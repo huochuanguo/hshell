@@ -35,6 +35,8 @@ jobs:
       - run: npm run format:check
       - run: cargo fmt --all -- --check
       - run: npm run build
+      - name: Generate Tauri permission schemas for frontend tests
+        run: cargo check -p hshell-desktop --locked
       - run: npm run test:frontend
       - run: python3 scripts/test_callgrind_summary.py
       - run: python3 scripts/test_validate_native_soak.py
