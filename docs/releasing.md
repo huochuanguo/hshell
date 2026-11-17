@@ -16,7 +16,7 @@ Gitee `origin` 保留为源码主仓库；GitHub `github` 为私有镜像和构�
 
 ## 发布新版本
 
-先修改原生版本并更新 `Cargo.lock`，新增 `docs/releases/版本号.md`，完成检查后提交。以下命令使用 `0.3.2` 为示例；下次发布必须使用新的版本号，不移动已发布标签：
+先修改原生版本并更新 `Cargo.lock`，新增 `docs/releases/版本号.md`，完成检查后提交。以下命令使用 `0.3.3` 为示例；下次发布必须使用新的版本号，不移动已发布标签：
 
 ```bash
 # 新检出仓库时只需要添加一次镜像 remote。
@@ -24,9 +24,9 @@ git remote add github https://github.com/huochuanguo/hshell.git
 
 git push origin main
 git push github main
-git tag -a v0.3.2 -m '发布 HShell 0.3.2'
-git push origin v0.3.2
-git push github v0.3.2
+git tag -a v0.3.3 -m '发布 HShell 0.3.3'
+git push origin v0.3.3
+git push github v0.3.3
 ```
 
 工作区当前已经配置 `github` 时，跳过 `remote add`。`main` 的普通 CI 不处理标签，发布流程不会重复运行 Windows 和 Web 打包任务。镜像同步通过上面的显式 Git 推送完成；仅向 Gitee 推送不会触发 GitHub Actions。
@@ -41,5 +41,7 @@ git push github v0.3.2
 - 已正式发布：工作流拒绝替换附件。通过新版本修复，不强推标签。
 
 首轮 `v0.3.1` 的协议验证通过，但云端 512 MiB 传输未在界面探针原有的 10 秒等待内完成，因此没有上传正式发行版。该标签保留不动；`v0.3.2` 仅将大文件完成等待设为 60 秒，并同步调整外层验证器时限，输入 100 ms、滚动/目录调度 50 ms 的 P95 门槛保持不变。普通界面操作仍使用原有 10 秒等待上限。
+
+第二轮 `v0.3.2` 的大文件传输已通过，但固定等待 1 秒后退出的探针可能在 SSH 连接完成、首次检查点落盘前停止传输，导致恢复检查没有有效进度。`v0.3.3` 在暂停和退出前直接确认真实检查点已保存，并注入 2 秒 SSH 启动延迟回归，仍要求恢复为暂停任务、存在非零断点并完成 SHA256 一致性检查。旧标签继续保留。
 
 首次配置需要在浏览器登录 GitHub；浏览器登录与本机 Git HTTPS 认证相互独立。本机可使用 GitHub CLI 的设备登录或已配置的 SSH 密钥，勿把令牌写入仓库或命令行参数。

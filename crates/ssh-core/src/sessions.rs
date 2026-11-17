@@ -340,6 +340,7 @@ impl SessionManager {
 #[cfg(test)]
 mod tests {
     use super::*;
+    #[cfg(unix)]
     use std::{
         sync::mpsc,
         time::{Duration, Instant},

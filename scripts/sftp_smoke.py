@@ -20,7 +20,9 @@ def main():
     parser.add_argument('--gui-only',action='store_true')
     parser.add_argument('--authentication-only',action='store_true')
     parser.add_argument('--appearance-only',action='store_true')
+    parser.add_argument('--ssh-startup-delay',type=float,default=0,help='Test-only SSH startup delay in seconds (0 to 5)')
     args=parser.parse_args()
+    if not 0<=args.ssh_startup_delay<=5:parser.error('--ssh-startup-delay must be between 0 and 5')
     if args.appearance_only:
         assert args.gui,'Appearance verification requires --gui'
         args.gui_only=True
@@ -70,7 +72,8 @@ Host fixture-password
   GlobalKnownHostsFile /dev/null
   LogLevel ERROR
 ''')
-            bindir=root/'bin';bindir.mkdir();wrapper=bindir/'ssh';wrapper.write_text('#!/bin/sh\nexec /usr/bin/ssh -F '+shlex.quote(str(config))+' "$@"\n');wrapper.chmod(0o700)
+            startup_delay=f'sleep {args.ssh_startup_delay}\n' if args.ssh_startup_delay else ''
+            bindir=root/'bin';bindir.mkdir();wrapper=bindir/'ssh';wrapper.write_text('#!/bin/sh\n'+startup_delay+'exec /usr/bin/ssh -F '+shlex.quote(str(config))+' "$@"\n');wrapper.chmod(0o700)
             env=os.environ.copy();env.update(PATH=str(bindir)+os.pathsep+env['PATH'],HSHELL_SFTP_ROOT=str(root),XDG_CONFIG_HOME=str(root/'config'),GTK_IM_MODULE='simple',NO_AT_BRIDGE='1')
             results=[]
             gui_hash=None

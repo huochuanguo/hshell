@@ -1191,6 +1191,31 @@ fn size(bytes: u64) -> String {
 }
 
 #[cfg(feature = "native-probe")]
+async fn until_checkpoint(pane: &FilePane) -> Result<(), String> {
+    let id = pane
+        .tasks
+        .borrow()
+        .last()
+        .ok_or("No transfer")?
+        .transfer
+        .id
+        .clone();
+    // A running worker can still be connecting. Interrupt only after the real
+    // durable journal records a partial transfer, independent of SSH startup.
+    crate::probe::until(
+        || {
+            Transfer::restore(&pane.state_path).is_ok_and(|tasks| {
+                tasks
+                    .iter()
+                    .any(|task| task.id == id && task.done > 0 && task.done < task.total)
+            })
+        },
+        "Interrupted transfer did not persist a partial checkpoint",
+    )
+    .await
+}
+
+#[cfg(feature = "native-probe")]
 pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Result<(), String> {
     use crate::{
         probe::{pause, snapshot, until, until_with_timeout},
@@ -1287,7 +1312,11 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         let action = pane.tasks.borrow().last().unwrap().action.clone();
         let done = pane.tasks.borrow().last().unwrap().transfer.done;
         if pane.tasks.borrow().last().unwrap().state != State::Paused || done == 0 {
-            return Err("Transfer did not restore as paused with checkpoint".into());
+            return Err(format!(
+                "Transfer did not restore as paused with checkpoint: paused={}, done={done}, total={}",
+                pane.tasks.borrow().last().unwrap().state == State::Paused,
+                pane.tasks.borrow().last().unwrap().transfer.total
+            ));
         }
         action.emit_clicked();
         until_with_timeout(
@@ -1423,7 +1452,7 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         "Pause fixture did not start",
     )
     .await?;
-    pause(500).await;
+    until_checkpoint(&pane).await?;
     let action = pane.tasks.borrow().last().unwrap().action.clone();
     action.emit_clicked();
     until(
@@ -1480,7 +1509,7 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         false,
     )]);
     until(|| pane.running() == 1, "Exit fixture did not start").await?;
-    pause(1000).await;
+    until_checkpoint(&pane).await?;
     let answered = crate::probe::answer_confirmation(gtk::ResponseType::Cancel, None);
     client.window.close();
     until(|| answered.get(), "Close cancellation not shown").await?;
