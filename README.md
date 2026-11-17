@@ -73,6 +73,8 @@ python3 scripts/package_native.py target/release/hshell \
 
 Ubuntu 22.04 的发布包必须在 Ubuntu 22.04 构建，再在 22.04 和 24.04 安装验收。**不能用 Ubuntu 24.04 构建结果宣称兼容 22.04**，因为 glibc 基线可能不兼容。CI 已定义两套 Ubuntu 构建及 Windows 构建，但添加工作流不代表已实际运行。
 
+源码保留在 [Gitee](https://gitee.com/huochuanguo/hshell)，并同步到 [GitHub 私有仓库](https://github.com/huochuanguo/hshell)。向 GitHub 推送与原生版本一致的 `vMAJOR.MINOR.PATCH` 标签后，[自动发布流程](.github/workflows/release.yml) 在 Ubuntu 22.04 构建，完成 SFTP 与双系统安装检查，再把 `.deb` 和 SHA256 校验文件上传到 [GitHub 发行版](https://github.com/huochuanguo/hshell/releases)。安装包不进入 Git 源码。私有发行版下载需要 GitHub 仓库访问权限。具体步骤及失败处理见 [发布说明](docs/releasing.md)。
+
 Windows 开发需要 MSVC C++ Build Tools、Rust MSVC 工具链、Node.js、WebView2 Runtime，以及 Windows「可选功能」中的 OpenSSH 客户端：
 
 ```powershell

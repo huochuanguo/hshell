@@ -12,12 +12,12 @@ import tempfile
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('binary')
-    parser.add_argument('--output', required=True)
+    parser.add_argument('--output', help='Defaults to target/release/bundle/deb/hshell_VERSION_amd64.deb')
     args = parser.parse_args()
     source = Path(__file__).resolve().parent.parent
     binary = Path(args.binary).resolve()
-    output = Path(args.output).resolve()
     version = re.search(r'^version = "([0-9.]+)"$', (source / 'crates/native-linux/Cargo.toml').read_text(), re.M)[1]
+    output = Path(args.output or source / f'target/release/bundle/deb/hshell_{version}_amd64.deb').resolve()
     payload = binary.read_bytes()
     assert b'HSHELL_NATIVE_PROBE' not in payload, 'Development probe must never ship'
     assert b'libwebkit' not in payload.lower(), 'Native package unexpectedly links WebKit'

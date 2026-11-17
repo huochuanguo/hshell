@@ -2,6 +2,7 @@ name: Desktop checks and packages
 
 on:
   push:
+    branches: [main]
   pull_request:
   workflow_dispatch:
 
@@ -37,6 +38,7 @@ jobs:
       - run: npm run test:frontend
       - run: python3 scripts/test_callgrind_summary.py
       - run: python3 scripts/test_validate_native_soak.py
+      - run: python3 scripts/test_release_metadata.py
       - run: cargo test --workspace --locked
       - run: cargo test -p hshell-native --all-features --locked
       - run: cargo clippy --workspace --all-targets --locked -- -D warnings
@@ -74,7 +76,7 @@ jobs:
         if: runner.os == 'Linux'
         run: |
           cargo build -p hshell-native --release --locked
-          python3 scripts/package_native.py target/release/hshell --output target/release/bundle/deb/hshell_0.3.1_amd64.deb
+          python3 scripts/package_native.py target/release/hshell
       - name: Windows package
         if: runner.os == 'Windows'
         run: npm run bundle -- --bundles nsis --ci
