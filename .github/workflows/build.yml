@@ -30,6 +30,8 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ matrix.os }}
       - name: Linux dependencies
         if: runner.os == 'Linux'
         run: |

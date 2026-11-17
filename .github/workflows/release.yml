@@ -31,6 +31,8 @@ jobs:
         with:
           components: rustfmt, clippy
       - uses: Swatinem/rust-cache@v2
+        with:
+          key: ubuntu22-native-release
       - name: Install native dependencies
         run: |
           sudo apt-get update

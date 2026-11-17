@@ -387,14 +387,19 @@ async fn main() {
         let transfer = task(&root, "network", Direction::Upload);
         data(&transfer.local, 256);
         let marker = root.join("network-progress");
-        let started = Instant::now();
+        let state = root.join("state-network");
+        let transfer_id = transfer.id.clone();
         let (sender, receiver) = std::sync::mpsc::sync_channel(8);
         let control = hshell_sftp::start_transfer(
             transfer,
             root.join("profiles.json"),
             move |event| {
                 if matches!(&event, hshell_sftp::TransferEvent::Progress(p) if p.bytes>=32*1024*1024)
-                    && started.elapsed() > Duration::from_secs(1)
+                    && Transfer::restore(&state).is_ok_and(|tasks| {
+                        tasks.iter().any(|task| {
+                            task.id == transfer_id && task.done > 0 && task.done < task.total
+                        })
+                    })
                 {
                     std::fs::write(&marker, b"ready").unwrap();
                     std::thread::sleep(Duration::from_millis(100));
@@ -406,9 +411,13 @@ async fn main() {
             match receiver.recv_timeout(Duration::from_secs(45)).unwrap() {
                 hshell_sftp::TransferEvent::Finished(transfer, result) => {
                     assert!(result.is_err());
+                    let checkpoint = Transfer::restore(&root.join("state-network"))
+                        .unwrap()
+                        .remove(0);
+                    assert!(checkpoint.done > 0 && checkpoint.done < checkpoint.total);
                     println!(
                         "{}",
-                        serde_json::json!({"networkFailure":result.unwrap_err(),"retained":transfer.done})
+                        serde_json::json!({"networkFailure":result.unwrap_err(),"retained":transfer.done,"checkpoint":checkpoint.done})
                     );
                     break;
                 }
