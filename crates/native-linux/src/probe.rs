@@ -23,9 +23,16 @@ pub(crate) async fn startup(client: &Client, result: &std::path::Path) -> Result
     std::fs::write(result, crate::timing::report().to_string()).map_err(|error| error.to_string())
 }
 pub(crate) async fn until(check: impl Fn() -> bool, message: &str) -> Result<(), String> {
+    until_with_timeout(check, message, Duration::from_secs(10)).await
+}
+pub(crate) async fn until_with_timeout(
+    check: impl Fn() -> bool,
+    message: &str,
+    timeout: Duration,
+) -> Result<(), String> {
     let started = Instant::now();
     while !check() {
-        if started.elapsed() > Duration::from_secs(10) {
+        if started.elapsed() > timeout {
             return Err(message.into());
         }
         pause(5).await;

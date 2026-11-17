@@ -116,7 +116,7 @@ Host fixture-password
                 env.update(HSHELL_NATIVE_PROBE='1',HSHELL_NATIVE_SFTP='1',HSHELL_NATIVE_RESULT=str(result),HSHELL_NATIVE_SNAPSHOT=str(snapshot))
                 if args.appearance_only:env['HSHELL_NATIVE_SFTP_APPEARANCE']='1'
                 gui_process=subprocess.Popen([str(gui)],env=env,text=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
-                samples={};deadline=time.monotonic()+120
+                samples={};deadline=time.monotonic()+180
                 try:
                     while gui_process.poll() is None:
                         assert time.monotonic()<deadline,'GUI timed out'
@@ -136,7 +136,7 @@ Host fixture-password
                     if gui_process.poll() is None:gui_process.kill();gui_process.wait()
                 if not args.appearance_only:
                     env['HSHELL_NATIVE_SFTP_RESTORE']='1'
-                    restored=subprocess.run([str(gui)],env=env,text=True,capture_output=True,timeout=45)
+                    restored=subprocess.run([str(gui)],env=env,text=True,capture_output=True,timeout=90)
                     assert restored.returncode==0,(restored.stdout,restored.stderr)
                     assert 'WARNING' not in restored.stderr and 'CRITICAL' not in restored.stderr,restored.stderr
                     measured=json.loads(result.read_text());assert measured['phase']=='complete' and measured['restoredAfterExit'],measured

@@ -1193,7 +1193,7 @@ fn size(bytes: u64) -> String {
 #[cfg(feature = "native-probe")]
 pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Result<(), String> {
     use crate::{
-        probe::{pause, snapshot, until},
+        probe::{pause, snapshot, until, until_with_timeout},
         probe_events::{key, scroll},
     };
     use gtk::gdk;
@@ -1290,9 +1290,10 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
             return Err("Transfer did not restore as paused with checkpoint".into());
         }
         action.emit_clicked();
-        until(
+        until_with_timeout(
             || pane.tasks.borrow().last().unwrap().state == State::Complete,
             "Restored GUI transfer did not finish",
+            Duration::from_secs(60),
         )
         .await?;
         return std::fs::write(
@@ -1380,7 +1381,14 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     if input.len() < 3 || simultaneous < 3 {
         return Err("Insufficient simultaneous transfer samples".into());
     }
-    until(|| pane.running() == 0, "Transfers did not finish").await?;
+    // Bulk completion depends on the runner's disk and SSH throughput. Keep
+    // the separate 100/50 ms input/scroll budgets unchanged below.
+    until_with_timeout(
+        || pane.running() == 0,
+        "Transfers did not finish",
+        Duration::from_secs(60),
+    )
+    .await?;
     if pane
         .tasks
         .borrow()
@@ -1427,9 +1435,10 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     pause(100).await;
     pane.show(profile);
     action.emit_clicked();
-    until(
+    until_with_timeout(
         || pane.tasks.borrow().last().unwrap().state == State::Complete,
         "Resume did not finish",
+        Duration::from_secs(60),
     )
     .await?;
     client.window.resize(800, 580);

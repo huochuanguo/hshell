@@ -1,6 +1,6 @@
 # 验证记录
 
-日期：2026-11-17。Ubuntu 当前试用构建：HShell 0.3.1，amd64；下方保留各版历史记录。
+日期：2026-11-17。下方保留各版本地专项记录；自动发布的最新 Ubuntu amd64 版本及安装包见 [GitHub 发行版](https://github.com/huochuanguo/hshell/releases)，发布门槛见 [发布说明](releasing.md)。
 
 ## 0.3.1 文件类型的颜色区分
 
