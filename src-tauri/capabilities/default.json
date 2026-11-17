@@ -1,0 +1,11 @@
+{
+  "$schema": "../gen/schemas/desktop-schema.json",
+  "identifier": "main-window",
+  "description": "Only the local main window can access application IPC.",
+  "windows": ["main"],
+  "permissions": [
+    "core:default",
+    "core:window:allow-close",
+    "core:window:allow-destroy"
+  ]
+}

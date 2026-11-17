@@ -1,0 +1,126 @@
+{
+  "binarySha256": "74cfe74836c79b3b7e8d57e1160fd66319e2e4e3ee2cb2f141b5e60f302fb2c0",
+  "guiBinarySha256": "074a3b7956b8c8c0b7af7109a7ff38ea1c8b0266864eb9858782151e32fd960e",
+  "results": [
+    {
+      "entries": [
+        {
+          "icon": "image-x-generic-symbolic",
+          "iconColor": "#a3c69b",
+          "name": "logo.png",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "text-x-generic-symbolic",
+          "iconColor": "#9abceb",
+          "name": "app.toml",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "insert-link-symbolic",
+          "iconColor": "#8fc9c2",
+          "name": "current-config",
+          "nameColor": "#8fc9c2"
+        },
+        {
+          "icon": "folder-symbolic",
+          "iconColor": "#d6b578",
+          "name": "configs",
+          "nameColor": "#d6b578"
+        },
+        {
+          "icon": "package-x-generic-symbolic",
+          "iconColor": "#b7a4d8",
+          "name": "backup.tar.gz",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "text-x-generic-symbolic",
+          "iconColor": "#9abceb",
+          "name": "deploy.sh",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "text-x-generic-symbolic",
+          "iconColor": "#a2aab7",
+          "name": "README.txt",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "folder-symbolic",
+          "iconColor": "#d6b578",
+          "name": "logs",
+          "nameColor": "#d6b578"
+        }
+      ],
+      "iconCacheEntries": 6,
+      "phase": "complete",
+      "scaleFactor": 1,
+      "selectionChecked": true,
+      "memorySamples": {
+        "terminal-baseline": [
+          {
+            "pssMiB": 25.33984375,
+            "rssMiB": 75.9921875
+          },
+          {
+            "pssMiB": 25.6826171875,
+            "rssMiB": 76.33984375
+          },
+          {
+            "pssMiB": 26.0107421875,
+            "rssMiB": 76.66796875
+          },
+          {
+            "pssMiB": 26.0107421875,
+            "rssMiB": 76.66796875
+          }
+        ],
+        "directory": [
+          {
+            "pssMiB": 29.4853515625,
+            "rssMiB": 87.26171875
+          },
+          {
+            "pssMiB": 29.517578125,
+            "rssMiB": 87.3828125
+          },
+          {
+            "pssMiB": 30.5771484375,
+            "rssMiB": 88.6796875
+          },
+          {
+            "pssMiB": 30.576171875,
+            "rssMiB": 88.6796875
+          },
+          {
+            "pssMiB": 38.16015625,
+            "rssMiB": 96.3125
+          },
+          {
+            "pssMiB": 31.5380859375,
+            "rssMiB": 89.69140625
+          },
+          {
+            "pssMiB": 31.4404296875,
+            "rssMiB": 89.59375
+          },
+          {
+            "pssMiB": 31.4404296875,
+            "rssMiB": 89.59375
+          },
+          {
+            "pssMiB": 31.4404296875,
+            "rssMiB": 89.59375
+          },
+          {
+            "pssMiB": 31.4404296875,
+            "rssMiB": 89.59375
+          }
+        ]
+      }
+    }
+  ],
+  "sshRemaining": 0,
+  "osRelease": "PRETTY_NAME=\"Ubuntu 24.04.4 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.4 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n"
+}

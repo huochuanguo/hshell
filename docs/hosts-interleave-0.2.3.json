@@ -1,0 +1,38 @@
+{
+  "initialPartialRows": 9,
+  "phase": "complete",
+  "profiles": 1000,
+  "updates": [
+    {
+      "case": "favorite",
+      "elapsedMs": 437.775801,
+      "maxLoopTickMs": 435.581034,
+      "replacedRows": 0,
+      "retainedRows": 1000
+    },
+    {
+      "case": "name-and-group",
+      "elapsedMs": 16.315537000000003,
+      "maxLoopTickMs": 39.714934,
+      "replacedRows": 0,
+      "retainedRows": 1000
+    },
+    {
+      "case": "replace-one",
+      "elapsedMs": 19.496758999999997,
+      "maxLoopTickMs": 25.263109999999998,
+      "replacedRows": 0,
+      "retainedRows": 999
+    },
+    {
+      "case": "restore",
+      "elapsedMs": 18.387503,
+      "maxLoopTickMs": 38.553269,
+      "replacedRows": 0,
+      "retainedRows": 999
+    }
+  ],
+  "binarySha256": "9ed949185c33997f612497400c76c0d9acc4851f1240af5f6bc182c58c739e40",
+  "medianMs": 18.94,
+  "maxMs": 437.78
+}

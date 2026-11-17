@@ -1,0 +1,1 @@
+{"cachedTotalMs":2.703423,"notes":"Same release binary, temporary local config, includes cache cold load and metadata checks. Does not measure SSH handshake or system credential reads.","preparations":1000,"profiles":1000,"uncachedTotalMs":1190.242917}

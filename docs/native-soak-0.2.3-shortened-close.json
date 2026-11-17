@@ -1,0 +1,10 @@
+{
+  "reason": "User shortened duration to two or three hours",
+  "windowCloseProtocol": true,
+  "realConfirmationAccepted": true,
+  "applicationExited": true,
+  "sshRemaining": 0,
+  "closeToExitMs": 10463,
+  "originalProbeCompleted": false,
+  "notes": "Fixed 8-hour probe reports intentional interruption after its terminal was closed. This is not an 8-hour pass and contains no full-duration latency histogram. Subsequent lifecycle regression is separate."
+}

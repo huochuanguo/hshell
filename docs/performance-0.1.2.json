@@ -1,0 +1,89 @@
+{
+  "environment": "Ubuntu 24.04, X11, native WebKitGTK 2.52.6, 1280x820; local PTY fixture, not a remote SSH bandwidth benchmark",
+  "switch_before_webgl_churn": {
+    "switchP95": 219,
+    "frameP95": 198,
+    "maxFrame": 220,
+    "outputMs": 97,
+    "outputBytes": 1040000
+  },
+  "switch_retained_webgl_probe": {
+    "switchP95": 18,
+    "frameP95": 17,
+    "maxFrame": 186,
+    "outputMs": 98.00000000000045,
+    "outputBytes": 1040000
+  },
+  "dom_base64_transport_probe": {
+    "inputP95": 30.000000000000455,
+    "switchP95": 32,
+    "frameP95": 19,
+    "maxFrame": 24,
+    "outputMs": 3064,
+    "outputBytes": 1040000
+  },
+  "dom_binary_transport_runs": [
+    {
+      "inputP95": 12,
+      "switchP95": 17.000000000000455,
+      "frameP95": 20,
+      "maxFrame": 30,
+      "outputMs": 1118,
+      "outputBytes": 1040000
+    },
+    {
+      "inputP95": 10.999999999999545,
+      "switchP95": 16.999999999999545,
+      "frameP95": 19,
+      "maxFrame": 25,
+      "outputMs": 1113.9999999999995,
+      "outputBytes": 1040000
+    },
+    {
+      "inputP95": 10.999999999999545,
+      "switchP95": 17.000000000000455,
+      "frameP95": 20,
+      "maxFrame": 29,
+      "outputMs": 1035.000000000001,
+      "outputBytes": 1040000
+    }
+  ],
+  "ssh_loopback_interaction_runs": [
+    {
+      "keyInputP95": 13,
+      "scrollP95": 34.00000000000091,
+      "loadedScrollP95": 32,
+      "loadedInputP95": 94,
+      "inputP95": 21.999999999999545,
+      "switchP95": 17,
+      "frameP95": 29,
+      "maxFrame": 43,
+      "outputMs": 1066,
+      "outputBytes": 1040000,
+      "fixture": {
+        "connections": 2,
+        "loadBytes": 1332000,
+        "echoedKeys": 48
+      },
+      "transport": "native WebKit + Tauri + PTY + real OpenSSH + loopback Paramiko"
+    },
+    {
+      "keyInputP95": 14.00000000000091,
+      "scrollP95": 35,
+      "loadedScrollP95": 30,
+      "loadedInputP95": 91,
+      "inputP95": 22,
+      "switchP95": 17.000000000000455,
+      "frameP95": 30,
+      "maxFrame": 43,
+      "outputMs": 1008,
+      "outputBytes": 1040000,
+      "fixture": {
+        "connections": 2,
+        "loadBytes": 1328400,
+        "echoedKeys": 48
+      },
+      "transport": "native WebKit + Tauri + PTY + real OpenSSH + loopback Paramiko"
+    }
+  ]
+}

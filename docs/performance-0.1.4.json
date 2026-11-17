@@ -1,0 +1,53 @@
+{
+  "version": "0.1.4",
+  "date": "2026-11-16",
+  "buildBaseline": "Ubuntu 22.04 amd64",
+  "host": "Ubuntu 24.04 X11; native WebKitGTK",
+  "scope": "One short run per scenario; loopback fixtures, no physical keyboard/network/Wayland/Windows latency claim",
+  "localPty": {
+    "inputP95": 11,
+    "switchP95": 17,
+    "frameP95": 19,
+    "maxFrame": 53,
+    "outputMs": 1063.9999999999995,
+    "outputBytes": 1040000,
+    "fontsLoaded": true,
+    "fontFamily": "\"Qizhan Mono\", \"Noto Sans Mono CJK SC\", \"DejaVu Sans Mono\", \"Microsoft YaHei\", monospace",
+    "fontSize": 15,
+    "lineHeight": 1.36
+  },
+  "sshLoopback": {
+    "keyInputP95": 13,
+    "scrollP95": 34,
+    "loadedScrollP95": 24,
+    "loadedInputP95": 39,
+    "inputP95": 21.000000000000455,
+    "switchP95": 19,
+    "frameP95": 22,
+    "maxFrame": 49,
+    "outputMs": 1030,
+    "outputBytes": 1040000,
+    "fontsLoaded": true,
+    "fontFamily": "\"Qizhan Mono\", \"Noto Sans Mono CJK SC\", \"DejaVu Sans Mono\", \"Microsoft YaHei\", monospace",
+    "fontSize": 15,
+    "lineHeight": 1.36,
+    "fixture": {
+      "connections": 2,
+      "loadBytes": 813600,
+      "echoedKeys": 48
+    },
+    "transport": "native WebKit + Tauri + PTY + real OpenSSH + loopback Paramiko"
+  },
+  "ubuntu22ContainerXvfbLocalPty": {
+    "inputP95": 8,
+    "switchP95": 27,
+    "frameP95": 21,
+    "maxFrame": 82,
+    "outputMs": 853,
+    "outputBytes": 1040000,
+    "fontsLoaded": true,
+    "fontFamily": "\"Qizhan Mono\", \"Noto Sans Mono CJK SC\", \"DejaVu Sans Mono\", \"Microsoft YaHei\", monospace",
+    "fontSize": 15,
+    "lineHeight": 1.36
+  }
+}

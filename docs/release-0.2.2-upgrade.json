@@ -1,0 +1,93 @@
+{
+  "oldPackage": "qizhan-ssh 0.2.0 -> hshell 0.2.1",
+  "newPackage": "hshell 0.2.2",
+  "oldPackageRemoved": true,
+  "oldExecutableRemoved": true,
+  "oldDesktopRemoved": true,
+  "legacyConfigUnchanged": true,
+  "legacyMissingPasswordSavedAcceptedByHostFixture": true,
+  "fonts": 4,
+  "fontLicenses": 2,
+  "pngSizes": 8,
+  "scalableIcon": true,
+  "version": "HShell native 0.2.2",
+  "close": "PASS: production window closed and process exited with code 0 in 17 ms",
+  "memory": {
+    "binarySha256": "8ea4e33ac75fc4ea189484105af98f3d360786b38378eb706b65bbecabeccd25",
+    "scenario": "idle native window, 1280x820, isolated configuration",
+    "runs": [
+      {
+        "run": 1,
+        "pssMedianMiB": 75.59,
+        "rssMedianMiB": 100.31,
+        "pssMaxMiB": 75.59,
+        "cpuPercentOneCore": 0.0,
+        "samples": [
+          {
+            "pssMiB": 75.587890625,
+            "rssMiB": 100.30859375,
+            "privateMiB": 53.88671875,
+            "swapPssMiB": 0.0,
+            "processes": [
+              {
+                "name": "hshell",
+                "rssMiB": 100.30859375,
+                "pssMiB": 75.587890625,
+                "privateMiB": 53.88671875,
+                "swapPssMiB": 0.0
+              }
+            ]
+          },
+          {
+            "pssMiB": 75.587890625,
+            "rssMiB": 100.30859375,
+            "privateMiB": 53.88671875,
+            "swapPssMiB": 0.0,
+            "processes": [
+              {
+                "name": "hshell",
+                "rssMiB": 100.30859375,
+                "pssMiB": 75.587890625,
+                "privateMiB": 53.88671875,
+                "swapPssMiB": 0.0
+              }
+            ]
+          },
+          {
+            "pssMiB": 75.587890625,
+            "rssMiB": 100.30859375,
+            "privateMiB": 53.88671875,
+            "swapPssMiB": 0.0,
+            "processes": [
+              {
+                "name": "hshell",
+                "rssMiB": 100.30859375,
+                "pssMiB": 75.587890625,
+                "privateMiB": 53.88671875,
+                "swapPssMiB": 0.0
+              }
+            ]
+          },
+          {
+            "pssMiB": 75.587890625,
+            "rssMiB": 100.30859375,
+            "privateMiB": 53.88671875,
+            "swapPssMiB": 0.0,
+            "processes": [
+              {
+                "name": "hshell",
+                "rssMiB": 100.30859375,
+                "pssMiB": 75.587890625,
+                "privateMiB": 53.88671875,
+                "swapPssMiB": 0.0
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "notes": "PSS apportions shared pages; RSS repeats shared pages. GPU device memory is excluded. Keep co-running apps and display constant.",
+    "pssMedianMiB": 75.59,
+    "rssMedianMiB": 100.31
+  }
+}

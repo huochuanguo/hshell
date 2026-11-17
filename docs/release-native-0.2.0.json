@@ -1,0 +1,13 @@
+{
+  "package": "target/native-ubuntu22/release/bundle/deb/qizhan-ssh_0.2.0_amd64.deb",
+  "bytes": 898552,
+  "sha256": "37803d3341958e502ee907e163c3d5df719785858d5fd6682c4c11413128b1b2",
+  "elfSha256": "bff76e7f1f909964b4383a9973a3b4b10b14d92f504c865369634a6e974115bc",
+  "releaseCloseUbuntu24": "PASS: production window closed and process exited with code 0 in 16 ms",
+  "probeExcluded": true,
+  "webKitExcluded": true,
+  "fonts": 4,
+  "licenses": 2,
+  "releaseCloseUbuntu22": "Installed final package; ordinary user; Xvfb; WM_DELETE_WINDOW; exit 0 in 18 ms",
+  "ubuntu24UpgradeSimulation": "0.1.4 -> 0.2.0; 0 newly installed dependencies; host installation unchanged"
+}

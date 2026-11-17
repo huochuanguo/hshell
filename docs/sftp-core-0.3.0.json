@@ -1,0 +1,83 @@
+{
+  "binarySha256": "562961ed5345a3ff8c8fc79e5c175139f3aa80950b2c013fa600f2acf6b3dd95",
+  "results": [
+    {
+      "downloadMiBs": 147.2511771466173,
+      "largeDirectory": {
+        "entries": 10000,
+        "maxBatch": 128,
+        "ms": 122
+      },
+      "passed": [
+        "64MiB bidirectional SHA256",
+        "no clobber",
+        "atomic replacement",
+        "publication crash recovery",
+        "empty and Unicode names",
+        "directory operations",
+        "10000 entries",
+        "disk full preserves destination",
+        "missing directory",
+        "symlink partial rejected"
+      ],
+      "sha256Roundtrip": "a4b70430582e198fa950b318face807e287f7c321f6355ca516e22a96e440f39",
+      "uploadMiBs": 102.27232453913109
+    },
+    {
+      "checkpoint": 33554432,
+      "paused": "upload",
+      "total": 67108864
+    },
+    {
+      "resumed": "upload",
+      "sha256": "a4b70430582e198fa950b318face807e287f7c321f6355ca516e22a96e440f39",
+      "verified": 33554432
+    },
+    {
+      "checkpoint": 33554432,
+      "paused": "upload",
+      "total": 67108864
+    },
+    {
+      "reason": "已传部分与源文件不一致，已停止续传。请新建任务",
+      "rejected": "upload"
+    },
+    {
+      "reason": "源文件已改变，已停止续传。请新建传输任务",
+      "rejected": "upload"
+    },
+    {
+      "checkpoint": 18874368,
+      "paused": "download",
+      "total": 67108864
+    },
+    {
+      "resumed": "download",
+      "sha256": "a4b70430582e198fa950b318face807e287f7c321f6355ca516e22a96e440f39",
+      "verified": 18874368
+    },
+    {
+      "checkpoint": 29360128,
+      "paused": "download",
+      "total": 67108864
+    },
+    {
+      "reason": "已传部分与源文件不一致，已停止续传。请新建任务",
+      "rejected": "download"
+    },
+    {
+      "reason": "源文件已改变，已停止续传。请新建传输任务",
+      "rejected": "download"
+    },
+    {
+      "networkFailure": "传输超过 30 秒无响应，已保留断点，请恢复传输",
+      "retained": 84410368
+    },
+    {
+      "resumed": "network",
+      "sha256": "063fb273f64a5acd7eb6e966000edae842e85022a5c00e20f01b035fffbb2147",
+      "verified": 50855936
+    }
+  ],
+  "sshRemaining": 0
+}

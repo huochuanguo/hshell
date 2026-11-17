@@ -1,0 +1,41 @@
+{
+  "startedAt": "2026-11-17T09:41:40.548500+00:00",
+  "plannedSeconds": 28800,
+  "tabs": 12,
+  "cycles": 64,
+  "environment": "Ubuntu 22.04 container / Xvfb / VTE 0.68",
+  "binarySha256": "166129a1e5c500ca3f2b5a5be2515d10b087af0494016db12035283e376c4120",
+  "sourceSha256": {
+    "Cargo.toml": "c0990ba0882cf80850e01710205c4530606db30e8adabdcd9bdd0f6e2b73a8fe",
+    "Cargo.lock": "4b158b6822c9385c8a3281f6f6a04a6fe4891218bba3a9fd30e4f9bb98ef5e4c",
+    "crates/native-linux/src/input_probe.rs": "8a89c82dfa89445cfc7fdb826be37f83cabc6b6a367da000b8b125d9e7181e8d",
+    "crates/native-linux/src/main.rs": "2b8ab0bfa6e2543b54f898892e17d8c167ace3a5738f1287e944a9d593017cad",
+    "crates/native-linux/src/probe.rs": "e5be050c972db6efc2cbb28a76d34fd4a534d4bbf59b5c391c574393b2593464",
+    "crates/native-linux/src/probe_events.rs": "87ad431ba2f82ca6fb7705679feb4faae45114acc5018bd5bf4afcf85cb9dcf2",
+    "crates/native-linux/src/probe_stats.rs": "98909757353f934869b43f637b2eaf96bffc40e7ad82923f8ec83a9085348147",
+    "crates/native-linux/src/program_probe.rs": "905ac4fa73a0dcab08eaf5a73d0b92c8a512c9c03392889bd2009a0060e606fc",
+    "crates/native-linux/src/reclaim.rs": "5955f379006da26d3f8a9a948add59620312e05dd31307d04b25d4fbeb342d36",
+    "crates/native-linux/src/stress.rs": "9b2e5fac83d3772144710a863d6ef9cb5b1c676fdd164cd0e30e8f5a54cad95d",
+    "crates/native-linux/src/terminal.rs": "543ebefea300b6d37e8e249575bdbceb321d8236facacb17f648a2a8c6ea027a",
+    "crates/native-linux/src/timing.rs": "fa644e45596c434786dc1899d9eb81f4791ada2b978a642e804b1252543685cc",
+    "crates/native-linux/src/ui.rs": "5169ba8df063f86548c3a98a3afe5b6c5baa64792e967bfb2e7b919b472a7553",
+    "crates/ssh-core/examples/askpass.rs": "469bfbb13d258cdb46a0388015d9b657d6648560fcd3931dafa24a21d3e552f9",
+    "crates/ssh-core/examples/config_cache_perf.rs": "2f3edfe8da962400aa0eb17ee7c710cbbd28e51d6375063e9ba3328587deb5f7",
+    "crates/ssh-core/examples/credentials_check.rs": "d3eddc11ceebfc320bb01b6941f2baa31fa2d6571c7a9d6a91c4d8e6cb8217e0",
+    "crates/ssh-core/src/askpass.rs": "e9d7a58535592123aa1129cd8ec31563e45c83f021be82864d01b984596f2f61",
+    "crates/ssh-core/src/credentials.rs": "f9f7061c67373c0abbbad41108ce83538ef24715551fda7fedd5527fb89ea712",
+    "crates/ssh-core/src/direct.rs": "44dab64674394dbf5dec245f8f48bcd77494a7f5a0062b1d2234ea1876fef716",
+    "crates/ssh-core/src/lib.rs": "790b33c77ed625a65757d043bd78d1f9846067a93ce03a7fbbc26254e970f760",
+    "crates/ssh-core/src/profile_cache.rs": "9d5f2aaa31e9a49683719cbb922df484d5e52382f8772d09cda43e39b21f88d3",
+    "crates/ssh-core/src/profiles.rs": "126808204a374221121e404c0af50adfb855ed1421c403ddbd10783560927cc3",
+    "crates/ssh-core/src/sessions.rs": "7eb38bfd3d7239334b49fb77f40e7bdc0c26808913598868bd6855e7eeec1c7d",
+    "crates/native-linux/src/style.css": "668c7705fd47f48e9275998a88a375da9c383d4c4cde78128c187a00ee88904d"
+  },
+  "acceptedDurationRangeSeconds": [
+    7200,
+    10800
+  ],
+  "durationRevisionReason": "User requested two or three hours instead of eight hours",
+  "originalProbeCompleted": false,
+  "acceptanceReport": "docs/native-soak-0.2.3-summary.json"
+}

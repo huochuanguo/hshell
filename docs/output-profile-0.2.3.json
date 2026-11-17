@@ -1,0 +1,664 @@
+{
+  "binarySha256": "5e94b67293c9489e6189e5d0fd1d2127a8c549c0fd9b7272e2df014fd6f20637",
+  "environment": "Ubuntu 24 X11",
+  "diagnosticOnly": true,
+  "stages": {
+    "stress-idle": {
+      "pssMedianMiB": 194.38,
+      "rssMedianMiB": 236.51,
+      "sessions": 0,
+      "sshProcesses": 0,
+      "samples": [
+        {
+          "pssMiB": 194.27734375,
+          "rssMiB": 236.40625,
+          "privateMiB": 189.3046875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 236.40625,
+              "pssMiB": 194.27734375,
+              "privateMiB": 189.3046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 194.3828125,
+          "rssMiB": 236.51171875,
+          "privateMiB": 189.41015625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 236.51171875,
+              "pssMiB": 194.3828125,
+              "privateMiB": 189.41015625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 194.3828125,
+          "rssMiB": 236.51171875,
+          "privateMiB": 189.41015625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 236.51171875,
+              "pssMiB": 194.3828125,
+              "privateMiB": 189.41015625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 194.3828125,
+          "rssMiB": 236.51171875,
+          "privateMiB": 189.41015625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 236.51171875,
+              "pssMiB": 194.3828125,
+              "privateMiB": 189.41015625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 24,
+      "threads": 7
+    },
+    "stress-streaming": {
+      "pssMedianMiB": 219.03,
+      "rssMedianMiB": 276.44,
+      "sessions": 2,
+      "sshProcesses": 2,
+      "samples": [
+        {
+          "pssMiB": 218.330078125,
+          "rssMiB": 274.85546875,
+          "privateMiB": 211.08984375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 258.078125,
+              "pssMiB": 213.5068359375,
+              "privateMiB": 208.125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.38671875,
+              "pssMiB": 2.40625,
+              "privateMiB": 1.4765625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.390625,
+              "pssMiB": 2.4169921875,
+              "privateMiB": 1.48828125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 218.9052734375,
+          "rssMiB": 276.31640625,
+          "privateMiB": 211.58984375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 259.359375,
+              "pssMiB": 213.90234375,
+              "privateMiB": 208.4453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.49609375,
+              "privateMiB": 1.56640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.48046875,
+              "pssMiB": 2.5068359375,
+              "privateMiB": 1.578125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 219.1552734375,
+          "rssMiB": 276.56640625,
+          "privateMiB": 211.83984375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 259.609375,
+              "pssMiB": 214.15234375,
+              "privateMiB": 208.6953125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.49609375,
+              "privateMiB": 1.56640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.48046875,
+              "pssMiB": 2.5068359375,
+              "privateMiB": 1.578125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 219.1748046875,
+          "rssMiB": 276.5859375,
+          "privateMiB": 211.859375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 259.62890625,
+              "pssMiB": 214.171875,
+              "privateMiB": 208.71484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.49609375,
+              "privateMiB": 1.56640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.48046875,
+              "pssMiB": 2.5068359375,
+              "privateMiB": 1.578125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 34,
+      "threads": 9
+    },
+    "stress-filled": {
+      "pssMedianMiB": 220.06,
+      "rssMedianMiB": 277.47,
+      "sessions": 2,
+      "sshProcesses": 2,
+      "samples": [
+        {
+          "pssMiB": 220.0615234375,
+          "rssMiB": 277.47265625,
+          "privateMiB": 212.74609375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 260.515625,
+              "pssMiB": 215.05859375,
+              "privateMiB": 209.6015625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.49609375,
+              "privateMiB": 1.56640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.48046875,
+              "pssMiB": 2.5068359375,
+              "privateMiB": 1.578125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 220.0615234375,
+          "rssMiB": 277.47265625,
+          "privateMiB": 212.74609375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 260.515625,
+              "pssMiB": 215.05859375,
+              "privateMiB": 209.6015625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.49609375,
+              "privateMiB": 1.56640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.48046875,
+              "pssMiB": 2.5068359375,
+              "privateMiB": 1.578125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 220.0615234375,
+          "rssMiB": 277.47265625,
+          "privateMiB": 212.74609375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 260.515625,
+              "pssMiB": 215.05859375,
+              "privateMiB": 209.6015625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.49609375,
+              "privateMiB": 1.56640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.48046875,
+              "pssMiB": 2.5068359375,
+              "privateMiB": 1.578125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 220.0615234375,
+          "rssMiB": 277.47265625,
+          "privateMiB": 212.74609375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 260.515625,
+              "pssMiB": 215.05859375,
+              "privateMiB": 209.6015625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.49609375,
+              "privateMiB": 1.56640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.48046875,
+              "pssMiB": 2.5068359375,
+              "privateMiB": 1.578125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 34,
+      "threads": 8
+    },
+    "stress-one-after-close": {
+      "pssMedianMiB": 224.52,
+      "rssMedianMiB": 275.64,
+      "sessions": 1,
+      "sshProcesses": 1,
+      "samples": [
+        {
+          "pssMiB": 224.5244140625,
+          "rssMiB": 275.64453125,
+          "privateMiB": 218.2578125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.16796875,
+              "pssMiB": 221.5458984375,
+              "privateMiB": 216.0078125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.978515625,
+              "privateMiB": 2.25,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 224.5244140625,
+          "rssMiB": 275.64453125,
+          "privateMiB": 218.2578125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.16796875,
+              "pssMiB": 221.5458984375,
+              "privateMiB": 216.0078125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.978515625,
+              "privateMiB": 2.25,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 224.5244140625,
+          "rssMiB": 275.64453125,
+          "privateMiB": 218.2578125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.16796875,
+              "pssMiB": 221.5458984375,
+              "privateMiB": 216.0078125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.978515625,
+              "privateMiB": 2.25,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 224.5244140625,
+          "rssMiB": 275.64453125,
+          "privateMiB": 218.2578125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.16796875,
+              "pssMiB": 221.5458984375,
+              "privateMiB": 216.0078125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.978515625,
+              "privateMiB": 2.25,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 29,
+      "threads": 7
+    },
+    "stress-one-after-cycles": {
+      "pssMedianMiB": 224.87,
+      "rssMedianMiB": 276.39,
+      "sessions": 1,
+      "sshProcesses": 1,
+      "samples": [
+        {
+          "pssMiB": 224.8720703125,
+          "rssMiB": 276.38671875,
+          "privateMiB": 218.5625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.91015625,
+              "pssMiB": 221.8935546875,
+              "privateMiB": 216.3125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.978515625,
+              "privateMiB": 2.25,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 224.8720703125,
+          "rssMiB": 276.38671875,
+          "privateMiB": 218.5625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.91015625,
+              "pssMiB": 221.8935546875,
+              "privateMiB": 216.3125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.978515625,
+              "privateMiB": 2.25,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 224.8720703125,
+          "rssMiB": 276.38671875,
+          "privateMiB": 218.5625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.91015625,
+              "pssMiB": 221.8935546875,
+              "privateMiB": 216.3125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.978515625,
+              "privateMiB": 2.25,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 224.8720703125,
+          "rssMiB": 276.38671875,
+          "privateMiB": 218.5625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.91015625,
+              "pssMiB": 221.8935546875,
+              "privateMiB": 216.3125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.4765625,
+              "pssMiB": 2.978515625,
+              "privateMiB": 2.25,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 29,
+      "threads": 7
+    },
+    "stress-closed-all": {
+      "pssMedianMiB": 221.58,
+      "rssMedianMiB": 267.57,
+      "sessions": 0,
+      "sshProcesses": 0,
+      "samples": [
+        {
+          "pssMiB": 221.5771484375,
+          "rssMiB": 267.56640625,
+          "privateMiB": 215.98828125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.56640625,
+              "pssMiB": 221.5771484375,
+              "privateMiB": 215.98828125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 221.5771484375,
+          "rssMiB": 267.56640625,
+          "privateMiB": 215.98828125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.56640625,
+              "pssMiB": 221.5771484375,
+              "privateMiB": 215.98828125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 221.5771484375,
+          "rssMiB": 267.56640625,
+          "privateMiB": 215.98828125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.56640625,
+              "pssMiB": 221.5771484375,
+              "privateMiB": 215.98828125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 221.5771484375,
+          "rssMiB": 267.56640625,
+          "privateMiB": 215.98828125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "callgrind-amd64",
+              "rssMiB": 267.56640625,
+              "pssMiB": 221.5771484375,
+              "privateMiB": 215.98828125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 24,
+      "threads": 6
+    }
+  },
+  "fixture": {
+    "connections": 3,
+    "fillBytes": 260000,
+    "passwordAuthentications": 0,
+    "stressBytes": 1666000,
+    "stressStreamsFinished": 2
+  },
+  "result": {
+    "connections": 3,
+    "cycles": 1,
+    "hiddenOutputComplete": true,
+    "inputP95": null,
+    "loopTickMax": 332.403073,
+    "loopTickP95": 87.83082300000001,
+    "partialInputP95": null,
+    "partialLoad": false,
+    "phase": "complete",
+    "reclaimCalls": 3,
+    "scrollbackLines": 3000,
+    "seconds": 5,
+    "sessions": 0,
+    "stress": true,
+    "tabs": 2
+  },
+  "streaming": [
+    {
+      "seconds": 0,
+      "pssMiB": 217.03,
+      "rssMiB": 272.32,
+      "cpuPercentOneCore": null,
+      "fds": 28,
+      "threads": 9
+    },
+    {
+      "seconds": 1.28,
+      "pssMiB": 219.33,
+      "rssMiB": 276.75,
+      "cpuPercentOneCore": 96.81,
+      "fds": 34,
+      "threads": 9
+    },
+    {
+      "seconds": 2.3,
+      "pssMiB": 219.34,
+      "rssMiB": 276.75,
+      "cpuPercentOneCore": 94.43,
+      "fds": 34,
+      "threads": 9
+    },
+    {
+      "seconds": 3.3,
+      "pssMiB": 219.36,
+      "rssMiB": 276.77,
+      "cpuPercentOneCore": 84.64,
+      "fds": 34,
+      "threads": 9
+    },
+    {
+      "seconds": 4.31,
+      "pssMiB": 219.38,
+      "rssMiB": 276.79,
+      "cpuPercentOneCore": 89.3,
+      "fds": 34,
+      "threads": 9
+    }
+  ],
+  "stderr": "",
+  "sshRemaining": 0,
+  "notes": "Development-only native GTK/VTE build. Same production PTY path and UI. Loopback fixture; input ends at parsed echo, not physical keyboard latency. Scroll tick measures GTK loop scheduling, not display frame time. PSS depends on co-running processes; no GPU device memory measurement."
+}

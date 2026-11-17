@@ -1,0 +1,76 @@
+{
+  "acceptance": "shortened-resource-run-with-separate-lifecycle",
+  "originalProbeCompleted": false,
+  "fullDurationLatencyAvailable": false,
+  "lifecycleReport": "docs/native-soak-0.2.3-lifecycle.json",
+  "lifecycleResult": {
+    "connections": 76,
+    "cycles": 64,
+    "hiddenOutputComplete": true,
+    "histogramResolutionMs": 0.25,
+    "inputP95": 39.5,
+    "inputSamples": 58,
+    "loopTickMax": 53.356012,
+    "loopTickP95": 28.0,
+    "loopTickSamples": 1515,
+    "partialInputP95": 18.25,
+    "partialLoad": true,
+    "phase": "complete",
+    "reclaimCalls": 3,
+    "scrollbackLines": 3000,
+    "seconds": 30,
+    "sessions": 0,
+    "stress": true,
+    "tabs": 12
+  },
+  "closeReport": "docs/native-soak-0.2.3-shortened-close.json",
+  "excludedShutdownSamples": [
+    {
+      "seconds": 10533.73,
+      "pssMiB": 86.97,
+      "rssMiB": 115.09,
+      "cpuPercentOneCore": -1304.52,
+      "fds": 8,
+      "threads": 3
+    }
+  ],
+  "excludedSampleReason": "SSH children already exited; process-tree CPU counter reset. Raw JSONL preserved.",
+  "observedSampleSeconds": 10503.71,
+  "samples": 351,
+  "resourceGrowth": {
+    "pssMiB": {
+      "firstMedian": 110.68,
+      "finalMedian": 110.77,
+      "delta": 0.09
+    },
+    "rssMiB": {
+      "firstMedian": 208.79,
+      "finalMedian": 208.88,
+      "delta": 0.09
+    }
+  },
+  "pssStableRangeMiB": [
+    110.68,
+    110.77
+  ],
+  "rssStableRangeMiB": [
+    208.79,
+    208.88
+  ],
+  "fdsStableRange": [
+    68,
+    68
+  ],
+  "threadsStableRange": [
+    15,
+    15
+  ],
+  "cpuMedianOneCore": 33.43,
+  "binarySha256": "166129a1e5c500ca3f2b5a5be2515d10b087af0494016db12035283e376c4120",
+  "environment": "Ubuntu 22.04 container / Xvfb / VTE 0.68",
+  "seconds": 10503.71,
+  "minimumSeconds": 7200,
+  "sourceHashesVerified": true,
+  "sshRemaining": 0,
+  "notes": "Fixed loopback workload with programmatic input and scrolling; not all production servers, physical input, Wayland, Windows or GPU memory."
+}

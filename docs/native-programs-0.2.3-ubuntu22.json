@@ -1,0 +1,23 @@
+{
+  "binarySha256": "166129a1e5c500ca3f2b5a5be2515d10b087af0494016db12035283e376c4120",
+  "result": {
+    "connections": 1,
+    "inputAfterScroll": true,
+    "naturalExit": true,
+    "notes": "Real remote vim.tiny/tmux over OpenSSH; programmatic GTK key and wheel events. Unicode paste is distinct from IME composition.",
+    "phase": "complete",
+    "resizeCount": 3,
+    "scrollEvents": 160,
+    "scrollRowsMoved": 589.4450397824767,
+    "sessions": 0,
+    "tmuxWindows": 2,
+    "vimUtf8Saved": true
+  },
+  "versions": "openssh-server\t1:8.9p1-3ubuntu0.18\ntmux\t3.2a-4ubuntu0.3\nvim-tiny\t2:8.2.3995-1ubuntu2.36\n",
+  "terminalSize": [
+    20,
+    85
+  ],
+  "sshRemaining": 0,
+  "stderr": ""
+}

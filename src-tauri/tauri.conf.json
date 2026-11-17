@@ -1,0 +1,57 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "HShell",
+  "version": "0.2.3",
+  "identifier": "io.qizhan.ssh",
+  "build": {
+    "beforeDevCommand": "npm run dev",
+    "devUrl": "http://localhost:1420",
+    "beforeBuildCommand": "npm run build",
+    "frontendDist": "../dist"
+  },
+  "app": {
+    "windows": [
+      {
+        "label": "main",
+        "title": "HShell",
+        "width": 1280,
+        "height": 820,
+        "minWidth": 800,
+        "minHeight": 580,
+        "backgroundColor": "#17191d"
+      }
+    ],
+    "security": {
+      "csp": "default-src 'self'; connect-src ipc: http://ipc.localhost; img-src 'self' asset: http://asset.localhost data:; style-src 'self' 'unsafe-inline'; font-src 'self'; script-src 'self'; object-src 'none'; base-uri 'self'"
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["deb"],
+    "category": "DeveloperTool",
+    "shortDescription": "Lightweight OpenSSH terminal workspace",
+    "longDescription": "A local SSH workspace with saved connections, independent terminal tabs, system OpenSSH authentication, and bounded terminal output queues.",
+    "icon": [
+      "icons/32x32.png",
+      "icons/128x128.png",
+      "icons/128x128@2x.png",
+      "icons/icon.ico"
+    ],
+    "linux": {
+      "deb": {
+        "depends": ["openssh-client"],
+        "recommends": ["gnome-keyring"]
+      }
+    },
+    "windows": {
+      "nsis": {
+        "displayLanguageSelector": false
+      }
+    },
+    "resources": {
+      "../LICENSES/ibm-plex-sans-OFL.txt": "licenses/ibm-plex-sans-OFL.txt",
+      "../LICENSES/jetbrains-OFL.txt": "licenses/jetbrains-OFL.txt"
+    }
+  },
+  "mainBinaryName": "HShell"
+}

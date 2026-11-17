@@ -1,0 +1,132 @@
+{
+  "version": "0.1.3",
+  "scope": "Test-only perf-probe build; actual GTK/WebKit close listener, native Destroyed event, real OpenSSH over loopback; X11/Xvfb only. elapsedMs includes launch, connection and confirmation steps.",
+  "ubuntu24": [
+    {
+      "scenario": "close-empty",
+      "phase": "ready",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 0,
+      "sshRemaining": 0,
+      "elapsedMs": 1351
+    },
+    {
+      "scenario": "close-running",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1602
+    },
+    {
+      "scenario": "close-cancel-retry",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1749
+    },
+    {
+      "scenario": "close-repeated",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1932
+    },
+    {
+      "scenario": "close-editor",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1689
+    },
+    {
+      "scenario": "close-info",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1700
+    }
+  ],
+  "ubuntu22": [
+    {
+      "scenario": "close-empty",
+      "phase": "ready",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 0,
+      "sshRemaining": 0,
+      "elapsedMs": 743
+    },
+    {
+      "scenario": "close-running",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 928
+    },
+    {
+      "scenario": "close-cancel-retry",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1111
+    },
+    {
+      "scenario": "close-repeated",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1244
+    },
+    {
+      "scenario": "close-editor",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 986
+    },
+    {
+      "scenario": "close-info",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 941
+    }
+  ],
+  "productionPackage": {
+    "path": "target/ubuntu22/release/bundle/deb/Qizhan SSH_0.1.3_amd64.deb",
+    "bytes": 2799348,
+    "sha256": "892a023655b0bbb3989ba47badbe137a0a61ae306195215ddedb04dcad391a94",
+    "ubuntu24": {
+      "protocol": "X11 WM_DELETE_WINDOW; actual packaged ELF extracted and launched with isolated config",
+      "closeToExitMs": 68,
+      "exitCode": 0
+    },
+    "ubuntu22": {
+      "protocol": "Xvfb WM_DELETE_WINDOW after dpkg install as an ordinary user",
+      "closeToExitMs": 72,
+      "exitCode": 0
+    },
+    "upgradeSimulation": "Ubuntu 24: installed 0.1.2 -> 0.1.3, no new dependencies; host install not performed"
+  }
+}

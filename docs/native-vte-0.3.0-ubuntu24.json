@@ -1,0 +1,653 @@
+{
+  "binarySha256": "eed75a1692c8298df0208451270dd91fe29cfd5b9bdbaf59fafb58c4367c35e4",
+  "environment": "Ubuntu 24 X11",
+  "diagnosticOnly": false,
+  "stages": {
+    "idle": {
+      "pssMedianMiB": 17.97,
+      "rssMedianMiB": 61.5,
+      "sessions": 0,
+      "sshProcesses": 0,
+      "samples": [
+        {
+          "pssMiB": 17.970703125,
+          "rssMiB": 61.5,
+          "privateMiB": 13.74609375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 61.5,
+              "pssMiB": 17.970703125,
+              "privateMiB": 13.74609375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 17.970703125,
+          "rssMiB": 61.5,
+          "privateMiB": 13.74609375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 61.5,
+              "pssMiB": 17.970703125,
+              "privateMiB": 13.74609375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 17.970703125,
+          "rssMiB": 61.5,
+          "privateMiB": 13.74609375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 61.5,
+              "pssMiB": 17.970703125,
+              "privateMiB": 13.74609375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 17.970703125,
+          "rssMiB": 61.5,
+          "privateMiB": 13.74609375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 61.5,
+              "pssMiB": 17.970703125,
+              "privateMiB": 13.74609375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 16,
+      "threads": 7
+    },
+    "one-session": {
+      "pssMedianMiB": 22.52,
+      "rssMedianMiB": 73.72,
+      "sessions": 1,
+      "sshProcesses": 1,
+      "samples": [
+        {
+          "pssMiB": 22.51953125,
+          "rssMiB": 73.72265625,
+          "privateMiB": 17.203125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 65.44921875,
+              "pssMiB": 19.865234375,
+              "privateMiB": 15.1640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2734375,
+              "pssMiB": 2.654296875,
+              "privateMiB": 2.0390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 22.51953125,
+          "rssMiB": 73.72265625,
+          "privateMiB": 17.203125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 65.44921875,
+              "pssMiB": 19.865234375,
+              "privateMiB": 15.1640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2734375,
+              "pssMiB": 2.654296875,
+              "privateMiB": 2.0390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 22.51953125,
+          "rssMiB": 73.72265625,
+          "privateMiB": 17.203125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 65.44921875,
+              "pssMiB": 19.865234375,
+              "privateMiB": 15.1640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2734375,
+              "pssMiB": 2.654296875,
+              "privateMiB": 2.0390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 22.51953125,
+          "rssMiB": 73.72265625,
+          "privateMiB": 17.203125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 65.44921875,
+              "pssMiB": 19.865234375,
+              "privateMiB": 15.1640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2734375,
+              "pssMiB": 2.654296875,
+              "privateMiB": 2.0390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 18,
+      "threads": 8
+    },
+    "four-filled": {
+      "pssMedianMiB": 33.71,
+      "rssMedianMiB": 107.39,
+      "sessions": 4,
+      "sshProcesses": 4,
+      "samples": [
+        {
+          "pssMiB": 33.7138671875,
+          "rssMiB": 107.39453125,
+          "privateMiB": 26.421875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 73.0078125,
+              "pssMiB": 24.880859375,
+              "privateMiB": 19.9453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.59375,
+              "pssMiB": 2.2197265625,
+              "privateMiB": 1.640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.64453125,
+              "pssMiB": 2.24609375,
+              "privateMiB": 1.64453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.64453125,
+              "pssMiB": 2.2431640625,
+              "privateMiB": 1.64453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.1240234375,
+              "privateMiB": 1.546875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 33.7138671875,
+          "rssMiB": 107.39453125,
+          "privateMiB": 26.421875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 73.0078125,
+              "pssMiB": 24.880859375,
+              "privateMiB": 19.9453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.59375,
+              "pssMiB": 2.2197265625,
+              "privateMiB": 1.640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.64453125,
+              "pssMiB": 2.24609375,
+              "privateMiB": 1.64453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.64453125,
+              "pssMiB": 2.2431640625,
+              "privateMiB": 1.64453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.1240234375,
+              "privateMiB": 1.546875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 33.7138671875,
+          "rssMiB": 107.39453125,
+          "privateMiB": 26.421875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 73.0078125,
+              "pssMiB": 24.880859375,
+              "privateMiB": 19.9453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.59375,
+              "pssMiB": 2.2197265625,
+              "privateMiB": 1.640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.64453125,
+              "pssMiB": 2.24609375,
+              "privateMiB": 1.64453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.64453125,
+              "pssMiB": 2.2431640625,
+              "privateMiB": 1.64453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.1240234375,
+              "privateMiB": 1.546875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 33.7138671875,
+          "rssMiB": 107.39453125,
+          "privateMiB": 26.421875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 73.0078125,
+              "pssMiB": 24.880859375,
+              "privateMiB": 19.9453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.59375,
+              "pssMiB": 2.2197265625,
+              "privateMiB": 1.640625,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.64453125,
+              "pssMiB": 2.24609375,
+              "privateMiB": 1.64453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.64453125,
+              "pssMiB": 2.2431640625,
+              "privateMiB": 1.64453125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.1240234375,
+              "privateMiB": 1.546875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 36,
+      "threads": 11
+    },
+    "one-after-close": {
+      "pssMedianMiB": 30.87,
+      "rssMedianMiB": 88.54,
+      "sessions": 1,
+      "sshProcesses": 1,
+      "samples": [
+        {
+          "pssMiB": 34.1123046875,
+          "rssMiB": 91.7890625,
+          "privateMiB": 27.96875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 83.28515625,
+              "pssMiB": 31.228515625,
+              "privateMiB": 25.703125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.8837890625,
+              "privateMiB": 2.265625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 34.1123046875,
+          "rssMiB": 91.7890625,
+          "privateMiB": 27.96875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 83.28515625,
+              "pssMiB": 31.228515625,
+              "privateMiB": 25.703125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.8837890625,
+              "privateMiB": 2.265625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 27.6201171875,
+          "rssMiB": 85.296875,
+          "privateMiB": 21.4765625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 76.79296875,
+              "pssMiB": 24.736328125,
+              "privateMiB": 19.2109375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.8837890625,
+              "privateMiB": 2.265625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 27.6201171875,
+          "rssMiB": 85.296875,
+          "privateMiB": 21.4765625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 76.79296875,
+              "pssMiB": 24.736328125,
+              "privateMiB": 19.2109375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.8837890625,
+              "privateMiB": 2.265625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 21,
+      "threads": 8
+    },
+    "one-after-cycles": {
+      "pssMedianMiB": 27.79,
+      "rssMedianMiB": 85.47,
+      "sessions": 1,
+      "sshProcesses": 1,
+      "samples": [
+        {
+          "pssMiB": 27.8466796875,
+          "rssMiB": 85.5234375,
+          "privateMiB": 21.703125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 77.01953125,
+              "pssMiB": 24.962890625,
+              "privateMiB": 19.4375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.8837890625,
+              "privateMiB": 2.265625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 27.8466796875,
+          "rssMiB": 85.5234375,
+          "privateMiB": 21.703125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 77.01953125,
+              "pssMiB": 24.962890625,
+              "privateMiB": 19.4375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.8837890625,
+              "privateMiB": 2.265625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 27.7333984375,
+          "rssMiB": 85.41015625,
+          "privateMiB": 21.58984375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 76.90625,
+              "pssMiB": 24.849609375,
+              "privateMiB": 19.32421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.8837890625,
+              "privateMiB": 2.265625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 27.7333984375,
+          "rssMiB": 85.41015625,
+          "privateMiB": 21.58984375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 76.90625,
+              "pssMiB": 24.849609375,
+              "privateMiB": 19.32421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.50390625,
+              "pssMiB": 2.8837890625,
+              "privateMiB": 2.265625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 21,
+      "threads": 7
+    },
+    "closed-all": {
+      "pssMedianMiB": 24.38,
+      "rssMedianMiB": 76.41,
+      "sessions": 0,
+      "sshProcesses": 0,
+      "samples": [
+        {
+          "pssMiB": 24.375,
+          "rssMiB": 76.4140625,
+          "privateMiB": 18.84375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 76.4140625,
+              "pssMiB": 24.375,
+              "privateMiB": 18.84375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 24.375,
+          "rssMiB": 76.4140625,
+          "privateMiB": 18.84375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 76.4140625,
+              "pssMiB": 24.375,
+              "privateMiB": 18.84375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 24.375,
+          "rssMiB": 76.4140625,
+          "privateMiB": 18.84375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 76.4140625,
+              "pssMiB": 24.375,
+              "privateMiB": 18.84375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 24.375,
+          "rssMiB": 76.4140625,
+          "privateMiB": 18.84375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-sftp-pro",
+              "rssMiB": 76.4140625,
+              "pssMiB": 24.375,
+              "privateMiB": 18.84375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 16,
+      "threads": 6
+    }
+  },
+  "fixture": {
+    "connections": 14,
+    "fillBytes": 1300000,
+    "passwordAuthentications": 0,
+    "stressBytes": 0,
+    "stressStreamsFinished": 0
+  },
+  "result": {
+    "clipboardConfirmation": true,
+    "closeCancelRepeatedAccept": true,
+    "connections": 14,
+    "credentials": false,
+    "cycles": 8,
+    "fingerprintConfirmations": 0,
+    "inputP95": 36.307428,
+    "inputUnderLoadP95": 45.154478999999995,
+    "naturalExit": true,
+    "phase": "complete",
+    "profileCrud": true,
+    "ptyResize": true,
+    "scrollTickP95": 17.196497,
+    "scrollbackLines": 3000,
+    "sessions": 0,
+    "unicodeCopy": true,
+    "unicodeSearch": true
+  },
+  "streaming": [],
+  "stderr": "",
+  "sshRemaining": 0,
+  "notes": "Development-only native GTK/VTE build. Same production PTY path and UI. Loopback fixture; input ends at parsed echo, not physical keyboard latency. Scroll tick measures GTK loop scheduling, not display frame time. PSS depends on co-running processes; no GPU device memory measurement."
+}

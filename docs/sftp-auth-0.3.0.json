@@ -1,0 +1,27 @@
+{
+  "binarySha256": "74cfe74836c79b3b7e8d57e1160fd66319e2e4e3ee2cb2f141b5e60f302fb2c0",
+  "guiBinarySha256": null,
+  "results": [
+    {
+      "sftpAuthentication": [
+        {
+          "fingerprintConfirmations": 1,
+          "passwordPrompts": 0,
+          "saved": true
+        },
+        {
+          "fingerprintConfirmations": 0,
+          "passwordPrompts": 1,
+          "saved": false
+        },
+        {
+          "fingerprintConfirmations": 0,
+          "passwordPrompts": 1,
+          "saved": true
+        }
+      ]
+    }
+  ],
+  "sshRemaining": 0,
+  "osRelease": "PRETTY_NAME=\"Ubuntu 24.04.4 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.4 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n"
+}

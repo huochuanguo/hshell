@@ -1,0 +1,176 @@
+{
+  "binarySha256": "22bc642f85d81f753bad6b43a5e003158fbf78b59c18c9f8cd21a53606694fc4",
+  "runs": [
+    {
+      "milestonesMs": {
+        "activated": 59.682415000000006,
+        "application-created": 0.19348400000000002,
+        "before-application": 0.018725000000000002,
+        "config-ready": 178.6558,
+        "entry": 0.000211,
+        "first-draw-dispatch": 201.261944,
+        "fonts-ready": 73.822422,
+        "host-list-ready": 178.660789,
+        "ui-ready": 124.012192,
+        "window-shown": 178.138789
+      },
+      "notes": "Elapsed from Rust main entry. First draw is GTK draw dispatch, not physical screen presentation. Release optimization with development-only timestamps.",
+      "phase": "complete",
+      "hosts": 0,
+      "run": 1,
+      "launchToMappedMs": 300.7373540003755,
+      "window": {
+        "id": 81788935,
+        "width": 1280,
+        "height": 820
+      }
+    },
+    {
+      "milestonesMs": {
+        "activated": 50.513648,
+        "application-created": 0.229732,
+        "before-application": 0.025658,
+        "config-ready": 179.132685,
+        "entry": 0.00022,
+        "first-draw-dispatch": 200.049585,
+        "fonts-ready": 65.573464,
+        "host-list-ready": 179.137384,
+        "ui-ready": 122.00153399999999,
+        "window-shown": 178.671168
+      },
+      "notes": "Elapsed from Rust main entry. First draw is GTK draw dispatch, not physical screen presentation. Release optimization with development-only timestamps.",
+      "phase": "complete",
+      "hosts": 0,
+      "run": 2,
+      "launchToMappedMs": 283.4908800004996,
+      "window": {
+        "id": 81788935,
+        "width": 1280,
+        "height": 820
+      }
+    },
+    {
+      "milestonesMs": {
+        "activated": 55.790272,
+        "application-created": 0.276199,
+        "before-application": 0.027161,
+        "config-ready": 176.856248,
+        "entry": 0.00023999999999999998,
+        "first-draw-dispatch": 207.46093,
+        "fonts-ready": 68.814914,
+        "host-list-ready": 176.861277,
+        "ui-ready": 119.879607,
+        "window-shown": 176.393168
+      },
+      "notes": "Elapsed from Rust main entry. First draw is GTK draw dispatch, not physical screen presentation. Release optimization with development-only timestamps.",
+      "phase": "complete",
+      "hosts": 0,
+      "run": 3,
+      "launchToMappedMs": 315.28711000009935,
+      "window": {
+        "id": 81788935,
+        "width": 1280,
+        "height": 820
+      }
+    },
+    {
+      "milestonesMs": {
+        "activated": 60.878663,
+        "application-created": 0.266681,
+        "before-application": 0.034605,
+        "config-ready": 176.064641,
+        "entry": 0.00029099999999999997,
+        "first-draw-dispatch": 1716.0829230000002,
+        "fonts-ready": 76.186514,
+        "host-list-ready": 1101.5743309999998,
+        "ui-ready": 124.983276,
+        "window-shown": 170.691546
+      },
+      "notes": "Elapsed from Rust main entry. First draw is GTK draw dispatch, not physical screen presentation. Release optimization with development-only timestamps.",
+      "phase": "complete",
+      "hosts": 1000,
+      "run": 1,
+      "launchToMappedMs": 263.48031199995603,
+      "window": {
+        "id": 81788935,
+        "width": 1280,
+        "height": 820
+      }
+    },
+    {
+      "milestonesMs": {
+        "activated": 55.148745999999996,
+        "application-created": 0.24944799999999998,
+        "before-application": 0.023083,
+        "config-ready": 179.75275900000003,
+        "entry": 0.00023999999999999998,
+        "first-draw-dispatch": 1933.9312469999998,
+        "fonts-ready": 67.979333,
+        "host-list-ready": 1081.7130479999998,
+        "ui-ready": 118.126271,
+        "window-shown": 172.004952
+      },
+      "notes": "Elapsed from Rust main entry. First draw is GTK draw dispatch, not physical screen presentation. Release optimization with development-only timestamps.",
+      "phase": "complete",
+      "hosts": 1000,
+      "run": 2,
+      "launchToMappedMs": 271.5189239997926,
+      "window": {
+        "id": 81788935,
+        "width": 1280,
+        "height": 820
+      }
+    },
+    {
+      "milestonesMs": {
+        "activated": 57.090655,
+        "application-created": 0.273194,
+        "before-application": 0.033784,
+        "config-ready": 189.803752,
+        "entry": 0.000261,
+        "first-draw-dispatch": 2051.449924,
+        "fonts-ready": 71.795513,
+        "host-list-ready": 1150.161515,
+        "ui-ready": 125.356776,
+        "window-shown": 181.764668
+      },
+      "notes": "Elapsed from Rust main entry. First draw is GTK draw dispatch, not physical screen presentation. Release optimization with development-only timestamps.",
+      "phase": "complete",
+      "hosts": 1000,
+      "run": 3,
+      "launchToMappedMs": 274.7204380002586,
+      "window": {
+        "id": 81788935,
+        "width": 1280,
+        "height": 820
+      }
+    }
+  ],
+  "medianMilestonesMs": {
+    "0": {
+      "activated": 55.79,
+      "application-created": 0.23,
+      "before-application": 0.03,
+      "config-ready": 178.66,
+      "entry": 0.0,
+      "first-draw-dispatch": 201.26,
+      "fonts-ready": 68.81,
+      "host-list-ready": 178.66,
+      "ui-ready": 122.0,
+      "window-shown": 178.14
+    },
+    "1000": {
+      "activated": 57.09,
+      "application-created": 0.27,
+      "before-application": 0.03,
+      "config-ready": 179.75,
+      "entry": 0.0,
+      "first-draw-dispatch": 1933.93,
+      "fonts-ready": 71.8,
+      "host-list-ready": 1101.57,
+      "ui-ready": 124.98,
+      "window-shown": 172.0
+    }
+  },
+  "notes": "Repeated startup on one desktop; not a cold-cache or physical presentation measurement. Own child-PID mapped window verified."
+}

@@ -1,0 +1,260 @@
+{
+  "totalInstructions": 660082184,
+  "reportedSummary": 660081984,
+  "objects": [
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "instructions": 413469825,
+      "percent": 62.64
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libcairo.so.2.11800.0",
+      "instructions": 84917337,
+      "percent": 12.86
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0",
+      "instructions": 32592406,
+      "percent": 4.94
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libc.so.6",
+      "instructions": 28974089,
+      "percent": 4.39
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/liblz4.so.1.9.4",
+      "instructions": 24186410,
+      "percent": 3.66
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libfribidi.so.0.4.0",
+      "instructions": 20137360,
+      "percent": 3.05
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libfontconfig.so.1.12.1",
+      "instructions": 16232551,
+      "percent": 2.46
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libgobject-2.0.so.0.8000.0",
+      "instructions": 10348331,
+      "percent": 1.57
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libgtk-3.so.0.2409.32",
+      "instructions": 10203989,
+      "percent": 1.55
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libfreetype.so.6.20.1",
+      "instructions": 5946330,
+      "percent": 0.9
+    },
+    {
+      "object": "???",
+      "instructions": 3449363,
+      "percent": 0.52
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libgnutls.so.30.37.1",
+      "instructions": 2977442,
+      "percent": 0.45
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libXrender.so.1.3.0",
+      "instructions": 2122526,
+      "percent": 0.32
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libgdk-3.so.0.2409.32",
+      "instructions": 1617666,
+      "percent": 0.25
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libX11.so.6.4.0",
+      "instructions": 1256458,
+      "percent": 0.19
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libharfbuzz.so.0.60830.0",
+      "instructions": 414556,
+      "percent": 0.06
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libpixman-1.so.0.42.2",
+      "instructions": 402528,
+      "percent": 0.06
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libpango-1.0.so.0.5200.1",
+      "instructions": 201800,
+      "percent": 0.03
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libdbus-1.so.3.32.4",
+      "instructions": 184800,
+      "percent": 0.03
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libxcb.so.1.1.0",
+      "instructions": 158324,
+      "percent": 0.02
+    },
+    {
+      "object": "/home/xy/work/self/ssh-shell/target/hshell-output-profile-0.2.3",
+      "instructions": 99514,
+      "percent": 0.02
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2",
+      "instructions": 70182,
+      "percent": 0.01
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libpangoft2-1.0.so.0.5200.1",
+      "instructions": 24147,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libpangocairo-1.0.so.0.5200.1",
+      "instructions": 23544,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libXext.so.6.4.0",
+      "instructions": 20482,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.33",
+      "instructions": 19636,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libm.so.6",
+      "instructions": 13239,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libatspi.so.0.0.1",
+      "instructions": 6465,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libgio-2.0.so.0.8000.0",
+      "instructions": 5115,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/gtk-3.0/3.0.0/immodules/im-ibus.so",
+      "instructions": 3440,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libnettle.so.8.8",
+      "instructions": 2284,
+      "percent": 0.0
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libatk-1.0.so.0.25209.1",
+      "instructions": 45,
+      "percent": 0.0
+    }
+  ],
+  "topFunctions": [
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x0000000000024750",
+      "instructions": 80590764,
+      "percent": 12.21
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x000000000006aff0",
+      "instructions": 65542830,
+      "percent": 9.93
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x000000000002ccf0",
+      "instructions": 51054968,
+      "percent": 7.73
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x000000000006d430",
+      "instructions": 29459516,
+      "percent": 4.46
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x000000000002c170",
+      "instructions": 27011852,
+      "percent": 4.09
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/liblz4.so.1.9.4",
+      "function": "LZ4_compress_fast_extState",
+      "instructions": 22425264,
+      "percent": 3.4
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x000000000002c8b0",
+      "instructions": 17796980,
+      "percent": 2.7
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x000000000005e940",
+      "instructions": 17732254,
+      "percent": 2.69
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x0000000000029210",
+      "instructions": 17037752,
+      "percent": 2.58
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x00000000000289f0",
+      "instructions": 16052026,
+      "percent": 2.43
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libcairo.so.2.11800.0",
+      "function": "0x00000000000862e0",
+      "instructions": 15795606,
+      "percent": 2.39
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x000000000002aaf0",
+      "instructions": 15693840,
+      "percent": 2.38
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libvte-2.91.so.0.7600.0",
+      "function": "0x0000000000029250",
+      "instructions": 12703048,
+      "percent": 1.92
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0",
+      "function": "g_array_append_vals",
+      "instructions": 11756185,
+      "percent": 1.78
+    },
+    {
+      "object": "/usr/lib/x86_64-linux-gnu/libglib-2.0.so.0.8000.0",
+      "function": "0x0000000000025a70",
+      "instructions": 10623533,
+      "percent": 1.61
+    }
+  ],
+  "profileSha256": "c4c89e1be0c8721dc8118be256ff7fc7abdb1392e053683e31966849b44f4434",
+  "notes": "Self instruction counts during two-session loopback output under Callgrind. Not wall-time CPU shares or uninstrumented performance. No frequent text extraction during scoped sample."
+}

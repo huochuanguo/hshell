@@ -1,0 +1,153 @@
+@font-face {
+  font-family: "QZ Plex Sans";
+  src: url("./fonts/ibm-plex-sans-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ JetBrains Mono";
+  src: url("./fonts/jetbrains-mono-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ Plex Mono";
+  src: url("./fonts/ibm-plex-mono-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ Ubuntu Sans";
+  src: url("./fonts/ubuntu-sans-medium.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ Ubuntu Mono";
+  src: url("./fonts/ubuntu-sans-mono-semibold.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ Plex Sans";
+  src: url("./fonts/ibm-plex-sans.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ JetBrains Mono";
+  src: url("./fonts/jetbrains-mono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ Plex Mono";
+  src: url("./fonts/ibm-plex-mono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ Ubuntu Sans";
+  src: url("./fonts/ubuntu-sans.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "QZ Ubuntu Mono";
+  src: url("./fonts/ubuntu-sans-mono.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+#app {
+  --font-ui: "QZ Plex Sans", "Noto Sans CJK SC", sans-serif;
+  font-family: var(--font-ui);
+  font-size: 13px;
+}
+#app button,
+#app input {
+  font-family: inherit;
+}
+#app .brand strong {
+  font-size: 15px;
+  font-weight: 500;
+  letter-spacing: 0.4px;
+}
+#app .sidebar-heading h2,
+#app .host-connect strong {
+  font-size: 13px;
+  font-weight: 500;
+}
+#app .host-connect small {
+  font-size: 11px;
+  line-height: 1.4;
+}
+#app .host-connect {
+  padding-top: 9px;
+  padding-bottom: 9px;
+}
+#app .tool-button,
+#app .filters button,
+#app .quick-submit {
+  font-size: 12px;
+}
+#app .sidebar-search input,
+#app .home-tab,
+#app .terminal-tab > button:first-child {
+  font-size: 12px;
+}
+#app .terminal-tab {
+  min-width: 170px;
+}
+#app .toolbar-right,
+#app .section-label,
+#app .sidebar-footer,
+#app .sample-session,
+#app .status-bar,
+#app .status-bar button,
+#app .port-label,
+#app #session-status {
+  font-size: 11px;
+}
+#app #quick-host {
+  font-size: 12px;
+  font-family: var(--mono);
+}
+#app #quick-port,
+#app #terminal-address,
+#app #terminal-size {
+  font-family: var(--mono);
+  font-size: 11px;
+}
+#app .protocol-label,
+#app kbd {
+  font-size: 11px;
+}
+#app .sidebar-heading .count {
+  font-size: 11px;
+}
+#app .font-terminal {
+  position: absolute;
+  inset: 0;
+  padding: 15px 20px 10px;
+  background: #17191d;
+}
+#app .font-terminal .xterm {
+  height: 100%;
+  font-variant-ligatures: none;
+  font-feature-settings:
+    "liga" 0,
+    "calt" 0;
+}
+#app .font-terminal .xterm-viewport {
+  scrollbar-width: thin;
+}

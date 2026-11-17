@@ -1,0 +1,54 @@
+{
+  "version": "0.1.4",
+  "date": "2026-11-16",
+  "environment": "Ubuntu 24.04.4 X11, current running production instance",
+  "scenario": "1 active OpenSSH child process; terminal contents and connection details not inspected",
+  "sample_count": 31,
+  "elapsed_seconds": 31.59,
+  "matches_packaged_binary": true,
+  "pss_mib": {
+    "min": 216.92,
+    "median": 216.92,
+    "max": 216.92
+  },
+  "rss_mib": {
+    "min": 493.66,
+    "median": 493.66,
+    "max": 493.66
+  },
+  "process_count": {
+    "min": 4,
+    "max": 4
+  },
+  "last_process_breakdown": [
+    {
+      "process": "qizhan-ssh",
+      "rss_mib": 193.77,
+      "pss_mib": 71.21,
+      "private_mib": 44.38,
+      "swap_pss_mib": 0.0
+    },
+    {
+      "process": "WebKitNetworkPr",
+      "rss_mib": 48.48,
+      "pss_mib": 15.54,
+      "private_mib": 8.62,
+      "swap_pss_mib": 0.0
+    },
+    {
+      "process": "WebKitWebProces",
+      "rss_mib": 246.35,
+      "pss_mib": 127.28,
+      "private_mib": 104.05,
+      "swap_pss_mib": 0.0
+    },
+    {
+      "process": "ssh",
+      "rss_mib": 8.28,
+      "pss_mib": 2.89,
+      "private_mib": 2.2,
+      "swap_pss_mib": 0.0
+    }
+  ],
+  "measurement_notes": "PSS is proportional physical-memory attribution including shared pages. RSS aggregate uses /proc/stat and is approximate, while per-process detail uses smaps_rollup; shared pages are counted repeatedly in RSS. GPU device memory is not included. Single current-use scenario, not a multi-session stress test."
+}

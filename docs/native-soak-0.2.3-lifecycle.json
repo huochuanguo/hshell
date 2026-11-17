@@ -1,0 +1,1427 @@
+{
+  "binarySha256": "166129a1e5c500ca3f2b5a5be2515d10b087af0494016db12035283e376c4120",
+  "environment": "Ubuntu 22.04 container / Xvfb / VTE 0.68; follow-up after shortened soak",
+  "diagnosticOnly": false,
+  "stages": {
+    "stress-idle": {
+      "pssMedianMiB": 73.98,
+      "rssMedianMiB": 100.36,
+      "sessions": 0,
+      "sshProcesses": 0,
+      "samples": [
+        {
+          "pssMiB": 73.982421875,
+          "rssMiB": 100.36328125,
+          "privateMiB": 50.1171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 100.36328125,
+              "pssMiB": 73.982421875,
+              "privateMiB": 50.1171875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 73.982421875,
+          "rssMiB": 100.36328125,
+          "privateMiB": 50.1171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 100.36328125,
+              "pssMiB": 73.982421875,
+              "privateMiB": 50.1171875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 73.982421875,
+          "rssMiB": 100.36328125,
+          "privateMiB": 50.1171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 100.36328125,
+              "pssMiB": 73.982421875,
+              "privateMiB": 50.1171875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 73.982421875,
+          "rssMiB": 100.36328125,
+          "privateMiB": 50.1171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 100.36328125,
+              "pssMiB": 73.982421875,
+              "privateMiB": 50.1171875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 8,
+      "threads": 4
+    },
+    "stress-streaming": {
+      "pssMedianMiB": 108.9,
+      "rssMedianMiB": 209.59,
+      "sessions": 12,
+      "sshProcesses": 12,
+      "samples": [
+        {
+          "pssMiB": 106.9326171875,
+          "rssMiB": 207.6171875,
+          "privateMiB": 76.41015625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 109.48828125,
+              "pssMiB": 79.9833984375,
+              "privateMiB": 55.48046875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 2.255859375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.19140625,
+              "pssMiB": 2.251953125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.248046875,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.13671875,
+              "pssMiB": 2.2314453125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.12109375,
+              "pssMiB": 2.2265625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.04296875,
+              "pssMiB": 2.2294921875,
+              "privateMiB": 1.73828125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.125,
+              "pssMiB": 2.23828125,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.26953125,
+              "pssMiB": 2.25390625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.21484375,
+              "pssMiB": 2.2705078125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.05078125,
+              "pssMiB": 2.2451171875,
+              "privateMiB": 1.75390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 108.6591796875,
+          "rssMiB": 209.34375,
+          "privateMiB": 78.13671875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 111.21484375,
+              "pssMiB": 81.7099609375,
+              "privateMiB": 57.20703125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 2.255859375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.19140625,
+              "pssMiB": 2.251953125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.248046875,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.13671875,
+              "pssMiB": 2.2314453125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.12109375,
+              "pssMiB": 2.2265625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.04296875,
+              "pssMiB": 2.2294921875,
+              "privateMiB": 1.73828125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.125,
+              "pssMiB": 2.23828125,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.26953125,
+              "pssMiB": 2.25390625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.21484375,
+              "pssMiB": 2.2705078125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.05078125,
+              "pssMiB": 2.2451171875,
+              "privateMiB": 1.75390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 109.1474609375,
+          "rssMiB": 209.83203125,
+          "privateMiB": 78.625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 111.703125,
+              "pssMiB": 82.1982421875,
+              "privateMiB": 57.6953125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 2.255859375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.19140625,
+              "pssMiB": 2.251953125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.248046875,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.13671875,
+              "pssMiB": 2.2314453125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.12109375,
+              "pssMiB": 2.2265625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.04296875,
+              "pssMiB": 2.2294921875,
+              "privateMiB": 1.73828125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.125,
+              "pssMiB": 2.23828125,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.26953125,
+              "pssMiB": 2.25390625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.21484375,
+              "pssMiB": 2.2705078125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.05078125,
+              "pssMiB": 2.2451171875,
+              "privateMiB": 1.75390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 109.3271484375,
+          "rssMiB": 210.01171875,
+          "privateMiB": 78.8046875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 111.8828125,
+              "pssMiB": 82.3779296875,
+              "privateMiB": 57.875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 2.255859375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.19140625,
+              "pssMiB": 2.251953125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.248046875,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.13671875,
+              "pssMiB": 2.2314453125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.12109375,
+              "pssMiB": 2.2265625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.04296875,
+              "pssMiB": 2.2294921875,
+              "privateMiB": 1.73828125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.125,
+              "pssMiB": 2.23828125,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.26953125,
+              "pssMiB": 2.25390625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.21484375,
+              "pssMiB": 2.2705078125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.05078125,
+              "pssMiB": 2.2451171875,
+              "privateMiB": 1.75390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 56,
+      "threads": 16
+    },
+    "stress-filled": {
+      "pssMedianMiB": 110.96,
+      "rssMedianMiB": 211.64,
+      "sessions": 12,
+      "sshProcesses": 12,
+      "samples": [
+        {
+          "pssMiB": 110.9599609375,
+          "rssMiB": 211.64453125,
+          "privateMiB": 80.4375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 113.515625,
+              "pssMiB": 84.0107421875,
+              "privateMiB": 59.5078125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 2.255859375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.19140625,
+              "pssMiB": 2.251953125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.248046875,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.13671875,
+              "pssMiB": 2.2314453125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.12109375,
+              "pssMiB": 2.2265625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.04296875,
+              "pssMiB": 2.2294921875,
+              "privateMiB": 1.73828125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.125,
+              "pssMiB": 2.23828125,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.26953125,
+              "pssMiB": 2.25390625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.21484375,
+              "pssMiB": 2.2705078125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.05078125,
+              "pssMiB": 2.2451171875,
+              "privateMiB": 1.75390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 110.9599609375,
+          "rssMiB": 211.64453125,
+          "privateMiB": 80.4375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 113.515625,
+              "pssMiB": 84.0107421875,
+              "privateMiB": 59.5078125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 2.255859375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.19140625,
+              "pssMiB": 2.251953125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.248046875,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.13671875,
+              "pssMiB": 2.2314453125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.12109375,
+              "pssMiB": 2.2265625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.04296875,
+              "pssMiB": 2.2294921875,
+              "privateMiB": 1.73828125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.125,
+              "pssMiB": 2.23828125,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.26953125,
+              "pssMiB": 2.25390625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.21484375,
+              "pssMiB": 2.2705078125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.05078125,
+              "pssMiB": 2.2451171875,
+              "privateMiB": 1.75390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 110.9599609375,
+          "rssMiB": 211.64453125,
+          "privateMiB": 80.4375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 113.515625,
+              "pssMiB": 84.0107421875,
+              "privateMiB": 59.5078125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 2.255859375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.19140625,
+              "pssMiB": 2.251953125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.248046875,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.13671875,
+              "pssMiB": 2.2314453125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.12109375,
+              "pssMiB": 2.2265625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.04296875,
+              "pssMiB": 2.2294921875,
+              "privateMiB": 1.73828125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.125,
+              "pssMiB": 2.23828125,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.26953125,
+              "pssMiB": 2.25390625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.21484375,
+              "pssMiB": 2.2705078125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.05078125,
+              "pssMiB": 2.2451171875,
+              "privateMiB": 1.75390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 110.9599609375,
+          "rssMiB": 211.64453125,
+          "privateMiB": 80.4375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 113.515625,
+              "pssMiB": 84.0107421875,
+              "privateMiB": 59.5078125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 2.255859375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.19140625,
+              "pssMiB": 2.251953125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.248046875,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.13671875,
+              "pssMiB": 2.2314453125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.12109375,
+              "pssMiB": 2.2265625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.25,
+              "pssMiB": 2.2490234375,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.04296875,
+              "pssMiB": 2.2294921875,
+              "privateMiB": 1.73828125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.125,
+              "pssMiB": 2.23828125,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.26953125,
+              "pssMiB": 2.25390625,
+              "privateMiB": 1.7421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.21484375,
+              "pssMiB": 2.2705078125,
+              "privateMiB": 1.74609375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.05078125,
+              "pssMiB": 2.2451171875,
+              "privateMiB": 1.75390625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 68,
+      "threads": 15
+    },
+    "stress-one-after-close": {
+      "pssMedianMiB": 84.03,
+      "rssMedianMiB": 116.46,
+      "sessions": 1,
+      "sshProcesses": 1,
+      "samples": [
+        {
+          "pssMiB": 84.0263671875,
+          "rssMiB": 116.4609375,
+          "privateMiB": 57.26171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 108.234375,
+              "pssMiB": 79.0703125,
+              "privateMiB": 54.21484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 4.9560546875,
+              "privateMiB": 3.046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 84.0263671875,
+          "rssMiB": 116.4609375,
+          "privateMiB": 57.26171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 108.234375,
+              "pssMiB": 79.0703125,
+              "privateMiB": 54.21484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 4.9560546875,
+              "privateMiB": 3.046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 84.0263671875,
+          "rssMiB": 116.4609375,
+          "privateMiB": 57.26171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 108.234375,
+              "pssMiB": 79.0703125,
+              "privateMiB": 54.21484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 4.9560546875,
+              "privateMiB": 3.046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 84.0263671875,
+          "rssMiB": 116.4609375,
+          "privateMiB": 57.26171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 108.234375,
+              "pssMiB": 79.0703125,
+              "privateMiB": 54.21484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 4.9560546875,
+              "privateMiB": 3.046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 13,
+      "threads": 4
+    },
+    "stress-one-after-cycles": {
+      "pssMedianMiB": 83.87,
+      "rssMedianMiB": 116.48,
+      "sessions": 1,
+      "sshProcesses": 1,
+      "samples": [
+        {
+          "pssMiB": 83.8662109375,
+          "rssMiB": 116.484375,
+          "privateMiB": 57.01171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 108.2578125,
+              "pssMiB": 78.91015625,
+              "privateMiB": 53.96484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 4.9560546875,
+              "privateMiB": 3.046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 83.8662109375,
+          "rssMiB": 116.484375,
+          "privateMiB": 57.01171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 108.2578125,
+              "pssMiB": 78.91015625,
+              "privateMiB": 53.96484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 4.9560546875,
+              "privateMiB": 3.046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 83.8662109375,
+          "rssMiB": 116.484375,
+          "privateMiB": 57.01171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 108.2578125,
+              "pssMiB": 78.91015625,
+              "privateMiB": 53.96484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 4.9560546875,
+              "privateMiB": 3.046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 83.8662109375,
+          "rssMiB": 116.484375,
+          "privateMiB": 57.01171875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 108.2578125,
+              "pssMiB": 78.91015625,
+              "privateMiB": 53.96484375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.2265625,
+              "pssMiB": 4.9560546875,
+              "privateMiB": 3.046875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 13,
+      "threads": 4
+    },
+    "stress-closed-all": {
+      "pssMedianMiB": 78.5,
+      "rssMedianMiB": 107.69,
+      "sessions": 0,
+      "sshProcesses": 0,
+      "samples": [
+        {
+          "pssMiB": 78.5009765625,
+          "rssMiB": 107.69140625,
+          "privateMiB": 53.43359375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 107.69140625,
+              "pssMiB": 78.5009765625,
+              "privateMiB": 53.43359375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 78.5009765625,
+          "rssMiB": 107.69140625,
+          "privateMiB": 53.43359375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 107.69140625,
+              "pssMiB": 78.5009765625,
+              "privateMiB": 53.43359375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 78.5009765625,
+          "rssMiB": 107.69140625,
+          "privateMiB": 53.43359375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 107.69140625,
+              "pssMiB": 78.5009765625,
+              "privateMiB": 53.43359375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 78.5009765625,
+          "rssMiB": 107.69140625,
+          "privateMiB": 53.43359375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-soak-0.2",
+              "rssMiB": 107.69140625,
+              "pssMiB": 78.5009765625,
+              "privateMiB": 53.43359375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 8,
+      "threads": 3
+    }
+  },
+  "fixture": {
+    "connections": 76,
+    "fillBytes": 16640000,
+    "passwordAuthentications": 0,
+    "stressBytes": 60829400,
+    "stressStreamsFinished": 13
+  },
+  "result": {
+    "connections": 76,
+    "cycles": 64,
+    "hiddenOutputComplete": true,
+    "histogramResolutionMs": 0.25,
+    "inputP95": 39.5,
+    "inputSamples": 58,
+    "loopTickMax": 53.356012,
+    "loopTickP95": 28.0,
+    "loopTickSamples": 1515,
+    "partialInputP95": 18.25,
+    "partialLoad": true,
+    "phase": "complete",
+    "reclaimCalls": 3,
+    "scrollbackLines": 3000,
+    "seconds": 30,
+    "sessions": 0,
+    "stress": true,
+    "tabs": 12
+  },
+  "streaming": [
+    {
+      "seconds": 0,
+      "pssMiB": 104.95,
+      "rssMiB": 203.39,
+      "cpuPercentOneCore": null,
+      "fds": 32,
+      "threads": 16
+    },
+    {
+      "seconds": 1.13,
+      "pssMiB": 109.57,
+      "rssMiB": 210.25,
+      "cpuPercentOneCore": 43.32,
+      "fds": 67,
+      "threads": 16
+    },
+    {
+      "seconds": 2.15,
+      "pssMiB": 110.24,
+      "rssMiB": 210.93,
+      "cpuPercentOneCore": 28.52,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 3.16,
+      "pssMiB": 110.26,
+      "rssMiB": 210.95,
+      "cpuPercentOneCore": 31.62,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 4.18,
+      "pssMiB": 110.26,
+      "rssMiB": 210.95,
+      "cpuPercentOneCore": 29.41,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 5.19,
+      "pssMiB": 110.26,
+      "rssMiB": 210.95,
+      "cpuPercentOneCore": 34.62,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 6.19,
+      "pssMiB": 110.26,
+      "rssMiB": 210.95,
+      "cpuPercentOneCore": 30.97,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 7.21,
+      "pssMiB": 110.26,
+      "rssMiB": 210.95,
+      "cpuPercentOneCore": 32.52,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 8.21,
+      "pssMiB": 110.28,
+      "rssMiB": 210.96,
+      "cpuPercentOneCore": 34.93,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 9.22,
+      "pssMiB": 110.28,
+      "rssMiB": 210.96,
+      "cpuPercentOneCore": 36.56,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 10.23,
+      "pssMiB": 110.28,
+      "rssMiB": 210.96,
+      "cpuPercentOneCore": 31.57,
+      "fds": 68,
+      "threads": 16
+    },
+    {
+      "seconds": 11.25,
+      "pssMiB": 110.29,
+      "rssMiB": 210.98,
+      "cpuPercentOneCore": 32.35,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 12.27,
+      "pssMiB": 110.29,
+      "rssMiB": 210.98,
+      "cpuPercentOneCore": 31.46,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 13.29,
+      "pssMiB": 110.29,
+      "rssMiB": 210.98,
+      "cpuPercentOneCore": 31.52,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 14.3,
+      "pssMiB": 110.29,
+      "rssMiB": 210.98,
+      "cpuPercentOneCore": 30.52,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 15.31,
+      "pssMiB": 110.29,
+      "rssMiB": 210.98,
+      "cpuPercentOneCore": 32.78,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 16.32,
+      "pssMiB": 110.29,
+      "rssMiB": 210.98,
+      "cpuPercentOneCore": 29.59,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 17.33,
+      "pssMiB": 110.29,
+      "rssMiB": 210.98,
+      "cpuPercentOneCore": 35.67,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 18.35,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 36.49,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 19.36,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 31.59,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 20.37,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 31.54,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 21.38,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 28.67,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 22.4,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 33.52,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 23.41,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 30.65,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 24.43,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 33.44,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 25.44,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 29.68,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 26.45,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 35.68,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 27.45,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 32.89,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 28.47,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 32.4,
+      "fds": 68,
+      "threads": 15
+    },
+    {
+      "seconds": 29.48,
+      "pssMiB": 110.32,
+      "rssMiB": 211.0,
+      "cpuPercentOneCore": 33.59,
+      "fds": 68,
+      "threads": 15
+    }
+  ],
+  "stderr": "",
+  "sshRemaining": 0,
+  "notes": "Development-only native GTK/VTE build. Same production PTY path and UI. Loopback fixture; input ends at parsed echo, not physical keyboard latency. Scroll tick measures GTK loop scheduling, not display frame time. PSS depends on co-running processes; no GPU device memory measurement."
+}

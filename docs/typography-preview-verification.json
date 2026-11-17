@@ -1,0 +1,32 @@
+{
+  "scope": "Browser design preview using real xterm; not a desktop release or native cross-platform font validation.",
+  "background": "#17191D",
+  "colors": {
+    "terminal": "#D3D9E2",
+    "secondary": "#A2AAB7",
+    "blue": "#9ABCEB",
+    "success": "#9CCAA0",
+    "warning": "#DDC28D",
+    "error": "#E69A9A"
+  },
+  "contrast": {
+    "terminal": 12.4,
+    "secondary": 7.52,
+    "blue": 9.02,
+    "success": 9.53,
+    "warning": 10.2,
+    "error": 7.92
+  },
+  "fontPresets": [
+    "IBM Plex Sans + Noto Sans CJK SC + JetBrains Mono",
+    "IBM Plex Sans + Noto Sans CJK SC + IBM Plex Mono",
+    "Ubuntu Sans + Noto Sans CJK SC + Ubuntu Sans Mono"
+  ],
+  "checks": [
+    "All three local 400/600 terminal font faces loaded and each local 400/500 UI font face loaded",
+    "Real xterm rendering of ASCII symbols and CJK two-column text",
+    "Preset switching and return to default",
+    "No browser warning/error logs"
+  ],
+  "productionChanged": false
+}

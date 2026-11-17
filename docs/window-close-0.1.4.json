@@ -1,0 +1,138 @@
+{
+  "version": "0.1.4",
+  "ubuntu24X11": [
+    {
+      "scenario": "close-empty",
+      "phase": "ready",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 0,
+      "sshRemaining": 0,
+      "elapsedMs": 1232
+    },
+    {
+      "scenario": "close-running",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1481
+    },
+    {
+      "scenario": "close-cancel-retry",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1660
+    },
+    {
+      "scenario": "close-repeated",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1887
+    },
+    {
+      "scenario": "close-editor",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1500
+    },
+    {
+      "scenario": "close-info",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1613
+    }
+  ],
+  "ubuntu22ContainerXvfb": [
+    {
+      "scenario": "close-empty",
+      "phase": "ready",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 0,
+      "sshRemaining": 0,
+      "elapsedMs": 704
+    },
+    {
+      "scenario": "close-running",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 940
+    },
+    {
+      "scenario": "close-cancel-retry",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1131
+    },
+    {
+      "scenario": "close-repeated",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1307
+    },
+    {
+      "scenario": "close-editor",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 1034
+    },
+    {
+      "scenario": "close-info",
+      "phase": "accepted",
+      "exitCode": 0,
+      "destroyed": true,
+      "sshConnections": 2,
+      "sshRemaining": 0,
+      "elapsedMs": 960
+    }
+  ],
+  "productionPackage": {
+    "path": "target/ubuntu22/release/bundle/deb/Qizhan SSH_0.1.4_amd64.deb",
+    "sizeBytes": 2907378,
+    "sha256": "bb8bfb003f714d6934db0e2032ab5ae925c353e2cc9594b6bda434a5627dc880",
+    "ubuntu24X11": {
+      "installedOnHost": false,
+      "extractedPackageBinary": true,
+      "closeProtocol": "WM_DELETE_WINDOW",
+      "exitCode": 0,
+      "closeElapsedMs": 68
+    },
+    "ubuntu22ContainerXvfb": {
+      "dpkgInstallPassed": true,
+      "closeProtocol": "WM_DELETE_WINDOW",
+      "exitCode": 0,
+      "closeElapsedMs": 66
+    },
+    "aptUpgradeSimulation": {
+      "installedVersion": "0.1.3",
+      "candidate": "0.1.4",
+      "newDependencies": 0
+    }
+  }
+}

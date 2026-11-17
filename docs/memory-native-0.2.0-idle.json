@@ -1,0 +1,207 @@
+{
+  "binarySha256": "bff76e7f1f909964b4383a9973a3b4b10b14d92f504c865369634a6e974115bc",
+  "scenario": "idle native window, 1280x820, isolated configuration",
+  "runs": [
+    {
+      "run": 1,
+      "pssMedianMiB": 18.49,
+      "rssMedianMiB": 60.53,
+      "pssMaxMiB": 18.49,
+      "cpuPercentOneCore": 0.0,
+      "samples": [
+        {
+          "pssMiB": 18.48828125,
+          "rssMiB": 60.53125,
+          "privateMiB": 12.96875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.53125,
+              "pssMiB": 18.48828125,
+              "privateMiB": 12.96875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.48828125,
+          "rssMiB": 60.53125,
+          "privateMiB": 12.96875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.53125,
+              "pssMiB": 18.48828125,
+              "privateMiB": 12.96875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.48828125,
+          "rssMiB": 60.53125,
+          "privateMiB": 12.96875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.53125,
+              "pssMiB": 18.48828125,
+              "privateMiB": 12.96875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.48828125,
+          "rssMiB": 60.53125,
+          "privateMiB": 12.96875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.53125,
+              "pssMiB": 18.48828125,
+              "privateMiB": 12.96875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.48828125,
+          "rssMiB": 60.53125,
+          "privateMiB": 12.96875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.53125,
+              "pssMiB": 18.48828125,
+              "privateMiB": 12.96875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.48828125,
+          "rssMiB": 60.53125,
+          "privateMiB": 12.96875,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.53125,
+              "pssMiB": 18.48828125,
+              "privateMiB": 12.96875,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "pssMedianMiB": 18.41,
+      "rssMedianMiB": 60.43,
+      "pssMaxMiB": 18.41,
+      "cpuPercentOneCore": 0.0,
+      "samples": [
+        {
+          "pssMiB": 18.41015625,
+          "rssMiB": 60.43359375,
+          "privateMiB": 12.89453125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.43359375,
+              "pssMiB": 18.41015625,
+              "privateMiB": 12.89453125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.41015625,
+          "rssMiB": 60.43359375,
+          "privateMiB": 12.89453125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.43359375,
+              "pssMiB": 18.41015625,
+              "privateMiB": 12.89453125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.41015625,
+          "rssMiB": 60.43359375,
+          "privateMiB": 12.89453125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.43359375,
+              "pssMiB": 18.41015625,
+              "privateMiB": 12.89453125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.41015625,
+          "rssMiB": 60.43359375,
+          "privateMiB": 12.89453125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.43359375,
+              "pssMiB": 18.41015625,
+              "privateMiB": 12.89453125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.41015625,
+          "rssMiB": 60.43359375,
+          "privateMiB": 12.89453125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.43359375,
+              "pssMiB": 18.41015625,
+              "privateMiB": 12.89453125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 18.41015625,
+          "rssMiB": 60.43359375,
+          "privateMiB": 12.89453125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 60.43359375,
+              "pssMiB": 18.41015625,
+              "privateMiB": 12.89453125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "notes": "PSS apportions shared pages; RSS repeats shared pages. GPU device memory is excluded. Keep co-running apps and display constant.",
+  "pssMedianMiB": 18.45,
+  "rssMedianMiB": 60.48
+}

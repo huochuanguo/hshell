@@ -1,0 +1,85 @@
+{
+  "favorites": 500,
+  "phase": "complete",
+  "profiles": 1000,
+  "samples": [
+    {
+      "milliseconds": 14.702481,
+      "query": "bench-node-9",
+      "visible": 111
+    },
+    {
+      "milliseconds": 2.576006,
+      "query": "missing-host",
+      "visible": 0
+    },
+    {
+      "milliseconds": 0.13833800000000002,
+      "query": "",
+      "visible": 1000
+    },
+    {
+      "milliseconds": 16.383885,
+      "query": "bench-node-500",
+      "visible": 1
+    },
+    {
+      "milliseconds": 3.007364,
+      "query": "BENCH-NODE-9",
+      "visible": 111
+    },
+    {
+      "milliseconds": 0.045835,
+      "query": "bench-node-9",
+      "visible": 111
+    },
+    {
+      "milliseconds": 2.111038,
+      "query": "missing-host",
+      "visible": 0
+    },
+    {
+      "milliseconds": 0.08932699999999999,
+      "query": "",
+      "visible": 1000
+    },
+    {
+      "milliseconds": 16.084635,
+      "query": "bench-node-500",
+      "visible": 1
+    },
+    {
+      "milliseconds": 3.098703,
+      "query": "BENCH-NODE-9",
+      "visible": 111
+    },
+    {
+      "milliseconds": 0.049472999999999996,
+      "query": "bench-node-9",
+      "visible": 111
+    },
+    {
+      "milliseconds": 2.139911,
+      "query": "missing-host",
+      "visible": 0
+    },
+    {
+      "milliseconds": 0.121557,
+      "query": "",
+      "visible": 1000
+    },
+    {
+      "milliseconds": 16.303304,
+      "query": "bench-node-500",
+      "visible": 1
+    },
+    {
+      "milliseconds": 3.106589,
+      "query": "BENCH-NODE-9",
+      "visible": 111
+    }
+  ],
+  "binarySha256": "777165a6ad5645b537e77e024aa1d50a1603cff94663a6acafdbdab4bf54c1bb",
+  "medianMs": 2.58,
+  "maxMs": 16.38
+}

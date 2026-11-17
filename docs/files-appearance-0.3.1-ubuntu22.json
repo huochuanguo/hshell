@@ -1,0 +1,134 @@
+{
+  "binarySha256": "04eafa926ea54c5868acbf149b3a130c62cf880377061da08c62f36969c5217b",
+  "guiBinarySha256": "f9caf393974039b7b13e6b9daf81a837060e4b69c07ea81520c17eaed14886e0",
+  "results": [
+    {
+      "entries": [
+        {
+          "icon": "image-x-generic-symbolic",
+          "iconColor": "#a3c69b",
+          "name": "logo.png",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "text-x-generic-symbolic",
+          "iconColor": "#9abceb",
+          "name": "app.toml",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "insert-link-symbolic",
+          "iconColor": "#8fc9c2",
+          "name": "current-config",
+          "nameColor": "#8fc9c2"
+        },
+        {
+          "icon": "folder-symbolic",
+          "iconColor": "#d6b578",
+          "name": "configs",
+          "nameColor": "#d6b578"
+        },
+        {
+          "icon": "package-x-generic-symbolic",
+          "iconColor": "#b7a4d8",
+          "name": "backup.tar.gz",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "text-x-generic-symbolic",
+          "iconColor": "#9abceb",
+          "name": "deploy.sh",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "text-x-generic-symbolic",
+          "iconColor": "#a2aab7",
+          "name": "README.txt",
+          "nameColor": "#dce1e9"
+        },
+        {
+          "icon": "folder-symbolic",
+          "iconColor": "#d6b578",
+          "name": "logs",
+          "nameColor": "#d6b578"
+        }
+      ],
+      "iconCacheEntries": 6,
+      "phase": "complete",
+      "scaleFactor": 1,
+      "selectionChecked": true,
+      "memorySamples": {
+        "terminal-baseline": [
+          {
+            "pssMiB": 80.9189453125,
+            "rssMiB": 110.07421875
+          },
+          {
+            "pssMiB": 81.4658203125,
+            "rssMiB": 110.69921875
+          },
+          {
+            "pssMiB": 81.4658203125,
+            "rssMiB": 110.69921875
+          },
+          {
+            "pssMiB": 81.4658203125,
+            "rssMiB": 110.69921875
+          }
+        ],
+        "directory": [
+          {
+            "pssMiB": 81.431640625,
+            "rssMiB": 111.08203125
+          },
+          {
+            "pssMiB": 84.228515625,
+            "rssMiB": 119.24609375
+          },
+          {
+            "pssMiB": 84.6943359375,
+            "rssMiB": 119.65625
+          },
+          {
+            "pssMiB": 84.8349609375,
+            "rssMiB": 119.80078125
+          },
+          {
+            "pssMiB": 84.8349609375,
+            "rssMiB": 119.80078125
+          },
+          {
+            "pssMiB": 93.3974609375,
+            "rssMiB": 128.37109375
+          },
+          {
+            "pssMiB": 85.3818359375,
+            "rssMiB": 120.35546875
+          },
+          {
+            "pssMiB": 85.2294921875,
+            "rssMiB": 120.203125
+          },
+          {
+            "pssMiB": 85.2333984375,
+            "rssMiB": 120.20703125
+          },
+          {
+            "pssMiB": 85.2333984375,
+            "rssMiB": 120.20703125
+          },
+          {
+            "pssMiB": 85.2333984375,
+            "rssMiB": 120.20703125
+          },
+          {
+            "pssMiB": 85.2333984375,
+            "rssMiB": 120.20703125
+          }
+        ]
+      }
+    }
+  ],
+  "sshRemaining": 0,
+  "osRelease": "PRETTY_NAME=\"Ubuntu 22.04.3 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"22.04\"\nVERSION=\"22.04.3 LTS (Jammy Jellyfish)\"\nVERSION_CODENAME=jammy\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=jammy\n"
+}

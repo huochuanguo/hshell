@@ -1,0 +1,373 @@
+{
+  "binarySha256": "82d43264c5e7ca6ea2b5a2dbc655e6140f7f2ea8b9925c0c7c69e55380700a13",
+  "scenario": "idle native window, 1280x820, isolated configuration",
+  "runs": [
+    {
+      "run": 1,
+      "pssMedianMiB": 141.87,
+      "rssMedianMiB": 440.02,
+      "pssMaxMiB": 141.88,
+      "samples": [
+        {
+          "pssMiB": 141.8564453125,
+          "rssMiB": 439.9765625,
+          "privateMiB": 86.93359375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.85546875,
+              "pssMiB": 60.962890625,
+              "privateMiB": 43.09375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.21875,
+              "pssMiB": 12.0244140625,
+              "privateMiB": 7.42578125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 205.90234375,
+              "pssMiB": 68.869140625,
+              "privateMiB": 36.4140625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.8564453125,
+          "rssMiB": 439.9765625,
+          "privateMiB": 86.93359375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.85546875,
+              "pssMiB": 60.962890625,
+              "privateMiB": 43.09375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.21875,
+              "pssMiB": 12.0244140625,
+              "privateMiB": 7.42578125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 205.90234375,
+              "pssMiB": 68.869140625,
+              "privateMiB": 36.4140625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.8564453125,
+          "rssMiB": 439.9765625,
+          "privateMiB": 86.93359375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.85546875,
+              "pssMiB": 60.962890625,
+              "privateMiB": 43.09375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.21875,
+              "pssMiB": 12.0244140625,
+              "privateMiB": 7.42578125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 205.90234375,
+              "pssMiB": 68.869140625,
+              "privateMiB": 36.4140625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.8818359375,
+          "rssMiB": 440.0546875,
+          "privateMiB": 86.953125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.875,
+              "pssMiB": 60.98046875,
+              "privateMiB": 43.11328125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.27734375,
+              "pssMiB": 12.0341796875,
+              "privateMiB": 7.42578125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 205.90234375,
+              "pssMiB": 68.8671875,
+              "privateMiB": 36.4140625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.8818359375,
+          "rssMiB": 440.0546875,
+          "privateMiB": 86.953125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.875,
+              "pssMiB": 60.98046875,
+              "privateMiB": 43.11328125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.27734375,
+              "pssMiB": 12.0341796875,
+              "privateMiB": 7.42578125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 205.90234375,
+              "pssMiB": 68.8671875,
+              "privateMiB": 36.4140625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.8818359375,
+          "rssMiB": 440.0546875,
+          "privateMiB": 86.953125,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.875,
+              "pssMiB": 60.98046875,
+              "privateMiB": 43.11328125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.27734375,
+              "pssMiB": 12.0341796875,
+              "privateMiB": 7.42578125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 205.90234375,
+              "pssMiB": 68.8671875,
+              "privateMiB": 36.4140625,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "pssMedianMiB": 141.75,
+      "rssMedianMiB": 440.07,
+      "pssMaxMiB": 141.76,
+      "samples": [
+        {
+          "pssMiB": 141.7392578125,
+          "rssMiB": 440.02734375,
+          "privateMiB": 86.8515625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.671875,
+              "pssMiB": 60.7099609375,
+              "privateMiB": 42.84375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.2265625,
+              "pssMiB": 12.0234375,
+              "privateMiB": 7.421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 206.12890625,
+              "pssMiB": 69.005859375,
+              "privateMiB": 36.5859375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.7392578125,
+          "rssMiB": 440.02734375,
+          "privateMiB": 86.8515625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.671875,
+              "pssMiB": 60.7099609375,
+              "privateMiB": 42.84375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.2265625,
+              "pssMiB": 12.0234375,
+              "privateMiB": 7.421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 206.12890625,
+              "pssMiB": 69.005859375,
+              "privateMiB": 36.5859375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.7392578125,
+          "rssMiB": 440.02734375,
+          "privateMiB": 86.8515625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.671875,
+              "pssMiB": 60.7099609375,
+              "privateMiB": 42.84375,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.2265625,
+              "pssMiB": 12.0234375,
+              "privateMiB": 7.421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 206.12890625,
+              "pssMiB": 69.005859375,
+              "privateMiB": 36.5859375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.7646484375,
+          "rssMiB": 440.10546875,
+          "privateMiB": 86.87109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.69140625,
+              "pssMiB": 60.7275390625,
+              "privateMiB": 42.86328125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.28515625,
+              "pssMiB": 12.033203125,
+              "privateMiB": 7.421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 206.12890625,
+              "pssMiB": 69.00390625,
+              "privateMiB": 36.5859375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.7646484375,
+          "rssMiB": 440.10546875,
+          "privateMiB": 86.87109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.69140625,
+              "pssMiB": 60.7275390625,
+              "privateMiB": 42.86328125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.28515625,
+              "pssMiB": 12.033203125,
+              "privateMiB": 7.421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 206.12890625,
+              "pssMiB": 69.00390625,
+              "privateMiB": 36.5859375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 141.7646484375,
+          "rssMiB": 440.10546875,
+          "privateMiB": 86.87109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "qizhan-ssh",
+              "rssMiB": 185.69140625,
+              "pssMiB": 60.7275390625,
+              "privateMiB": 42.86328125,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitNetworkPr",
+              "rssMiB": 48.28515625,
+              "pssMiB": 12.033203125,
+              "privateMiB": 7.421875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "WebKitWebProces",
+              "rssMiB": 206.12890625,
+              "pssMiB": 69.00390625,
+              "privateMiB": 36.5859375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "notes": "PSS apportions shared pages; RSS repeats shared pages. GPU device memory is excluded. Keep co-running apps and display constant.",
+  "pssMedianMiB": 141.81,
+  "rssMedianMiB": 440.04
+}

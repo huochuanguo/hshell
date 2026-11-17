@@ -1,0 +1,130 @@
+{
+  "binarySha256": "3077f2199ef723044c2944a2f8b27199a1e9f8dd73153929845de06b225cd872",
+  "environment": "Ubuntu 24 X11",
+  "diagnosticOnly": false,
+  "stages": {
+    "ime-ready": {
+      "pssMedianMiB": 23.09,
+      "rssMedianMiB": 73.28,
+      "sessions": 1,
+      "sshProcesses": 1,
+      "samples": [
+        {
+          "pssMiB": 22.3974609375,
+          "rssMiB": 71.46875,
+          "privateMiB": 17.0,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell",
+              "rssMiB": 63.12109375,
+              "pssMiB": 19.71484375,
+              "privateMiB": 14.88671875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.34765625,
+              "pssMiB": 2.6826171875,
+              "privateMiB": 2.11328125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 22.3974609375,
+          "rssMiB": 71.46875,
+          "privateMiB": 17.0,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell",
+              "rssMiB": 63.12109375,
+              "pssMiB": 19.71484375,
+              "privateMiB": 14.88671875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.34765625,
+              "pssMiB": 2.6826171875,
+              "privateMiB": 2.11328125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 23.7880859375,
+          "rssMiB": 75.0859375,
+          "privateMiB": 18.15625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell",
+              "rssMiB": 66.73828125,
+              "pssMiB": 21.10546875,
+              "privateMiB": 16.04296875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.34765625,
+              "pssMiB": 2.6826171875,
+              "privateMiB": 2.11328125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 23.80859375,
+          "rssMiB": 75.3359375,
+          "privateMiB": 18.15625,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell",
+              "rssMiB": 66.98828125,
+              "pssMiB": 21.1259765625,
+              "privateMiB": 16.04296875,
+              "swapPssMiB": 0.0
+            },
+            {
+              "name": "ssh",
+              "rssMiB": 8.34765625,
+              "pssMiB": 2.6826171875,
+              "privateMiB": 2.11328125,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ],
+      "fds": 14,
+      "threads": 7
+    }
+  },
+  "fixture": {
+    "connections": 1,
+    "fillBytes": 0,
+    "passwordAuthentications": 0,
+    "stressBytes": 0,
+    "stressStreamsFinished": 0
+  },
+  "result": {
+    "commitToParsedEchoMs": [
+      5.628842000000001,
+      21.421013,
+      21.5742
+    ],
+    "commits": 3,
+    "connections": 1,
+    "ime": "IBus/libpinyin",
+    "notes": "Programmatically delivered GTK key events through real isolated IBus/libpinyin. Not physical keyboard or display latency.",
+    "phase": "complete",
+    "preeditWasNotSentToSsh": true,
+    "sessions": 0
+  },
+  "streaming": [],
+  "stderr": "",
+  "sshRemaining": 0,
+  "notes": "Development-only native GTK/VTE build. Same production PTY path and UI. Loopback fixture; input ends at parsed echo, not physical keyboard latency. Scroll tick measures GTK loop scheduling, not display frame time. PSS depends on co-running processes; no GPU device memory measurement."
+}

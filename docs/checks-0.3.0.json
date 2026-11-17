@@ -1,0 +1,25 @@
+{
+  "version": "0.3.0",
+  "packageSha256": "19556e3c206d40dff86ed641276349d5a4ce00a301ee03f991eb408205a52447",
+  "passed": [
+    "cargo fmt --all -- --check",
+    "cargo test -p ssh-core -p hshell-sftp -p hshell-native --all-features --locked",
+    "cargo clippy -p hshell-sftp -p hshell-native -p ssh-core --all-targets --all-features --locked -- -D warnings",
+    "scripts/ssh_smoke.py",
+    "scripts/keyring_smoke.py",
+    "SFTP protocol and recovery: Ubuntu 24 and Ubuntu 22",
+    "SFTP GTK integration and application restart: Ubuntu 24 X11 and Ubuntu 22 Xvfb",
+    "SFTP saved-password, fallback and host verification integration",
+    "native VTE regression: Ubuntu 24",
+    "Ubuntu 22 package installation and production close",
+    "Ubuntu 24 extracted production ELF close and idle resources"
+  ],
+  "notRun": [
+    "Windows SFTP UI and runtime",
+    "Wayland",
+    "Remote CI",
+    "Hour-scale SFTP soak",
+    "Real public-network or ProxyJump SFTP"
+  ],
+  "warnings": []
+}

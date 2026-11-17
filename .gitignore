@@ -1,0 +1,14 @@
+node_modules/
+dist/
+target/
+src-tauri/gen/
+.DS_Store
+*.log
+__pycache__/
+*.pyc
+.env
+.env.*
+!.env.example
+*.callgrind
+*.samples.jsonl
+*.progress.json

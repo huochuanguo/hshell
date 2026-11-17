@@ -1,0 +1,90 @@
+{
+  "objective": "按照优先级依次实施",
+  "requirements": [
+    {
+      "priority": 1,
+      "requirement": "主机列表增量更新及分批创建",
+      "status": "verified",
+      "evidence": [
+        "crates/native-linux/src/ui.rs",
+        "docs/hosts-update-0.2.3-final.json",
+        "docs/hosts-interleave-0.2.3-final.json"
+      ],
+      "limitation": "千行列表布局仍可能停顿；列表虚拟化未在本轮约定范围内"
+    },
+    {
+      "priority": 2,
+      "requirement": "配置快照复用并识别外部变更",
+      "status": "verified",
+      "evidence": [
+        "crates/ssh-core/src/profile_cache.rs",
+        "crates/native-linux/src/ui.rs",
+        "docs/config-cache-0.2.3.json"
+      ],
+      "limitation": "只减少本地连接准备开销；Windows 仍即时读取"
+    },
+    {
+      "priority": 3,
+      "requirement": "分段测量启动耗时并据实优化",
+      "status": "verified",
+      "evidence": [
+        "crates/native-linux/src/timing.rs",
+        "docs/startup-0.2.3-before.json",
+        "docs/startup-0.2.3-after.json"
+      ],
+      "limitation": "千行首次绘制调度提速，完整行填充更慢；字体耗时较低，未改字体加载"
+    },
+    {
+      "priority": 4,
+      "requirement": "输出路径性能采样及重复工作评估",
+      "status": "verified",
+      "evidence": [
+        "docs/output-profile-0.2.3.json",
+        "docs/profiles/output-0.2.3.callgrind",
+        "docs/output-profile-summary-0.2.3.json"
+      ],
+      "limitation": "采样为指令占比；未发现需修改的应用输出拷贝，未据此宣称持续输出 CPU 下降"
+    },
+    {
+      "priority": 5,
+      "requirement": "中文输入法、vim/tmux、快速滚轮、缩放及功能回归",
+      "status": "verified",
+      "evidence": [
+        "docs/native-0.2.3-ubuntu22.json",
+        "docs/native-0.2.3-ubuntu24.json",
+        "docs/native-programs-0.2.3-ubuntu22.json",
+        "docs/native-programs-0.2.3-ubuntu24.json",
+        "docs/native-ime-0.2.3-ubuntu24.json",
+        "docs/checks-0.2.3.json"
+      ],
+      "limitation": "输入法实测为 Ubuntu 24 隔离 IBus/libpinyin；均为程序化输入，Windows/Wayland/物理输入未覆盖"
+    },
+    {
+      "priority": 6,
+      "requirement": "按用户修订的 2～3 小时多会话验收并检查退出清理",
+      "status": "verified-under-revised-scope",
+      "evidence": [
+        "docs/native-soak-0.2.3-summary.json",
+        "docs/native-soak-0.2.3-shortened-close.json",
+        "docs/native-soak-0.2.3-lifecycle.json"
+      ],
+      "limitation": "长时资源观察与同构建独立生命周期补测分开；没有完整长时延迟直方图"
+    }
+  ],
+  "package": "target/native-ubuntu22/release/bundle/deb/hshell_0.2.3_amd64.deb",
+  "packageSha256": "6af4c83ad1ed39059e677919434754061e1d59d0fbb5de350afbd1b237a2e424",
+  "binarySha256": "82c5896d22a0c1aae91c1dce53c33cee598a4f4e62ceaf201379b99ca4b2da4e",
+  "sourceHashesVerified": true,
+  "packageInspected": true,
+  "compatibleGlibcMaximum": "2.34",
+  "priorBuildAndCheckEvidence": "docs/checks-0.2.3.json; actual successful commands rechecked in thread history",
+  "notCovered": [
+    "Windows hardware",
+    "Wayland",
+    "Physical keyboard-to-display latency",
+    "User production sshd/jump-host/MFA environments",
+    "GPU device memory",
+    "Remote CI"
+  ],
+  "result": "complete-with-documented-platform-and-measurement-boundaries"
+}

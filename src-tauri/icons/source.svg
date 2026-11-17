@@ -1,0 +1,7 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 64 64">
+  <title>HShell</title>
+  <rect x="2" y="2" width="60" height="60" rx="14" fill="#232830"/>
+  <rect x="16" y="16" width="7" height="32" rx="1.5" fill="#e7edf5"/>
+  <rect x="41" y="16" width="7" height="32" rx="1.5" fill="#e7edf5"/>
+  <path d="M23 32h16m-8-8 8 8-8 8" fill="none" stroke="#9abceb" stroke-width="5" stroke-linecap="square" stroke-linejoin="miter"/>
+</svg>

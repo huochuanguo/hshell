@@ -1,0 +1,87 @@
+name: Desktop checks and packages
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  desktop:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-22.04, ubuntu-24.04, windows-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Linux dependencies
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libvte-2.91-dev fonts-noto-cjk build-essential curl wget file libxdo-dev libssl-dev librsvg2-dev libayatana-appindicator3-dev openssh-client gnome-keyring dbus-x11 xvfb xauth
+      - run: npm ci
+      - run: npm run format:check
+      - run: cargo fmt --all -- --check
+      - run: npm run build
+      - run: npm run test:frontend
+      - run: python3 scripts/test_callgrind_summary.py
+      - run: python3 scripts/test_validate_native_soak.py
+      - run: cargo test --workspace --locked
+      - run: cargo test -p hshell-native --all-features --locked
+      - run: cargo clippy --workspace --all-targets --locked -- -D warnings
+      - name: Isolated OpenSSH integration
+        if: runner.os == 'Linux'
+        run: |
+          python3 -m venv /tmp/hshell-test-venv
+          /tmp/hshell-test-venv/bin/pip install paramiko==3.5.1
+          /tmp/hshell-test-venv/bin/python scripts/ssh_smoke.py
+      - name: Isolated system keyring integration
+        if: runner.os == 'Linux'
+        run: python3 scripts/keyring_smoke.py
+      - name: Native terminal integration
+        if: runner.os == 'Linux'
+        env:
+          NO_AT_BRIDGE: '1'
+        run: |
+          cargo build -p hshell-native --release --locked --features native-probe
+          /tmp/hshell-test-venv/bin/python -m py_compile scripts/native_vte.py
+          xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_vte.py target/release/hshell --output target/native-probe.json
+          xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_vte.py target/release/hshell --credentials --output target/native-credentials.json
+          xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_hosts.py target/release/hshell --output target/native-hosts.json
+          xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_hosts.py target/release/hshell --updates --max-replaced-rows 1 --output target/native-host-updates.json
+          xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_hosts.py target/release/hshell --updates --interleave --max-replaced-rows 1 --output target/native-host-interleave.json
+          xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_vte.py target/release/hshell --stress --partial-load --output target/native-stress.json
+      - name: Native SFTP integration
+        if: runner.os == 'Linux'
+        env:
+          NO_AT_BRIDGE: '1'
+        run: |
+          docker build --build-arg BASE_IMAGE=ubuntu:22.04 -f scripts/programs.Dockerfile -t hshell-test:programs-ubuntu22 .
+          cargo build -p hshell-sftp --example verify --release --locked
+          xvfb-run -a python3 scripts/sftp_smoke.py target/release/examples/verify --gui target/release/hshell --output target/sftp-integration.json
+      - name: Ubuntu native package
+        if: runner.os == 'Linux'
+        run: |
+          cargo build -p hshell-native --release --locked
+          python3 scripts/package_native.py target/release/hshell --output target/release/bundle/deb/hshell_0.3.1_amd64.deb
+      - name: Windows package
+        if: runner.os == 'Windows'
+        run: npm run bundle -- --bundles nsis --ci
+      - uses: actions/upload-artifact@v4
+        with:
+          name: hshell-${{ matrix.os }}
+          path: |
+            target/release/bundle/deb/*.deb
+            target/release/bundle/nsis/*.exe
+          if-no-files-found: error

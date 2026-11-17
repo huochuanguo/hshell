@@ -1,0 +1,558 @@
+{
+  "binarySha256": "04eafa926ea54c5868acbf149b3a130c62cf880377061da08c62f36969c5217b",
+  "guiBinarySha256": "f9caf393974039b7b13e6b9daf81a837060e4b69c07ea81520c17eaed14886e0",
+  "results": [
+    {
+      "directoryTickP95Ms": 18.519168999999998,
+      "exitDuringTransfer": true,
+      "hiddenIdleTimerStopped": true,
+      "inputP95Ms": 16.646836,
+      "inputSamples": 20,
+      "largeDirectory": 10000,
+      "minimumTerminalWidth": 437,
+      "notes": "Synthetic GTK keyboard/scroll events to real SSH; echo ends at VTE parsing, scroll timing is main-loop scheduling, not physical display latency.",
+      "pauseResume": true,
+      "phase": "complete",
+      "scrollTickP95Ms": 17.219951000000002,
+      "simultaneousTransferTicks": 60,
+      "transferredMiB": 1536,
+      "memorySamples": {
+        "terminal-baseline": [
+          {
+            "pssMiB": 80.7021484375,
+            "rssMiB": 109.5078125
+          },
+          {
+            "pssMiB": 81.2548828125,
+            "rssMiB": 110.13671875
+          },
+          {
+            "pssMiB": 81.2548828125,
+            "rssMiB": 110.13671875
+          },
+          {
+            "pssMiB": 81.2548828125,
+            "rssMiB": 110.13671875
+          }
+        ],
+        "directory": [
+          {
+            "pssMiB": 83.98046875,
+            "rssMiB": 118.7734375
+          },
+          {
+            "pssMiB": 84.4951171875,
+            "rssMiB": 119.2109375
+          },
+          {
+            "pssMiB": 84.5888671875,
+            "rssMiB": 119.3046875
+          },
+          {
+            "pssMiB": 84.8701171875,
+            "rssMiB": 119.5859375
+          },
+          {
+            "pssMiB": 85.2255859375,
+            "rssMiB": 119.94140625
+          },
+          {
+            "pssMiB": 85.5380859375,
+            "rssMiB": 120.25390625
+          },
+          {
+            "pssMiB": 86.0732421875,
+            "rssMiB": 120.7890625
+          },
+          {
+            "pssMiB": 86.2529296875,
+            "rssMiB": 120.96875
+          },
+          {
+            "pssMiB": 86.5966796875,
+            "rssMiB": 121.3125
+          },
+          {
+            "pssMiB": 86.9248046875,
+            "rssMiB": 121.640625
+          },
+          {
+            "pssMiB": 87.2685546875,
+            "rssMiB": 121.984375
+          },
+          {
+            "pssMiB": 87.6279296875,
+            "rssMiB": 122.34375
+          },
+          {
+            "pssMiB": 87.9638671875,
+            "rssMiB": 122.6796875
+          },
+          {
+            "pssMiB": 88.1787109375,
+            "rssMiB": 122.89453125
+          }
+        ],
+        "transferring": [
+          {
+            "pssMiB": 91.5537109375,
+            "rssMiB": 138.22265625
+          },
+          {
+            "pssMiB": 92.2744140625,
+            "rssMiB": 138.9375
+          },
+          {
+            "pssMiB": 97.359375,
+            "rssMiB": 144.11328125
+          },
+          {
+            "pssMiB": 97.37109375,
+            "rssMiB": 144.125
+          },
+          {
+            "pssMiB": 97.40625,
+            "rssMiB": 144.16015625
+          },
+          {
+            "pssMiB": 97.5390625,
+            "rssMiB": 144.29296875
+          },
+          {
+            "pssMiB": 97.5625,
+            "rssMiB": 144.31640625
+          },
+          {
+            "pssMiB": 97.578125,
+            "rssMiB": 144.33203125
+          },
+          {
+            "pssMiB": 97.58203125,
+            "rssMiB": 144.3359375
+          },
+          {
+            "pssMiB": 97.59375,
+            "rssMiB": 144.34765625
+          },
+          {
+            "pssMiB": 97.70703125,
+            "rssMiB": 144.4609375
+          },
+          {
+            "pssMiB": 97.71484375,
+            "rssMiB": 144.46875
+          },
+          {
+            "pssMiB": 97.71484375,
+            "rssMiB": 144.46875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 97.7578125,
+            "rssMiB": 144.51171875
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 93.2158203125,
+            "rssMiB": 134.01953125
+          },
+          {
+            "pssMiB": 89.1767578125,
+            "rssMiB": 123.91015625
+          },
+          {
+            "pssMiB": 89.7470703125,
+            "rssMiB": 124.515625
+          },
+          {
+            "pssMiB": 91.6240234375,
+            "rssMiB": 132.37890625
+          },
+          {
+            "pssMiB": 93.701171875,
+            "rssMiB": 134.50390625
+          },
+          {
+            "pssMiB": 93.701171875,
+            "rssMiB": 134.50390625
+          },
+          {
+            "pssMiB": 93.701171875,
+            "rssMiB": 134.50390625
+          },
+          {
+            "pssMiB": 90.0458984375,
+            "rssMiB": 118.9609375
+          },
+          {
+            "pssMiB": 93.9697265625,
+            "rssMiB": 134.83984375
+          },
+          {
+            "pssMiB": 95.3876953125,
+            "rssMiB": 136.37890625
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 95.4892578125,
+            "rssMiB": 136.48046875
+          },
+          {
+            "pssMiB": 92.814453125,
+            "rssMiB": 127.63671875
+          },
+          {
+            "pssMiB": 93.1591796875,
+            "rssMiB": 127.92578125
+          },
+          {
+            "pssMiB": 93.1552734375,
+            "rssMiB": 127.92578125
+          },
+          {
+            "pssMiB": 93.1552734375,
+            "rssMiB": 127.92578125
+          },
+          {
+            "pssMiB": 95.5458984375,
+            "rssMiB": 130.31640625
+          }
+        ],
+        "hidden-idle": [
+          {
+            "pssMiB": 94.7294921875,
+            "rssMiB": 123.64453125
+          },
+          {
+            "pssMiB": 94.7294921875,
+            "rssMiB": 123.64453125
+          },
+          {
+            "pssMiB": 94.7294921875,
+            "rssMiB": 123.64453125
+          },
+          {
+            "pssMiB": 94.7294921875,
+            "rssMiB": 123.64453125
+          },
+          {
+            "pssMiB": 94.7294921875,
+            "rssMiB": 123.64453125
+          },
+          {
+            "pssMiB": 96.31640625,
+            "rssMiB": 131.1015625
+          },
+          {
+            "pssMiB": 98.568359375,
+            "rssMiB": 133.2890625
+          },
+          {
+            "pssMiB": 98.572265625,
+            "rssMiB": 133.29296875
+          },
+          {
+            "pssMiB": 98.572265625,
+            "rssMiB": 133.29296875
+          },
+          {
+            "pssMiB": 98.572265625,
+            "rssMiB": 133.29296875
+          },
+          {
+            "pssMiB": 98.572265625,
+            "rssMiB": 133.29296875
+          },
+          {
+            "pssMiB": 98.572265625,
+            "rssMiB": 133.29296875
+          },
+          {
+            "pssMiB": 98.572265625,
+            "rssMiB": 133.29296875
+          },
+          {
+            "pssMiB": 100.91015625,
+            "rssMiB": 136.39453125
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": 60293120,
+      "phase": "complete",
+      "restoredAfterExit": true
+    }
+  ],
+  "sshRemaining": 0,
+  "osRelease": "PRETTY_NAME=\"Ubuntu 22.04.3 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"22.04\"\nVERSION=\"22.04.3 LTS (Jammy Jellyfish)\"\nVERSION_CODENAME=jammy\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=jammy\n"
+}

@@ -1,0 +1,31 @@
+{
+  "name": "hshell",
+  "version": "0.2.3",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "tsc --noEmit && vite build",
+    "check": "tsc --noEmit",
+    "format": "prettier --write src vite.config.ts index.html package.json tsconfig.json src-tauri/*.json src-tauri/capabilities/*.json",
+    "format:check": "prettier --check src vite.config.ts index.html package.json tsconfig.json src-tauri/*.json src-tauri/capabilities/*.json",
+    "tauri": "tauri",
+    "desktop": "tauri dev",
+    "bundle": "tauri build",
+    "test:core": "cargo test -p ssh-core",
+    "test:frontend": "node --experimental-strip-types --test scripts/quick-connect.test.mjs scripts/window-close.test.mjs"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "^2.12.4",
+    "@xterm/addon-fit": "^0.11.0",
+    "@xterm/addon-search": "^0.16.0",
+    "@xterm/xterm": "^6.0.0",
+    "lucide": "^0.468.0"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "^2.10.0",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "vite": "^8.0.0"
+  }
+}

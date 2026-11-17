@@ -1,0 +1,10 @@
+{
+  "package": "/home/xy/work/self/ssh-shell/target/native-ubuntu22/release/bundle/deb/hshell_0.3.1_amd64.deb",
+  "sizeBytes": 1181676,
+  "sha256": "90718c42d261ecfc77898fce5aca54662d68a138c7cd3552a21aaa9b9a556ecc",
+  "binarySha256": "d21746b0c202a85e5197df532e2a1e3d64d0bd535655f569708227ffc60e621d",
+  "maximumGlibc": "2.34",
+  "noProbe": true,
+  "noWebKit": true,
+  "dependencies": "openssh-client, libc6 (>= 2.34), libcairo-gobject2 (>= 1.10.0), libcairo2 (>= 1.2.4), libfontconfig1 (>= 2.12.6), libgcc-s1 (>= 4.2), libgdk-pixbuf-2.0-0 (>= 2.22.0), libglib2.0-0 (>= 2.35.8), libgtk-3-0 (>= 3.21.6), libpango-1.0-0 (>= 1.14.0), libvte-2.91-0 (>= 0.67.90)"
+}

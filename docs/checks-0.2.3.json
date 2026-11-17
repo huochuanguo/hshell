@@ -1,0 +1,46 @@
+{
+  "version": "0.2.3",
+  "passed": [
+    "Ubuntu 22 container: cargo test --workspace --locked --offline (core 15 passed, fixture 1 ignored; native 3 passed)",
+    "Ubuntu 24: cargo test -p hshell-native -p ssh-core --all-features --locked (native 4/core 15 passed)",
+    "Ubuntu 22 container: cargo clippy --workspace --all-targets --locked --offline -- -D warnings",
+    "Ubuntu 24: cargo clippy -p hshell-native -p ssh-core --all-features --all-targets --locked -- -D warnings",
+    "cargo fmt --all -- --check",
+    "npm run build",
+    "npm run test:frontend (11 passed)",
+    "npm run format:check",
+    "python3 -m py_compile scripts/*.py",
+    "python3 scripts/test_callgrind_summary.py (2 passed)",
+    "python3 scripts/ssh_smoke.py (7 scenarios)",
+    "python3 scripts/keyring_smoke.py",
+    "Ubuntu 22/24 native credentials regressions (14 connections each)",
+    "Ubuntu 22/24 real sshd/vim/tmux/resize/wheel regressions",
+    "Ubuntu 24 isolated IBus/libpinyin composition regression",
+    "Ubuntu 24 180-second/12-session/64-cycle stress regression",
+    "Ubuntu 22 production build, package and sequential installation upgrades in disposable container",
+    "Ubuntu 22/24 production mapped-window and close verification",
+    "Legacy namespace and historical package checksum verification",
+    "git diff --no-index --check against source backup (directory has no repository metadata)",
+    "Ubuntu 22 same-process 12-session resource observation: 10503.71 seconds; shortened acceptance minimum 7200 seconds",
+    "Ubuntu 22 same-binary separate 30-second/12-session/64-cycle lifecycle regression; 76 connections; no SSH remaining",
+    "python3 scripts/test_validate_native_soak.py (6 passed)",
+    "python3 scripts/validate_native_soak.py (shortened resource run, real window close and separate lifecycle verified)"
+  ],
+  "pending": [],
+  "notCovered": [
+    "Windows hardware",
+    "Wayland",
+    "Physical keyboard-to-display latency",
+    "User production sshd/jump-host/MFA environments",
+    "GPU device memory",
+    "Remote CI"
+  ],
+  "nonBlockingNotes": [
+    "Host workspace check initially lacked WebKit/Soup pkg-config files; completed on Ubuntu 22 container with actual development libraries",
+    "Isolated session portal/PipeWire shutdown messages and container apt-utils warning; application regressions require no GTK WARNING/CRITICAL",
+    "Initial 1000-row GTK layout can still stall; no universal 18 ms latency claim",
+    "Original fixed eight-hour probe intentionally interrupted on user request; full-duration latency histogram unavailable, follow-up metrics kept separate"
+  ],
+  "hostInstallationPerformed": false,
+  "commitOrPushPerformed": false
+}

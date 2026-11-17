@@ -1,0 +1,217 @@
+{
+  "binarySha256": "82c5896d22a0c1aae91c1dce53c33cee598a4f4e62ceaf201379b99ca4b2da4e",
+  "scenario": "idle native window, mapped X11 window verified by child PID, isolated configuration",
+  "runs": [
+    {
+      "run": 1,
+      "window": {
+        "id": 83886087,
+        "width": 1280,
+        "height": 820
+      },
+      "pssMedianMiB": 16.16,
+      "rssMedianMiB": 60.02,
+      "pssMaxMiB": 16.16,
+      "cpuPercentOneCore": 0.0,
+      "samples": [
+        {
+          "pssMiB": 16.1640625,
+          "rssMiB": 60.01953125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 60.01953125,
+              "pssMiB": 16.1640625,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1640625,
+          "rssMiB": 60.01953125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 60.01953125,
+              "pssMiB": 16.1640625,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1640625,
+          "rssMiB": 60.01953125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 60.01953125,
+              "pssMiB": 16.1640625,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1640625,
+          "rssMiB": 60.01953125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 60.01953125,
+              "pssMiB": 16.1640625,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1640625,
+          "rssMiB": 60.01953125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 60.01953125,
+              "pssMiB": 16.1640625,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1640625,
+          "rssMiB": 60.01953125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 60.01953125,
+              "pssMiB": 16.1640625,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "run": 2,
+      "window": {
+        "id": 83886087,
+        "width": 1280,
+        "height": 820
+      },
+      "pssMedianMiB": 16.15,
+      "rssMedianMiB": 59.88,
+      "pssMaxMiB": 16.15,
+      "cpuPercentOneCore": 0.0,
+      "samples": [
+        {
+          "pssMiB": 16.1455078125,
+          "rssMiB": 59.8828125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 59.8828125,
+              "pssMiB": 16.1455078125,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1455078125,
+          "rssMiB": 59.8828125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 59.8828125,
+              "pssMiB": 16.1455078125,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1455078125,
+          "rssMiB": 59.8828125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 59.8828125,
+              "pssMiB": 16.1455078125,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1455078125,
+          "rssMiB": 59.8828125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 59.8828125,
+              "pssMiB": 16.1455078125,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1455078125,
+          "rssMiB": 59.8828125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 59.8828125,
+              "pssMiB": 16.1455078125,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        },
+        {
+          "pssMiB": 16.1455078125,
+          "rssMiB": 59.8828125,
+          "privateMiB": 12.109375,
+          "swapPssMiB": 0.0,
+          "processes": [
+            {
+              "name": "hshell-release-",
+              "rssMiB": 59.8828125,
+              "pssMiB": 16.1455078125,
+              "privateMiB": 12.109375,
+              "swapPssMiB": 0.0
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "notes": "PSS apportions shared pages; RSS repeats shared pages. GPU device memory is excluded. Keep co-running apps and display constant.",
+  "pssMedianMiB": 16.16,
+  "rssMedianMiB": 59.95
+}

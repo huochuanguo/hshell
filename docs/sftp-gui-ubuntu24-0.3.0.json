@@ -1,0 +1,526 @@
+{
+  "binarySha256": "9a9f46c92849a21254ec108044dd2829b0de60b91130cb8bc8c613cbe1c601ad",
+  "guiBinarySha256": "eed75a1692c8298df0208451270dd91fe29cfd5b9bdbaf59fafb58c4367c35e4",
+  "results": [
+    {
+      "directoryTickP95Ms": 19.70308,
+      "exitDuringTransfer": true,
+      "hiddenIdleTimerStopped": true,
+      "inputP95Ms": 54.509103,
+      "inputSamples": 20,
+      "largeDirectory": 10000,
+      "minimumTerminalWidth": 437,
+      "notes": "Synthetic GTK keyboard/scroll events to real SSH; echo ends at VTE parsing, scroll timing is main-loop scheduling, not physical display latency.",
+      "pauseResume": true,
+      "phase": "complete",
+      "scrollTickP95Ms": 17.219967999999998,
+      "simultaneousTransferTicks": 60,
+      "transferredMiB": 1536,
+      "memorySamples": {
+        "terminal-baseline": [
+          {
+            "pssMiB": 21.8994140625,
+            "rssMiB": 71.3984375
+          },
+          {
+            "pssMiB": 22.271484375,
+            "rssMiB": 71.8125
+          },
+          {
+            "pssMiB": 22.271484375,
+            "rssMiB": 71.8125
+          },
+          {
+            "pssMiB": 22.951171875,
+            "rssMiB": 72.9140625
+          }
+        ],
+        "directory": [
+          {
+            "pssMiB": 24.755859375,
+            "rssMiB": 81.3984375
+          },
+          {
+            "pssMiB": 25.1396484375,
+            "rssMiB": 82.03515625
+          },
+          {
+            "pssMiB": 25.5693359375,
+            "rssMiB": 82.52734375
+          },
+          {
+            "pssMiB": 26.0302734375,
+            "rssMiB": 82.98828125
+          },
+          {
+            "pssMiB": 26.3056640625,
+            "rssMiB": 83.4140625
+          },
+          {
+            "pssMiB": 26.7197265625,
+            "rssMiB": 83.828125
+          },
+          {
+            "pssMiB": 27.1435546875,
+            "rssMiB": 84.25
+          },
+          {
+            "pssMiB": 27.609375,
+            "rssMiB": 84.71875
+          },
+          {
+            "pssMiB": 28.0302734375,
+            "rssMiB": 85.13671875
+          },
+          {
+            "pssMiB": 28.4482421875,
+            "rssMiB": 85.5546875
+          },
+          {
+            "pssMiB": 28.9482421875,
+            "rssMiB": 86.0546875
+          },
+          {
+            "pssMiB": 29.1044921875,
+            "rssMiB": 86.2109375
+          }
+        ],
+        "transferring": [
+          {
+            "pssMiB": 32.001953125,
+            "rssMiB": 102.05078125
+          },
+          {
+            "pssMiB": 32.541015625,
+            "rssMiB": 102.78125
+          },
+          {
+            "pssMiB": 38.869140625,
+            "rssMiB": 109.109375
+          },
+          {
+            "pssMiB": 38.802734375,
+            "rssMiB": 109.04296875
+          },
+          {
+            "pssMiB": 38.861328125,
+            "rssMiB": 109.1015625
+          },
+          {
+            "pssMiB": 38.228515625,
+            "rssMiB": 108.46875
+          },
+          {
+            "pssMiB": 38.869140625,
+            "rssMiB": 109.109375
+          },
+          {
+            "pssMiB": 38.482421875,
+            "rssMiB": 108.72265625
+          },
+          {
+            "pssMiB": 38.865234375,
+            "rssMiB": 109.10546875
+          },
+          {
+            "pssMiB": 38.482421875,
+            "rssMiB": 108.72265625
+          },
+          {
+            "pssMiB": 38.865234375,
+            "rssMiB": 109.10546875
+          },
+          {
+            "pssMiB": 38.728515625,
+            "rssMiB": 108.96875
+          },
+          {
+            "pssMiB": 38.869140625,
+            "rssMiB": 109.109375
+          },
+          {
+            "pssMiB": 38.228515625,
+            "rssMiB": 108.46875
+          },
+          {
+            "pssMiB": 38.240234375,
+            "rssMiB": 108.48046875
+          },
+          {
+            "pssMiB": 38.869140625,
+            "rssMiB": 109.109375
+          },
+          {
+            "pssMiB": 38.498046875,
+            "rssMiB": 108.73828125
+          },
+          {
+            "pssMiB": 38.228515625,
+            "rssMiB": 108.46875
+          },
+          {
+            "pssMiB": 38.869140625,
+            "rssMiB": 109.109375
+          },
+          {
+            "pssMiB": 38.8740234375,
+            "rssMiB": 109.109375
+          },
+          {
+            "pssMiB": 38.3818359375,
+            "rssMiB": 108.6171875
+          },
+          {
+            "pssMiB": 38.4873046875,
+            "rssMiB": 108.72265625
+          },
+          {
+            "pssMiB": 38.6201171875,
+            "rssMiB": 108.85546875
+          },
+          {
+            "pssMiB": 38.8662109375,
+            "rssMiB": 109.1015625
+          },
+          {
+            "pssMiB": 38.8740234375,
+            "rssMiB": 109.109375
+          },
+          {
+            "pssMiB": 38.3662109375,
+            "rssMiB": 108.6015625
+          },
+          {
+            "pssMiB": 38.8740234375,
+            "rssMiB": 109.109375
+          },
+          {
+            "pssMiB": 38.6396484375,
+            "rssMiB": 108.875
+          },
+          {
+            "pssMiB": 38.8701171875,
+            "rssMiB": 109.10546875
+          },
+          {
+            "pssMiB": 33.23046875,
+            "rssMiB": 96.9765625
+          },
+          {
+            "pssMiB": 33.234375,
+            "rssMiB": 96.98046875
+          },
+          {
+            "pssMiB": 33.109375,
+            "rssMiB": 96.85546875
+          },
+          {
+            "pssMiB": 32.7265625,
+            "rssMiB": 96.47265625
+          },
+          {
+            "pssMiB": 32.98046875,
+            "rssMiB": 96.7265625
+          },
+          {
+            "pssMiB": 32.84765625,
+            "rssMiB": 96.59375
+          },
+          {
+            "pssMiB": 33.0625,
+            "rssMiB": 96.80859375
+          },
+          {
+            "pssMiB": 33.0546875,
+            "rssMiB": 96.80078125
+          },
+          {
+            "pssMiB": 33.234375,
+            "rssMiB": 96.98046875
+          },
+          {
+            "pssMiB": 33.23046875,
+            "rssMiB": 96.9765625
+          },
+          {
+            "pssMiB": 32.84765625,
+            "rssMiB": 96.59375
+          },
+          {
+            "pssMiB": 33.23046875,
+            "rssMiB": 96.9765625
+          },
+          {
+            "pssMiB": 29.66015625,
+            "rssMiB": 86.96484375
+          },
+          {
+            "pssMiB": 29.7001953125,
+            "rssMiB": 87.6015625
+          },
+          {
+            "pssMiB": 31.380859375,
+            "rssMiB": 95.41796875
+          },
+          {
+            "pssMiB": 33.7392578125,
+            "rssMiB": 97.83984375
+          },
+          {
+            "pssMiB": 33.7431640625,
+            "rssMiB": 97.84375
+          },
+          {
+            "pssMiB": 30.388671875,
+            "rssMiB": 81.4296875
+          },
+          {
+            "pssMiB": 31.580078125,
+            "rssMiB": 89.4296875
+          },
+          {
+            "pssMiB": 33.298828125,
+            "rssMiB": 97.40234375
+          },
+          {
+            "pssMiB": 37.8271484375,
+            "rssMiB": 102.04296875
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 38.3623046875,
+            "rssMiB": 102.578125
+          },
+          {
+            "pssMiB": 32.55078125,
+            "rssMiB": 84.17578125
+          },
+          {
+            "pssMiB": 34.4482421875,
+            "rssMiB": 92.0078125
+          },
+          {
+            "pssMiB": 34.7216796875,
+            "rssMiB": 92.34375
+          },
+          {
+            "pssMiB": 38.3935546875,
+            "rssMiB": 96.015625
+          }
+        ],
+        "hidden-idle": [
+          {
+            "pssMiB": 36.6552734375,
+            "rssMiB": 87.80859375
+          },
+          {
+            "pssMiB": 36.6552734375,
+            "rssMiB": 87.80859375
+          },
+          {
+            "pssMiB": 36.6552734375,
+            "rssMiB": 87.80859375
+          },
+          {
+            "pssMiB": 36.244140625,
+            "rssMiB": 87.84765625
+          },
+          {
+            "pssMiB": 38.1005859375,
+            "rssMiB": 95.62109375
+          },
+          {
+            "pssMiB": 39.9716796875,
+            "rssMiB": 97.6015625
+          },
+          {
+            "pssMiB": 39.9716796875,
+            "rssMiB": 97.6015625
+          },
+          {
+            "pssMiB": 39.9716796875,
+            "rssMiB": 97.6015625
+          },
+          {
+            "pssMiB": 39.9716796875,
+            "rssMiB": 97.6015625
+          },
+          {
+            "pssMiB": 39.9716796875,
+            "rssMiB": 97.6015625
+          },
+          {
+            "pssMiB": 39.9716796875,
+            "rssMiB": 97.6015625
+          }
+        ]
+      }
+    },
+    {
+      "checkpoint": 55574528,
+      "phase": "complete",
+      "restoredAfterExit": true
+    }
+  ],
+  "sshRemaining": 0,
+  "osRelease": "PRETTY_NAME=\"Ubuntu 24.04.4 LTS\"\nNAME=\"Ubuntu\"\nVERSION_ID=\"24.04\"\nVERSION=\"24.04.4 LTS (Noble Numbat)\"\nVERSION_CODENAME=noble\nID=ubuntu\nID_LIKE=debian\nHOME_URL=\"https://www.ubuntu.com/\"\nSUPPORT_URL=\"https://help.ubuntu.com/\"\nBUG_REPORT_URL=\"https://bugs.launchpad.net/ubuntu/\"\nPRIVACY_POLICY_URL=\"https://www.ubuntu.com/legal/terms-and-policies/privacy-policy\"\nUBUNTU_CODENAME=noble\nLOGO=ubuntu-logo\n"
+}
