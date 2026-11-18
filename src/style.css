@@ -896,7 +896,8 @@ h1 {
     "liga" 0,
     "calt" 0;
 }
-.xterm-viewport {
+.terminal-pane .xterm .xterm-viewport {
+  background-color: var(--canvas);
   scrollbar-width: thin;
   scrollbar-color: var(--line-strong) var(--canvas);
 }
