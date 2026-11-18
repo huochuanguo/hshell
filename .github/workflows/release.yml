@@ -1,4 +1,4 @@
-name: Release Ubuntu native
+name: Release HShell
 
 on:
   push:
@@ -17,7 +17,7 @@ jobs:
     timeout-minutes: 35
     outputs:
       package: ${{ steps.metadata.outputs.package }}
-      notes: ${{ steps.metadata.outputs.notes }}
+      windows_package: ${{ steps.metadata.outputs.windows_package }}
     steps:
       - uses: actions/checkout@v4
         with:
@@ -112,15 +112,16 @@ jobs:
           GH_TOKEN: ${{ github.token }}
           GH_REPO: ${{ github.repository }}
           RELEASE_TAG: ${{ github.ref_name }}
-          RELEASE_NOTES: ${{ needs.build.outputs.notes }}
           RELEASE_PACKAGE: ${{ needs.build.outputs.package }}
+          WINDOWS_PACKAGE: ${{ needs.build.outputs.windows_package }}
         run: |
-          if gh release view "$RELEASE_TAG" --json isDraft > target-release.json; then
-            python3 -c 'import json; assert json.load(open("target-release.json"))["isDraft"], "Published releases must never be overwritten"'
-          else
-            gh release create "$RELEASE_TAG" --verify-tag --draft --title "HShell $RELEASE_TAG" --notes-file "$RELEASE_NOTES"
-          fi
-          (cd release-assets && sha256sum --check "$RELEASE_PACKAGE.sha256")
+          test "$(gh release view "$RELEASE_TAG" --json isDraft --jq .isDraft)" = true
+          gh release download "$RELEASE_TAG" --pattern "$WINDOWS_PACKAGE" --pattern "$WINDOWS_PACKAGE.sha256" --dir release-assets
+          (
+            cd release-assets
+            sha256sum --check "$WINDOWS_PACKAGE.sha256"
+            sha256sum --check "$RELEASE_PACKAGE.sha256"
+          )
           gh release upload "$RELEASE_TAG" "release-assets/$RELEASE_PACKAGE" "release-assets/$RELEASE_PACKAGE.sha256" --clobber
           gh release edit "$RELEASE_TAG" --draft=false --latest
           gh release view "$RELEASE_TAG" --json url,assets

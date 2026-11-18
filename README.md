@@ -53,7 +53,7 @@ npm run dev
 
 0.3.0 新增 SFTP 的专项验收见 [验证记录](docs/verification.md)，未将旧版长时结果作为本版 SFTP 的长时证明。
 
-Ubuntu 原生 **HShell 0.3.5** 在本机打包后生成 `target/release/bundle/deb/hshell_0.3.5_amd64.deb`，命令为 `hshell`。安装时自动替换旧 `qizhan-ssh` 包；请先退出旧客户端，再安装并从启动器打开 HShell。原连接配置、保存的密码及 OpenSSH 信任记录继续使用，无需导出迁移。
+Ubuntu 原生 **HShell 0.3.6** 在本机打包后生成 `target/release/bundle/deb/hshell_0.3.6_amd64.deb`，命令为 `hshell`。安装时自动替换旧 `qizhan-ssh` 包；请先退出旧客户端，再安装并从启动器打开 HShell。原连接配置、保存的密码及 OpenSSH 信任记录继续使用，无需导出迁移。
 
 新图标将 H 与终端提示符结合，提供 Linux 多尺寸 PNG / SVG 和 Windows ICO。矢量源为 [hshell.svg](src/assets/hshell.svg)，运行 `python3 scripts/generate_icons.py` 可重新生成（开发时需 `rsvg-convert` 与 Pillow）。
 
@@ -62,12 +62,12 @@ Ubuntu 原生 **HShell 0.3.5** 在本机打包后生成 `target/release/bundle/d
 ```bash
 cargo build -p hshell-native --release --locked
 python3 scripts/package_native.py target/release/hshell
-sudo apt install ./target/release/bundle/deb/hshell_0.3.5_amd64.deb
+sudo apt install ./target/release/bundle/deb/hshell_0.3.6_amd64.deb
 ```
 
 Ubuntu 22.04 的发布包必须在 Ubuntu 22.04 构建，再在 22.04 和 24.04 安装验收。**不能用 Ubuntu 24.04 构建结果宣称兼容 22.04**，因为 glibc 基线可能不兼容。CI 已定义两套 Ubuntu 构建及 Windows 构建，但添加工作流不代表已实际运行。
 
-源码保留在 [Gitee](https://gitee.com/huochuanguo/hshell)，并同步到 [GitHub 私有仓库](https://github.com/huochuanguo/hshell)。向 GitHub 推送与原生版本一致的 `vMAJOR.MINOR.PATCH` 标签后，[自动发布流程](.github/workflows/release.yml) 在 Ubuntu 22.04 构建，完成 SFTP 与双系统安装检查，再把 `.deb` 和 SHA256 校验文件上传到 [GitHub 发行版](https://github.com/huochuanguo/hshell/releases)。安装包不进入 Git 源码。私有发行版下载需要 GitHub 仓库访问权限。具体步骤及失败处理见 [发布说明](docs/releasing.md)。
+源码保留在 [Gitee](https://gitee.com/huochuanguo/hshell)，并同步到 [GitHub 私有仓库](https://github.com/huochuanguo/hshell)。Ubuntu 和 Windows 使用同一个版本号与 `vMAJOR.MINOR.PATCH` 标签。[自动发布流程](.github/workflows/release.yml) 在 Ubuntu 22.04 构建并完成 SFTP 与双系统安装检查，然后将 `.deb`、Windows `.exe` 及各自的 SHA256 校验文件一起发布到 [GitHub 发行版](https://github.com/huochuanguo/hshell/releases)。安装包不进入 Git 源码。私有发行版下载需要 GitHub 仓库访问权限。具体步骤及失败处理见 [发布说明](docs/releasing.md)。
 
 Windows 开发需要 MSVC C++ Build Tools（含 Windows SDK）、Rust MSVC 工具链、Node.js 24 LTS、WebView2 Runtime，以及 Windows「可选功能」中的 OpenSSH 客户端。保存密码及 SFTP 需要 OpenSSH 8.4+：
 
