@@ -1,5 +1,19 @@
 # 验证记录
 
+## Windows 适配代码与界面验证（2026-11-18）
+
+Windows Tauri 前端已接入共享 SFTP 核心，支持目录操作、上传下载、两路队列及断点恢复；修复 Windows 对远程 Unix 路径的误判，接入原生剪贴板及 Job Object 进程树清理。窗口退出同时考虑后台传输，快捷键保留远端 Ctrl B/K。Windows 平台配置默认生成当前用户安装的简体中文/英文 NSIS 包，版本对齐 0.3.4。
+
+本机实际通过 `npm run build`、15 项 `npm run test:frontend` 测试、TypeScript 检查与 Python 语法检查。浏览器通过官方 Tauri IPC mock 验证中文目录导航、新建目录、上传/下载任务、暂停继续、收起文件栏后任务保留及 800×580 布局；这些是界面模拟，不能作为真实 Windows SSH/SFTP 成功记录。截图位于本地未入库的 `target/windows-ui-fixture.jpg`。
+
+用户手动关闭智能应用控制后，Windows 11（build 26200）、Rust 1.100.0 MSVC / OpenSSH 9.5p2 实际通过 Rust 编译与格式检查、工作区单测（13 项，另 1 项集成夹具独立运行）、全目标/全功能 Clippy `-D warnings`、9 类 SSH 认证与关闭场景、32 MiB SFTP 跨进程双向续传、前缀核对和 SHA256，以及 Windows Credential Manager 随机条目生命周期。修复 ConPTY 自然退出后不产生 EOF、界面提前销毁时初始光标握手阻塞的回收问题；上传改为等待有界写入批次完成并显式关闭句柄后发布，避免 Windows 服务端拒绝重命名仍打开的文件。回环夹具的连接重置提示为关闭/拒绝场景日志，断言通过。
+
+字号调整前的 NSIS 包为 2,344,785 字节，SHA256 `5be6675eeda06873f18a37fc53cfaf7180f1205e408814fea228aa16e7d9aa96`。实际安装到工作区测试目录并完成正式程序启动、系统关闭及卸载，安装/卸载退出码均为 0，测试副本已清理。包内程序与 Release 程序仅有 Tauri 安装类型标记的 3 字节差异。原生窗口实测中文界面、文件栏、版本/引擎信息及快捷键；真实 SSH/SFTP 全界面端到端操作尚未执行，协议核心与模拟界面采用分层验收。产物未签名且不含测试探针，详情见 `target/windows-acceptance.json`。
+
+终端字号更新：`npm run bundle -- --ci` 重新生成同版本 NSIS 包，实际 SHA256 见安装包旁的 `.exe.sha256`。`npm run test:frontend` 共 20 项通过，模拟界面验证终端在 15 → 18 px 时由 93×24 重排至 78×20，且发送对应的会话尺寸更新；放大、缩小、恢复默认不会将按键送给 SSH。新建及切回原有标签、刷新记忆、上下限和 800×580 打开文件栏时的布局均已检查。此轮未重跑安装/卸载或真实协议测试。
+
+尚未覆盖 Windows 10、物理中文输入、生产 sshd / 跳板机、长时压力或本次共享传输修改的 Linux 专项。工作流已新增 Windows 隔离 SSH/SFTP/凭据库检查，远端 CI 尚未运行。完整命令和夹具边界见 [Windows 客户端](windows.md)。`npm ci` 报告已有的 4 项高危构建依赖告警，来源为 picomatch 及其依赖链，当前注册表未提供大于受影响范围的版本，未使用强制降级 Vite 处理。
+
 日期：2026-11-17。下方保留各版本地专项记录；自动发布的最新 Ubuntu amd64 版本及安装包见 [GitHub 发行版](https://github.com/huochuanguo/hshell/releases)，发布门槛见 [发布说明](releasing.md)。
 
 ## 0.3.1 文件类型的颜色区分

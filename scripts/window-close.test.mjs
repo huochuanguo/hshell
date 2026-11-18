@@ -24,17 +24,34 @@ function fixture(overrides = {}) {
 }
 const session = (dispose, extra = {}) => ({ status: 'running', preview: false, dispose, ...extra });
 
-// Exercise the installed Tauri wrapper and the actual application capability.
-// Removing allow-destroy must reproduce 0.1.2's unclosable empty window.
+test('只有后台文件传输时也确认退出并按顺序保存断点', async () => {
+  const order = [];
+  const { close } = fixture({
+    hasBackgroundWork: async () => true,
+    confirm: async () => { order.push('确认'); return true; },
+    cleanup: async () => { order.push('保存断点'); },
+    destroy: async () => { order.push('销毁窗口'); },
+  });
+  await close();
+  assert.deepEqual(order, ['确认', '保存断点', '销毁窗口']);
+});
+
+test('取消退出时后台传输继续运行', async () => {
+  let stopped = false;
+  const { close, calls } = fixture({ hasBackgroundWork: async () => true, confirm: async () => false, cleanup: async () => { stopped = true; } });
+  await close();
+  assert.equal(stopped, false);
+  assert.equal(calls.destroyed, 0);
+});
+
+// 使用已安装的 Tauri 包和真实权限配置，明确要求窗口具备销毁权限。
 test('Tauri close-request listener reaches permitted native destruction', async () => {
   globalThis.window = { crypto: globalThis.crypto };
   mockWindows('main');
   try {
     const capability = JSON.parse(await readFile(new URL('../src-tauri/capabilities/default.json', import.meta.url)));
-    const manifests = JSON.parse(await readFile(new URL('../src-tauri/gen/schemas/acl-manifests.json', import.meta.url)));
-    const defaults = manifests['core:window'].default_permission.permissions;
-    const permitted = action => capability.permissions.includes(`core:window:allow-${action}`) ||
-      (capability.permissions.includes('core:default') && defaults.includes(`allow-${action}`));
+    assert.deepEqual(capability.windows, ['main']);
+    const permitted = action => capability.permissions.includes(`core:window:allow-${action}`);
     let listener;
     let destroyed = 0;
     mockIPC(async (command, args) => {

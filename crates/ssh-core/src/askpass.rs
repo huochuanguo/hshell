@@ -50,6 +50,8 @@ impl AskpassBroker {
         password: Option<Zeroizing<String>>,
         prompt: impl Fn(String, String, bool) -> bool + Send + 'static,
     ) -> Result<Self, String> {
+        #[cfg(windows)]
+        crate::platform::require_askpass_support()?;
         let expected_prompt = password_prompt_for(command)?;
         let listener = TcpListener::bind("127.0.0.1:0").map_err(|_| "无法启动本地认证通道")?;
         let address = listener.local_addr().map_err(|e| e.to_string())?;
@@ -187,11 +189,26 @@ fn password_prompt_for(command: &CommandBuilder) -> Result<Option<String>, Strin
         resolve.creation_flags(0x08000000);
     }
     let mut child = resolve.spawn().map_err(|_| "无法解析 SSH 配置")?;
+    let stdout = child.stdout.take().ok_or("SSH 配置解析失败")?;
+    let (sender, receiver) = mpsc::sync_channel(1);
+    // Windows 匿名管道容量较小，必须边读取边等待，避免 ssh -G 写满管道后死锁。
+    thread::spawn(move || {
+        let mut data = String::new();
+        let result = stdout
+            .take(1024 * 1024 + 1)
+            .read_to_string(&mut data)
+            .map(|_| data);
+        let _ = sender.send(result);
+    });
     let deadline = Instant::now() + Duration::from_secs(5);
     loop {
         match child.try_wait() {
             Ok(Some(status)) if status.success() => break,
-            Ok(Some(_)) | Err(_) => return Err("SSH 配置解析失败".into()),
+            Ok(Some(_)) | Err(_) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err("SSH 配置解析失败".into());
+            }
             Ok(None) if Instant::now() < deadline => thread::sleep(Duration::from_millis(10)),
             _ => {
                 let _ = child.kill();
@@ -200,14 +217,13 @@ fn password_prompt_for(command: &CommandBuilder) -> Result<Option<String>, Strin
             }
         }
     }
-    let mut data = String::new();
-    child
-        .stdout
-        .take()
-        .ok_or("SSH 配置解析失败")?
-        .take(1024 * 1024)
-        .read_to_string(&mut data)
+    let data = receiver
+        .recv_timeout(Duration::from_secs(1))
+        .map_err(|_| "SSH 配置输出超时")?
         .map_err(|_| "SSH 配置解析失败")?;
+    if data.len() > 1024 * 1024 {
+        return Err("SSH 配置输出超过 1 MiB".into());
+    }
     let value = |name: &str| data.lines().find_map(|line| line.strip_prefix(name));
     if ["proxyjump ", "proxycommand "]
         .iter()
@@ -253,14 +269,13 @@ pub fn run_askpass_helper() -> Option<i32> {
 }
 
 #[cfg(test)]
-#[cfg(unix)]
 mod tests {
     use super::*;
     #[test]
     fn resolved_alias_and_jump_hosts_have_separate_password_scope() {
         let dir = tempfile::tempdir().unwrap();
         let config = dir.path().join("config");
-        let mut command = CommandBuilder::new("ssh");
+        let mut command = CommandBuilder::new(crate::ssh_program().unwrap());
         command.args(["-F", config.to_str().unwrap(), "--", "fixture-alias"]);
         std::fs::write(
             &config,
@@ -276,8 +291,18 @@ mod tests {
     }
     #[test]
     fn wrong_local_capability_cannot_read_saved_password() {
-        let mut command = CommandBuilder::new("ssh");
-        command.args(["-F", "/dev/null", "-l", "fixture", "--", "127.0.0.1"]);
+        let directory = tempfile::tempdir().unwrap();
+        let config = directory.path().join("config");
+        std::fs::write(&config, "").unwrap();
+        let mut command = CommandBuilder::new(crate::ssh_program().unwrap());
+        command.args([
+            "-F",
+            config.to_str().unwrap(),
+            "-l",
+            "fixture",
+            "--",
+            "127.0.0.1",
+        ]);
         let _broker = AskpassBroker::attach(
             &mut command,
             Zeroizing::new("fixture-secret".into()),

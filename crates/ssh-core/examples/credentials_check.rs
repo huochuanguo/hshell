@@ -1,9 +1,19 @@
-//! Run in an isolated Secret Service session using scripts/keyring_smoke.py.
-use ssh_core::{password_for, store_connections, PasswordUpdate, Profile, SystemCredentials};
+//! Linux 使用隔离 Secret Service，Windows 使用随机条目验证凭据管理器。
+use ssh_core::{
+    password_for, store_connections, CredentialStore, PasswordUpdate, Profile, SystemCredentials,
+};
+struct Cleanup(String);
+impl Drop for Cleanup {
+    fn drop(&mut self) {
+        // 即使断言失败，也只清理本次测试创建的临时条目。
+        let _ = SystemCredentials.delete(&self.0);
+    }
+}
 fn main() {
     let directory = tempfile::tempdir().unwrap();
     let path = directory.path().join("profiles.json");
     let id = uuid::Uuid::new_v4().to_string();
+    let _cleanup = Cleanup(id.clone());
     let profile: Profile = serde_json::from_value(serde_json::json!({"id":id,"name":"fixture","host":"fixture.invalid","username":"fixture","port":22,"identityFile":"","group":"","favorite":false})).unwrap();
     let saved = store_connections(
         &path,

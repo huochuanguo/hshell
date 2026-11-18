@@ -26,6 +26,8 @@ pub struct Connection {
     _authentication: SubsystemAuthentication,
     diagnostic: Arc<Mutex<String>>,
     _group: ProcessGroup,
+    #[cfg(windows)]
+    _job: ssh_core::WindowsJob,
 }
 
 struct ProcessGroup(u32);
@@ -73,6 +75,14 @@ impl Connection {
             .spawn()
             .map_err(|e| format!("启动 SFTP 失败：{e}"))?;
         let group = ProcessGroup(child.id().ok_or("SFTP 进程已退出")?);
+        #[cfg(windows)]
+        let job = match ssh_core::WindowsJob::attach(group.0) {
+            Ok(job) => job,
+            Err(error) => {
+                let _ = child.kill().await;
+                return Err(error);
+            }
+        };
         let diagnostic = Arc::new(Mutex::new(String::new()));
         let errors = diagnostic.clone();
         let mut stderr = child.stderr.take().ok_or("SFTP 错误通道不可用")?;
@@ -121,6 +131,8 @@ impl Connection {
             _authentication: auth,
             diagnostic,
             _group: group,
+            #[cfg(windows)]
+            _job: job,
         })
     }
 
@@ -148,11 +160,17 @@ impl Connection {
         while let Some(entry) = entries.next().await {
             let entry = entry.map_err(|e| e.to_string())?;
             let name = entry.filename();
-            if name == Path::new(".") || name == Path::new("..") {
+            if name.as_os_str() == std::ffi::OsStr::new(".")
+                || name.as_os_str() == std::ffi::OsStr::new("..")
+            {
                 continue;
             }
-            // A server-provided directory entry must be a single path component.
-            if name.components().count() != 1 || name.is_absolute() {
+            // 文件名按服务器的 Unix 规则校验，避免 Windows 将反斜杠和冒号误判。
+            #[cfg(unix)]
+            let valid = name.components().count() == 1 && !name.is_absolute();
+            #[cfg(not(unix))]
+            let valid = name.to_str().is_some_and(crate::remote_name);
+            if !valid {
                 return Err("服务器返回无效文件名".into());
             }
             let metadata = entry.metadata();
@@ -213,6 +231,8 @@ impl Connection {
             sftp,
             mut child,
             _group,
+            #[cfg(windows)]
+            _job,
             ..
         } = self;
         let _ = tokio::time::timeout(Duration::from_secs(1), sftp.close()).await;

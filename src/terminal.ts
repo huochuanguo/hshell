@@ -6,6 +6,14 @@ import type { Profile, TerminalEvent } from "./types";
 import "@xterm/xterm/css/xterm.css";
 import { requestAuthentication } from "./auth";
 import { terminalAppearance } from "./appearance";
+import { copyText, pasteText } from "./clipboard";
+import {
+  DEFAULT_TERMINAL_FONT_SIZE,
+  getTerminalFontSize,
+  onTerminalFontSizeChange,
+  setTerminalFontSize,
+  terminalFontShortcut,
+} from "./terminal-font";
 export { loadTerminalFonts } from "./appearance";
 
 const INPUT_LIMIT = 1024 * 1024;
@@ -29,6 +37,7 @@ export class TerminalView {
   private writing = false;
   private sentSize = "";
   private previewInput = "";
+  private stopFontSizeListener: () => void;
 
   constructor(
     profile: Profile,
@@ -51,6 +60,10 @@ export class TerminalView {
     this.term.loadAddon(this.fit);
     this.term.loadAddon(this.search);
     this.observer = new ResizeObserver(() => this.scheduleFit());
+    this.stopFontSizeListener = onTerminalFontSizeChange((size) => {
+      this.term.options.fontSize = size;
+      this.scheduleFit();
+    });
     this.term.onData((data) => this.enqueue(data));
     this.element.addEventListener(
       "paste",
@@ -73,24 +86,38 @@ export class TerminalView {
       true,
     );
     this.term.attachCustomKeyEventHandler((event) => {
-      if (
-        (event.ctrlKey &&
-          !event.shiftKey &&
-          ["k", "b"].includes(event.key.toLowerCase())) ||
-        (event.altKey && /^[1-9]$/.test(event.key))
-      )
+      const fontAction = terminalFontShortcut(event);
+      if (fontAction) {
+        event.preventDefault();
+        if (event.type === "keydown")
+          setTerminalFontSize(
+            fontAction === "reset"
+              ? DEFAULT_TERMINAL_FONT_SIZE
+              : getTerminalFontSize() + (fontAction === "increase" ? 1 : -1),
+          );
+        return false;
+      }
+      if (event.altKey && !event.ctrlKey && /^[1-9]$/.test(event.key))
         return false;
       if (
         event.ctrlKey &&
         event.shiftKey &&
-        ["C", "V", "F", "T", "W"].includes(event.key.toUpperCase())
+        !event.altKey &&
+        ["C", "V", "F", "T", "W", "K", "B"].includes(event.key.toUpperCase())
       ) {
+        event.preventDefault();
         if (event.type === "keydown" && event.key.toUpperCase() === "C") {
           const selection = this.term.getSelection();
           if (selection)
-            void navigator.clipboard
-              .writeText(selection)
-              .catch(() => this.notify("复制失败，请检查剪贴板权限。"));
+            void copyText(selection).catch(() =>
+              this.notify("复制失败，请检查剪贴板权限。"),
+            );
+        }
+        if (event.type === "keydown" && event.key.toUpperCase() === "V") {
+          event.preventDefault();
+          void pasteText()
+            .then((text) => this.paste(text))
+            .catch(() => this.notify("读取剪贴板失败。"));
         }
         return false;
       }
@@ -102,6 +129,20 @@ export class TerminalView {
     parent.append(this.element);
     this.term.open(this.element);
     this.observer.observe(this.element);
+  }
+
+  private async paste(text: string) {
+    if (!text || this.disposed || this.status !== "running") return;
+    if (new TextEncoder().encode(text).length > INPUT_LIMIT) {
+      this.notify("粘贴内容超过 1 MiB，请通过文件传输处理。");
+      return;
+    }
+    if (
+      /[\r\n]/.test(text) &&
+      !(await this.confirmPaste(text.split(/\r\n|\r|\n/).length))
+    )
+      return;
+    if (!this.disposed && this.status === "running") this.term.paste(text);
   }
 
   async start() {
@@ -128,7 +169,7 @@ export class TerminalView {
       if (this.disposed) return;
       if (event instanceof ArrayBuffer) {
         const bytes = new Uint8Array(event);
-        // The acknowledgement only follows parsing. Hidden tabs are still drained.
+        // 解析完成后才确认消费，隐藏标签也必须持续处理输出。
         this.term.write(bytes, () => {
           if (!this.disposed)
             void invoke("ack_output", { id: this.id }).catch(() => {});
@@ -336,6 +377,7 @@ export class TerminalView {
     this.authAbort.abort();
     this.queue = [];
     this.observer.disconnect();
+    this.stopFontSizeListener();
     cancelAnimationFrame(this.frame);
     this.term.dispose();
     this.element.remove();

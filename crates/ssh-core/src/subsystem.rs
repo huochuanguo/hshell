@@ -17,8 +17,34 @@ pub fn sftp_command(
     password: Option<Zeroizing<String>>,
     prompt: impl Fn(SessionEvent) -> bool + Send + 'static,
 ) -> Result<(Command, SubsystemAuthentication), String> {
+    subsystem_command(ssh_command(profile)?, password, prompt)
+}
+
+#[cfg(feature = "test-support")]
+pub fn sftp_command_with_config(
+    profile: &Profile,
+    config: &std::path::Path,
+    password: Option<Zeroizing<String>>,
+    prompt: impl Fn(SessionEvent) -> bool + Send + 'static,
+) -> Result<(Command, SubsystemAuthentication), String> {
     let mut builder = ssh_command(profile)?;
-    builder.get_argv_mut()[1] = "-T".into();
+    builder
+        .get_argv_mut()
+        .splice(1..1, ["-F".into(), config.as_os_str().to_owned()]);
+    subsystem_command(builder, password, prompt)
+}
+
+fn subsystem_command(
+    mut builder: portable_pty::CommandBuilder,
+    password: Option<Zeroizing<String>>,
+    prompt: impl Fn(SessionEvent) -> bool + Send + 'static,
+) -> Result<(Command, SubsystemAuthentication), String> {
+    let terminal = builder
+        .get_argv_mut()
+        .iter_mut()
+        .find(|arg| arg.as_os_str() == std::ffi::OsStr::new("-tt"))
+        .ok_or("SSH 终端参数缺失")?;
+    *terminal = "-T".into();
     builder.get_argv_mut().insert(1, "-s".into());
     builder.arg("sftp");
     let auth = AskpassBroker::attach_optional(
@@ -36,7 +62,7 @@ pub fn sftp_command(
     let mut command = Command::new(&args[0]);
     command.args(&args[1..]);
     command.envs(builder.iter_extra_env_as_str());
-    // Preserve the exact helper path, including non-UTF-8 Unix installations.
+    // 保留完整的认证助手路径，包括 Unix 下的非 UTF-8 安装路径。
     if let Some(helper) = builder.get_env("SSH_ASKPASS") {
         command.env("SSH_ASKPASS", helper);
     }

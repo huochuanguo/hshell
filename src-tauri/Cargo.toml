@@ -1,6 +1,6 @@
 [package]
 name = "hshell-desktop"
-version = "0.2.3"
+version = "0.3.4"
 description = "A quiet, lightweight SSH workspace"
 edition = "2021"
 rust-version = "1.90"
@@ -15,3 +15,7 @@ tauri-build = { version = "2", features = [] }
 tauri = { version = "2", features = [] }
 serde = { version = "1", features = ["derive"] }
 ssh-core = { path = "../crates/ssh-core" }
+hshell-sftp = { path = "../crates/sftp" }
+tauri-plugin-dialog = "2"
+tauri-plugin-clipboard-manager = "2"
+uuid = { version = "1", features = ["v4"] }

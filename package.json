@@ -1,6 +1,6 @@
 {
   "name": "hshell",
-  "version": "0.2.3",
+  "version": "0.3.4",
   "private": true,
   "type": "module",
   "scripts": {
@@ -13,10 +13,12 @@
     "desktop": "tauri dev",
     "bundle": "tauri build",
     "test:core": "cargo test -p ssh-core",
-    "test:frontend": "node --experimental-strip-types --test scripts/quick-connect.test.mjs scripts/window-close.test.mjs"
+    "test:frontend": "node --experimental-strip-types --test scripts/quick-connect.test.mjs scripts/window-close.test.mjs scripts/paths.test.mjs scripts/terminal-font.test.mjs"
   },
   "dependencies": {
     "@tauri-apps/api": "^2.12.4",
+    "@tauri-apps/plugin-clipboard-manager": "^2.5.0",
+    "@tauri-apps/plugin-dialog": "^2.8.4",
     "@xterm/addon-fit": "^0.11.0",
     "@xterm/addon-search": "^0.16.0",
     "@xterm/xterm": "^6.0.0",

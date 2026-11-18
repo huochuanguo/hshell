@@ -17,6 +17,7 @@ zeroize = "1"
 
 [target.'cfg(windows)'.dependencies]
 keyring = { version = "3.6.3", features = ["windows-native"] }
+windows-sys = { version = "0.61", features = ["Win32_Security", "Win32_System_JobObjects", "Win32_System_Threading"] }
 
 [target.'cfg(target_os = "linux")'.dependencies]
 keyring = { version = "3.6.3", features = ["async-secret-service", "async-io", "crypto-rust"] }

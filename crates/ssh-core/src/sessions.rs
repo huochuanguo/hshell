@@ -35,18 +35,27 @@ struct Flow {
 }
 
 struct Session {
-    master: Mutex<Box<dyn MasterPty + Send>>,
+    master: Mutex<Option<Box<dyn MasterPty + Send>>>,
     writer: Mutex<Box<dyn Write + Send>>,
     killer: Mutex<Box<dyn ChildKiller + Send + Sync>>,
     flow: Mutex<Flow>,
     ready: Condvar,
     askpass: Option<AskpassBroker>,
+    #[cfg(windows)]
+    job: crate::WindowsJob,
 }
 
 impl Session {
     fn stop(&self) {
         self.flow.lock().unwrap().closed = true;
         self.ready.notify_all();
+        #[cfg(windows)]
+        {
+            self.job.terminate();
+            // 终端尚未挂载就关闭时也要完成 ConPTY 的初始光标握手，才能释放控制台。
+            let mut writer = self.writer.lock().unwrap();
+            let _ = writer.write_all(b"\x1b[1;1R").and_then(|_| writer.flush());
+        }
         let _ = self.killer.lock().unwrap().kill();
     }
 }
@@ -71,7 +80,7 @@ fn size(cols: u16, rows: u16) -> Result<PtySize, String> {
 
 pub fn ssh_command(profile: &Profile) -> Result<CommandBuilder, String> {
     profile.validate()?;
-    let mut cmd = CommandBuilder::new(if cfg!(windows) { "ssh.exe" } else { "ssh" });
+    let mut cmd = CommandBuilder::new(crate::ssh_program()?);
     cmd.args([
         "-tt",
         "-e",
@@ -84,7 +93,7 @@ pub fn ssh_command(profile: &Profile) -> Result<CommandBuilder, String> {
         "ServerAliveCountMax=3",
         "-o",
         "ConnectTimeout=15",
-        // A tab owns its process: don't leave multiplexing masters alive on exit.
+        // 每个标签拥有独立进程，退出时不能遗留复用连接的主进程。
         "-o",
         "ControlMaster=no",
         "-o",
@@ -105,7 +114,7 @@ pub fn ssh_command(profile: &Profile) -> Result<CommandBuilder, String> {
     }
     cmd.args(["--", &profile.host]);
     cmd.env("TERM", "xterm-256color");
-    // Askpass would hide prompts in another app or fail in headless sessions.
+    // 未保存密码的终端认证继续直接显示在 PTY 中。
     cmd.env("SSH_ASKPASS_REQUIRE", "never");
     Ok(cmd)
 }
@@ -226,15 +235,43 @@ impl SessionManager {
             .spawn_command(command)
             .map_err(|e| format!("启动 OpenSSH 失败，请检查是否安装 SSH 客户端：{e}"))?;
         drop(pair.slave);
+        #[cfg(windows)]
+        let job = match child
+            .process_id()
+            .ok_or("SSH 进程已退出".into())
+            .and_then(crate::WindowsJob::attach)
+        {
+            Ok(job) => job,
+            Err(error) => {
+                let _ = child.kill();
+                let _ = child.wait();
+                return Err(error);
+            }
+        };
         let session = Arc::new(Session {
-            master: Mutex::new(pair.master),
+            master: Mutex::new(Some(pair.master)),
             writer: Mutex::new(writer),
             killer: Mutex::new(child.clone_killer()),
             flow: Mutex::new(Flow::default()),
             ready: Condvar::new(),
             askpass,
+            #[cfg(windows)]
+            job,
         });
         sessions.insert(id.clone(), session.clone());
+        #[cfg(windows)]
+        let exit = {
+            let (sender, receiver) = std::sync::mpsc::sync_channel(1);
+            let session = session.clone();
+            thread::spawn(move || {
+                let result = child.wait();
+                // ConPTY 在主进程退出后仍持有输出管道，须关闭控制台才能让读取端收到 EOF。
+                let master = session.master.lock().unwrap().take();
+                drop(master);
+                let _ = sender.send(result);
+            });
+            receiver
+        };
         let manager = self.clone();
         thread::spawn(move || {
             let mut buf = vec![0; OUTPUT_CHUNK];
@@ -245,6 +282,7 @@ impl SessionManager {
                     while flow.pending >= OUTPUT_WINDOW && !flow.closed {
                         flow = session.ready.wait(flow).unwrap();
                     }
+                    #[cfg(not(windows))]
                     if flow.closed {
                         break;
                     }
@@ -253,6 +291,8 @@ impl SessionManager {
                     Ok(0) => break,
                     Ok(n) => n,
                     Err(e) if e.kind() == std::io::ErrorKind::Interrupted => continue,
+                    #[cfg(windows)]
+                    Err(e) if e.kind() == std::io::ErrorKind::BrokenPipe => break,
                     // Linux PTYs report EIO once the slave closes.
                     Err(e) if cfg!(target_os = "linux") && e.raw_os_error() == Some(5) => break,
                     Err(e) => {
@@ -260,16 +300,27 @@ impl SessionManager {
                         break;
                     }
                 };
+                #[cfg(windows)]
+                if session.flow.lock().unwrap().closed {
+                    // 主动关闭时继续排空管道，避免 ClosePseudoConsole 等待读取而阻塞。
+                    continue;
+                }
                 session.flow.lock().unwrap().pending += 1;
                 if !sink(SessionEvent::Data(buf[..length].to_vec())) {
                     session.stop();
+                    #[cfg(not(windows))]
                     break;
                 }
             }
             if read_error.is_some() {
                 session.stop();
             }
+            #[cfg(not(windows))]
             let result = child.wait();
+            #[cfg(windows)]
+            let result = exit
+                .recv()
+                .unwrap_or_else(|error| Err(std::io::Error::other(error)));
             let (code, error) = match result {
                 Ok(status) => (Some(status.exit_code()), read_error),
                 Err(e) => (None, Some(e.to_string())),
@@ -307,6 +358,8 @@ impl SessionManager {
             .master
             .lock()
             .unwrap()
+            .as_ref()
+            .ok_or("SSH 会话已结束")?
             .resize(dimensions)
             .map_err(|e| e.to_string())
     }
@@ -341,10 +394,8 @@ impl SessionManager {
 mod tests {
     use super::*;
     #[cfg(unix)]
-    use std::{
-        sync::mpsc,
-        time::{Duration, Instant},
-    };
+    use std::time::Instant;
+    use std::{sync::mpsc, time::Duration};
 
     #[test]
     fn command_preserves_config_and_enforces_host_verification() {
@@ -435,13 +486,14 @@ mod tests {
 
     #[test]
     #[ignore = "Run with python3 scripts/ssh_smoke.py (isolated loopback SSH server)"]
-    #[cfg(unix)]
     fn openssh_fixture() {
         use std::{env, ffi::OsString, fs};
         let port: u16 = env::var("HSHELL_TEST_PORT").unwrap().parse().unwrap();
         let fingerprint = env::var("HSHELL_TEST_FINGERPRINT").unwrap();
         let dir = tempfile::tempdir().unwrap();
         let known_hosts = dir.path().join("known_hosts");
+        let config = dir.path().join("empty_config");
+        fs::write(&config, "").unwrap();
         let manager = SessionManager::default();
         for method in [
             "saved-password",
@@ -449,6 +501,8 @@ mod tests {
             "saved-host-declined",
             "password",
             "publickey",
+            "close-active",
+            "sink-closed",
             "changed-host",
             "saved-changed-host",
         ] {
@@ -479,11 +533,17 @@ mod tests {
             let mut command = ssh_command(&profile).unwrap();
             let overrides = [
                 "-F".to_string(),
-                "/dev/null".to_string(),
+                config.to_string_lossy().into_owned(),
                 "-o".to_string(),
-                format!("UserKnownHostsFile={}", known_hosts.display()),
+                format!(
+                    "UserKnownHostsFile=\"{}\"",
+                    known_hosts.to_string_lossy().replace('\\', "/")
+                ),
                 "-o".to_string(),
-                "GlobalKnownHostsFile=/dev/null".to_string(),
+                format!(
+                    "GlobalKnownHostsFile=\"{}\"",
+                    config.to_string_lossy().replace('\\', "/")
+                ),
                 "-o".to_string(),
                 format!(
                     "PreferredAuthentications={}",
@@ -529,7 +589,7 @@ mod tests {
                         if data {
                             ack.acknowledge(&ack_id);
                         }
-                        ok
+                        ok && !(method == "sink-closed" && data)
                     },
                 )
                 .unwrap();
@@ -537,8 +597,14 @@ mod tests {
             let mut trusted = false;
             let mut authenticated = false;
             let mut sent = false;
+            #[cfg(windows)]
+            let mut cursor_queries = 0;
             loop {
-                match rx.recv_timeout(Duration::from_secs(10)).unwrap() {
+                match rx
+                    .recv_timeout(Duration::from_secs(10))
+                    .unwrap_or_else(|error| {
+                        panic!("OpenSSH {method} 事件等待失败：{error:?}，终端输出：{output:?}")
+                    }) {
                     SessionEvent::Auth {
                         request_id,
                         prompt,
@@ -566,21 +632,58 @@ mod tests {
                         }
                     }
                     SessionEvent::Data(data) => {
+                        if method == "sink-closed" {
+                            continue;
+                        }
                         output.push_str(&String::from_utf8_lossy(&data));
+                        #[cfg(windows)]
+                        {
+                            // 夹具没有 xterm，需自行回复 ConPTY 启动时的光标位置查询。
+                            let queries = output.matches("\x1b[6n").count();
+                            for _ in cursor_queries..queries {
+                                manager.write(&id, b"\x1b[1;1R").unwrap();
+                            }
+                            cursor_queries = queries;
+                        }
                         if !trusted && output.contains("(yes/no/[fingerprint])?") {
                             assert_eq!(method, "password");
                             assert!(output.contains(&fingerprint));
-                            manager.write(&id, b"yes\n").unwrap();
+                            manager
+                                .write(&id, if cfg!(windows) { b"yes\r" } else { b"yes\n" })
+                                .unwrap();
                             trusted = true;
                         }
                         if !authenticated && output.contains("password:") {
                             assert_eq!(method, "password");
-                            manager.write(&id, b"fixture-only\n").unwrap();
+                            manager
+                                .write(
+                                    &id,
+                                    if cfg!(windows) {
+                                        b"fixture-only\r"
+                                    } else {
+                                        b"fixture-only\n"
+                                    },
+                                )
+                                .unwrap();
                             authenticated = true;
                         }
                         if !sent && output.contains("fixture-ready") {
+                            if method == "close-active" {
+                                manager.close(&id);
+                                continue;
+                            }
                             manager.resize(&id, 100, 35).unwrap();
-                            manager.write(&id, "hello-中文\n".as_bytes()).unwrap();
+                            manager
+                                .write(
+                                    &id,
+                                    if cfg!(windows) {
+                                        "hello-中文\r"
+                                    } else {
+                                        "hello-中文\n"
+                                    }
+                                    .as_bytes(),
+                                )
+                                .unwrap();
                             sent = true;
                         }
                     }
@@ -592,6 +695,9 @@ mod tests {
                                 output.contains("REMOTE HOST IDENTIFICATION HAS CHANGED"),
                                 "{output}"
                             );
+                            assert!(!sent);
+                        } else if matches!(method, "close-active" | "sink-closed") {
+                            assert_ne!(code, Some(0), "{output}");
                             assert!(!sent);
                         } else if method == "saved-host-declined" {
                             assert_eq!(code, Some(255), "{output}");

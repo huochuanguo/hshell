@@ -59,6 +59,15 @@ jobs:
       - name: Isolated system keyring integration
         if: runner.os == 'Linux'
         run: python3 scripts/keyring_smoke.py
+      - name: Windows OpenSSH and Credential Manager integration
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          python -m venv target/windows-test-venv
+          target/windows-test-venv/Scripts/python -m pip install paramiko==3.5.1
+          target/windows-test-venv/Scripts/python scripts/ssh_smoke.py
+          target/windows-test-venv/Scripts/python scripts/windows_sftp_smoke.py
+          cargo run -p ssh-core --example credentials_check --locked
       - name: Native terminal integration
         if: runner.os == 'Linux'
         env:

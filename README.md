@@ -1,8 +1,8 @@
 # HShell
 
-面向日常服务器运维的轻量 SSH 桌面工作空间。首版聚焦连接管理与多标签终端，目标平台为 Ubuntu 22.04 / 24.04，预留 Windows 10 1809+ / Windows 11 适配。
+面向日常服务器运维的轻量 SSH 桌面工作空间。支持连接管理、多标签终端和 SFTP，目标平台为 Ubuntu 22.04 / 24.04 和 Windows 10 1809+ / Windows 11。Windows 构建与验证范围见 [Windows 客户端](docs/windows.md)。
 
-Ubuntu 0.3.4 使用 **Rust + GTK 3 + VTE + 系统 OpenSSH**，终端直接读取 PTY，不启动 WebKit 或本地 HTTP 服务。Windows 继续保留 Tauri 2 / xterm.js 前端与共享 Rust 核心，尚待实机适配。密码可选存入系统凭据库。详细取舍见 [技术方案](docs/architecture.md)，实测边界见 [验证记录](docs/verification.md)。
+Ubuntu 0.3.4 使用 **Rust + GTK 3 + VTE + 系统 OpenSSH**，终端直接读取 PTY，不启动 WebKit 或本地 HTTP 服务。Windows 使用 Tauri 2 / xterm.js 前端与共享 Rust SSH/SFTP 核心，已通过 Windows 11 回环 SSH、SFTP 双向续传及凭据管理器验证。密码可选存入系统凭据库。详细取舍见 [技术方案](docs/architecture.md)，实测边界见 [验证记录](docs/verification.md)。
 
 ## 已实现
 
@@ -19,8 +19,8 @@ Ubuntu 0.3.4 使用 **Rust + GTK 3 + VTE + 系统 OpenSSH**，终端直接读取
 - 主机列表按行增量更新，首次加载分批创建；配置校验快照在文件身份变化后刷新，避免每次连接重复解析。
 - 主机搜索复用已有控件与检索字符串；终端搜索复用编译结果。关闭标签后延迟合并回收空闲堆页（包括仍有其他会话时），重新连接会取消尚未开始的回收。
 - Ubuntu 终端由 VTE 直接解析、渲染、滚动，不经过 JS 或 IPC；隐藏标签继续处理输出。Tauri 前端保留二进制 IPC 与输出背压。
-- 连接表单支持保存、替换、清除登录密码；Linux 使用 Secret Service，Windows 预留 Credential Manager。
-- Ubuntu SFTP：右侧文件栏、目录导航、上传/下载、双向断点续传、暂停/继续、重启后恢复、新建目录、重命名及删除文件/空目录。最多两路传输，文件内容不进入界面线程。
+- 连接表单支持保存、替换、清除登录密码；Linux 使用 Secret Service，Windows 使用 Credential Manager。
+- Ubuntu / Windows SFTP：右侧文件栏、目录导航、上传/下载、双向断点续传、暂停/继续、重启后恢复、新建目录、重命名及删除文件/空目录。最多两路传输，文件内容不进入界面线程。
 - 文件栏按类型区分图标：目录柔金色、链接青绿色、代码冷蓝色、压缩包淡紫色、图片灰绿色；目录与链接名称同步着色，普通文件名保持浅灰。六类图标缓存复用，不增加远程查询。
 
 在终端会话中点击「文件」打开 SFTP。收起文件栏会断开浏览连接，后台传输继续；退出应用保留断点，再次打开文件栏后点击「继续」。续传会在后台完整核对已传前缀，大文件可能有一段校验时间。移除未完成任务会明确保留临时文件路径，按需清理。断点记录不含密码。详见 [SFTP 设计](docs/sftp-design.md)。
@@ -75,15 +75,17 @@ Ubuntu 22.04 的发布包必须在 Ubuntu 22.04 构建，再在 22.04 和 24.04 
 
 源码保留在 [Gitee](https://gitee.com/huochuanguo/hshell)，并同步到 [GitHub 私有仓库](https://github.com/huochuanguo/hshell)。向 GitHub 推送与原生版本一致的 `vMAJOR.MINOR.PATCH` 标签后，[自动发布流程](.github/workflows/release.yml) 在 Ubuntu 22.04 构建，完成 SFTP 与双系统安装检查，再把 `.deb` 和 SHA256 校验文件上传到 [GitHub 发行版](https://github.com/huochuanguo/hshell/releases)。安装包不进入 Git 源码。私有发行版下载需要 GitHub 仓库访问权限。具体步骤及失败处理见 [发布说明](docs/releasing.md)。
 
-Windows 开发需要 MSVC C++ Build Tools、Rust MSVC 工具链、Node.js、WebView2 Runtime，以及 Windows「可选功能」中的 OpenSSH 客户端：
+Windows 开发需要 MSVC C++ Build Tools（含 Windows SDK）、Rust MSVC 工具链、Node.js 24 LTS、WebView2 Runtime，以及 Windows「可选功能」中的 OpenSSH 客户端。保存密码及 SFTP 需要 OpenSSH 8.4+：
 
 ```powershell
 npm ci
 npm run desktop
-npm run bundle -- --bundles nsis
+npm run bundle -- --ci
+# 完整检查、回环 SSH/SFTP、凭据管理器验收及 NSIS 打包
+./scripts/build_windows.ps1
 ```
 
-Windows 使用保留的 Tauri 前端，通过 `portable-pty` 使用 ConPTY；Linux 原生 crate 在非 Linux 平台不加载 GTK 依赖。Windows 当前属于适配预留，尚需实机验证，尤其是中文输入、剪贴板、密钥路径和退出清理。
+Windows 通过 `portable-pty` 使用 ConPTY；Linux 原生 crate 在非 Linux 平台不加载 GTK 依赖。Windows 已接入 SFTP 文件栏、原生剪贴板、Windows Job Object 进程树清理及中文 NSIS 配置；远程路径统一按 Unix 规则处理。本机已通过真实 SSH 认证与退出、SFTP 跨进程双向续传和凭据库检查；Windows 10、物理中文输入、公网/跳板机和长时运行仍待实测，详见 [Windows 验证说明](docs/windows.md)。
 
 ## 连接方式
 

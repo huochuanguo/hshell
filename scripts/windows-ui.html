@@ -1,0 +1,174 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <title>HShell Windows UI 夹具</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module">
+      // 仅用于浏览器界面回归；所有 IPC 均为模拟，不读取配置或建立网络连接。
+      import { mockIPC, mockWindows } from "@tauri-apps/api/mocks";
+      import { emit } from "@tauri-apps/api/event";
+      const profile = {
+        id: "windows-ui-fixture",
+        name: "Windows 界面夹具",
+        host: "fixture.invalid",
+        username: "fixture",
+        port: 22,
+        identityFile: "C:\\Users\\测试用户\\.ssh\\id_ed25519",
+        group: "界面验证",
+        favorite: true,
+        passwordSaved: false,
+      };
+      let browser,
+        terminal,
+        tasks = [],
+        entries = [
+          { name: "中文 目录", directory: true, size: null },
+          { name: "链接", symlink: true, size: 9 },
+          { name: "server.ts", size: 2048 },
+          { name: "backup.tar.gz", size: 10485760 },
+          { name: "image.png", size: 8096 },
+          { name: '<文件 & "名称">.txt', size: 123 },
+        ].map((e) => ({
+          directory: false,
+          symlink: false,
+          modified: 1780000000,
+          ...e,
+        }));
+      mockWindows("main");
+      globalThis.isTauri = true;
+      const log = [];
+      function record(cmd, args) {
+        log.push({ cmd, ...args });
+        let output = document.querySelector("#fixture-output");
+        if (!output) {
+          output = document.createElement("output");
+          output.id = "fixture-output";
+          output.hidden = true;
+          document.body.append(output);
+        }
+        output.textContent = JSON.stringify(log);
+      }
+      mockIPC(
+        async (cmd, args) => {
+          record(cmd, args);
+          if (cmd === "get_profiles") return [profile];
+          if (cmd === "environment")
+            return {
+              platform: "windows",
+              sshVersion: "Windows UI 夹具 · 无真实 SSH",
+              configPath: "仅模拟数据，不读取用户配置",
+            };
+          if (cmd === "sftp_tasks") return tasks;
+          if (cmd === "start_session") {
+            terminal = args.onEvent;
+            setTimeout(
+              () =>
+                terminal.onmessage(
+                  new TextEncoder().encode(
+                    "\x1b[34mWindows UI 夹具 · 未连接服务器\x1b[0m\r\n中文字符、终端尺寸与文件栏交互验证\r\nfixture $ ",
+                  ).buffer,
+                ),
+              30,
+            );
+          }
+          if (cmd === "sftp_open") {
+            browser = args.onEvent;
+            setTimeout(() => browser.onmessage({ type: "ready" }), 10);
+          }
+          if (cmd === "sftp_request") {
+            const r = args.request;
+            if (r.type === "list") {
+              const path = r.path === "." ? "/home/测试用户" : r.path;
+              setTimeout(() => {
+                browser.onmessage({
+                  type: "entries",
+                  generation: r.generation,
+                  entries: path.endsWith("中文 目录") ? [] : entries,
+                });
+                browser.onmessage({
+                  type: "listed",
+                  generation: r.generation,
+                  path,
+                  error: null,
+                });
+              }, 10);
+            } else {
+              if (r.type === "mkdir")
+                entries = [
+                  ...entries,
+                  {
+                    name: r.name,
+                    directory: true,
+                    symlink: false,
+                    size: null,
+                    modified: null,
+                  },
+                ];
+              if (r.type === "rename")
+                entries = entries.map((e) =>
+                  e.name === r.path.split("/").at(-1)
+                    ? { ...e, name: r.name }
+                    : e,
+                );
+              if (r.type === "remove")
+                entries = entries.filter(
+                  (e) => e.name !== r.path.split("/").at(-1),
+                );
+              setTimeout(
+                () => browser.onmessage({ type: "changed", error: null }),
+                10,
+              );
+            }
+          }
+          if (cmd === "plugin:dialog|open")
+            return "C:\\Users\\测试用户\\上传 文件.txt";
+          if (cmd === "plugin:dialog|save")
+            return "C:\\Users\\测试用户\\下载 文件.txt";
+          if (cmd === "sftp_enqueue") {
+            const task = {
+              id: crypto.randomUUID(),
+              name: profile.name,
+              host: profile.host,
+              direction: args.direction,
+              local: args.local,
+              remote: args.remotePath,
+              partial: args.local + ".part",
+              status: "running",
+              bytes: 1048576,
+              total: 8388608,
+              verifying: false,
+              error: null,
+            };
+            tasks.push(task);
+            await emit("sftp-transfer", {
+              type: "task",
+              task: structuredClone(task),
+            });
+            return task.id;
+          }
+          if (cmd === "sftp_task_action") {
+            const task = tasks.find((t) => t.id === args.id);
+            if (args.action === "remove")
+              tasks = tasks.filter((t) => t !== task);
+            else {
+              task.status = args.action === "pause" ? "paused" : "running";
+              await emit("sftp-transfer", {
+                type: "task",
+                task: structuredClone(task),
+              });
+            }
+          }
+          if (cmd === "sftp_busy")
+            return tasks.some((t) => t.status === "running");
+          return null;
+        },
+        { shouldMockEvents: true },
+      );
+      await import("/src/main.ts");
+    </script>
+  </body>
+</html>

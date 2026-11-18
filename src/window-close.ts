@@ -11,6 +11,8 @@ interface Session {
 interface CloseOptions {
   sessions(): Iterable<Session>;
   confirm(): Promise<boolean>;
+  hasBackgroundWork?(): Promise<boolean>;
+  cleanup?(): Promise<void>;
   destroy(): Promise<void>;
   reportError(message: string): void;
 }
@@ -18,8 +20,7 @@ interface CloseOptions {
 export function createCloseHandler(options: CloseOptions) {
   let busy = false;
   return async (event: CloseEvent) => {
-    // Tauri's listener otherwise calls destroy implicitly. Own this sequence
-    // explicitly so repeated requests cannot bypass confirmation or cleanup.
+    // 统一管理确认和清理，重复关闭请求不能绕过正在进行的退出流程。
     event.preventDefault();
     if (busy) return;
     busy = true;
@@ -27,13 +28,14 @@ export function createCloseHandler(options: CloseOptions) {
     try {
       const sessions = [...options.sessions()];
       if (
-        sessions.some((view) => view.status !== "exited" && !view.preview) &&
+        (sessions.some((view) => view.status !== "exited" && !view.preview) ||
+          (await options.hasBackgroundWork?.())) &&
         !(await options.confirm())
       )
         return;
-      // Native WindowEvent::Destroyed also closes every managed SSH process.
-      // An individual terminal's disposal error must not trap the whole app.
+      // 原生销毁回调也会清理进程；单个终端清理失败不能阻止整个应用退出。
       await Promise.allSettled(sessions.map((view) => view.dispose()));
+      await options.cleanup?.();
       await options.destroy();
       destroyed = true;
     } catch (error) {

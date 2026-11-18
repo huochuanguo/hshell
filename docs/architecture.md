@@ -2,7 +2,7 @@
 
 ## HShell 0.3.0 的选择
 
-Ubuntu 改用 **Rust + GTK 3 + VTE + 系统 OpenSSH**。Windows 预留原有 Tauri / xterm.js 前端；两者共享不依赖 GUI 的 `ssh-core`，连接配置和凭据格式相同。当前原生前端针对 Ubuntu amd64，Windows 尚未实机验收。
+Ubuntu 改用 **Rust + GTK 3 + VTE + 系统 OpenSSH**。Windows 0.3.4 使用 Tauri / xterm.js 前端；两者共享不依赖 GUI 的 `ssh-core` 和 `hshell-sftp`，连接配置和凭据格式相同。当前原生 GTK 前端针对 Ubuntu amd64，Windows 11 已通过回环 SSH、SFTP 和凭据库检查，具体范围见 [Windows 客户端](windows.md)。
 
 0.1.4 使用系统 WebView，安装包小，但运行时仍有 WebKit、渲染与网络进程。在同一 Ubuntu 24 X11 桌面、1280×820 空窗口、相同共存应用下，旧发布版两轮中位数约 142 MiB PSS / 440 MiB RSS。关闭 WebKit 合成、关闭硬件加速、调整页面缓存后，PSS 仍约 142 MiB。主要开销是运行时本身，继续微调 CSS 或字体无法实现同等幅度的下降。
 
@@ -17,7 +17,8 @@ Ubuntu 原生 GTK 界面（连接、标签、搜索、剪贴板）
   └─ Rust ssh-core / DirectSession（校验、PTY、子进程、askpass）
       └─ 系统 OpenSSH（协议、认证、known_hosts、ssh_config）
 
-Windows 预留：TypeScript / xterm.js → Tauri IPC → ssh-core → ConPTY → ssh.exe
+Windows：TypeScript / xterm.js → Tauri IPC → ssh-core → ConPTY → 系统 ssh.exe
+两端 SFTP：后台 hshell-sftp → 独立 OpenSSH 管道 → SFTP 子系统
 ```
 
 原生输出不经过 Rust 字符串转换、JSON 序列化、WebView IPC 或 JS 事件循环。VTE 直接读取 PTY，主线程负责 GTK 事件；配置、凭据库和启动进程在工作线程执行。每个会话只保留等待 SSH 退出的阻塞线程；保存密码的 askpass 接收线程使用阻塞 accept，关闭时唤醒，不做固定周期轮询。

@@ -1,4 +1,5 @@
 import type { ITheme } from "@xterm/xterm";
+import { getTerminalFontSize } from "./terminal-font";
 
 let fontsReady: Promise<void> | undefined;
 
@@ -41,7 +42,7 @@ export function terminalAppearance() {
   };
   return {
     fontFamily: color("mono"),
-    fontSize: 15,
+    fontSize: getTerminalFontSize(),
     fontWeight: "400" as const,
     fontWeightBold: "600" as const,
     lineHeight: 1.36,

@@ -818,8 +818,29 @@ h1 {
   min-width: 0;
 }
 .terminal-toolbar > div:first-child {
+  flex: 1;
   color: var(--muted);
   overflow: hidden;
+}
+.terminal-toolbar > div:last-child {
+  flex-shrink: 0;
+}
+.terminal-font-controls {
+  display: flex;
+  align-items: center;
+  gap: 1px;
+}
+.terminal-font-value {
+  min-width: 39px;
+  height: 23px;
+  padding: 0 3px;
+  border-radius: 3px;
+  color: var(--muted);
+  font: 11px var(--mono);
+  font-variant-numeric: tabular-nums;
+}
+.terminal-font-value:hover {
+  background: var(--hover);
 }
 #terminal-address {
   font: 11px var(--mono);
@@ -860,6 +881,7 @@ h1 {
   flex: 1;
   position: relative;
   min-height: 0;
+  min-width: 0;
 }
 .terminal-pane {
   position: absolute;

@@ -1,5 +1,6 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+mod files;
 use serde::Serialize;
 use ssh_core::{Profile, SessionEvent, SessionManager};
 use std::{
@@ -77,7 +78,7 @@ async fn start_session(
     let path = state.profiles_path.clone();
     let lock = state.config_lock.clone();
     tauri::async_runtime::spawn_blocking(move || {
-        // Trust the canonical saved profile, not a frontend passwordSaved flag.
+        // 只从匹配的已保存连接读取凭据，不能信任前端的 passwordSaved 标记。
         let saved = {
             let _guard = lock.lock().unwrap();
             ssh_core::load_profiles(&path)?.into_iter().find(|p| {
@@ -168,7 +169,7 @@ struct Environment {
 async fn environment(state: State<'_, AppState>) -> Result<Environment, String> {
     let config_path = state.profiles_path.display().to_string();
     tauri::async_runtime::spawn_blocking(move || {
-        let mut command = std::process::Command::new(if cfg!(windows) { "ssh.exe" } else { "ssh" });
+        let mut command = std::process::Command::new(ssh_core::ssh_program()?);
         #[cfg(windows)]
         {
             use std::os::windows::process::CommandExt;
@@ -230,7 +231,15 @@ fn main() {
         std::process::exit(code);
     }
     let app = tauri::Builder::default()
+        .plugin(tauri_plugin_dialog::init())
+        .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
+            let config = app.path().app_config_dir()?;
+            app.manage(files::Files::new(
+                app.handle().clone(),
+                config.join("profiles.json"),
+                config.join("transfers"),
+            ));
             app.manage(AppState {
                 sessions: SessionManager::default(),
                 profiles_path: app.path().app_config_dir()?.join("profiles.json"),
@@ -248,6 +257,15 @@ fn main() {
             close_session,
             environment,
             auth_respond,
+            files::sftp_open,
+            files::sftp_request,
+            files::sftp_close,
+            files::sftp_auth,
+            files::sftp_tasks,
+            files::sftp_enqueue,
+            files::sftp_task_action,
+            files::sftp_busy,
+            files::sftp_shutdown,
             #[cfg(feature = "perf-probe")]
             perf_result,
             #[cfg(feature = "perf-probe")]
@@ -282,6 +300,8 @@ fn main() {
                 }
         ) {
             handle.state::<AppState>().sessions.close_all();
+            handle.state::<files::Files>().shutdown();
         }
     });
+    hshell_sftp::wait_for_shutdown(std::time::Duration::from_secs(4));
 }

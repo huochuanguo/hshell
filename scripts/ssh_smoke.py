@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Loopback-only SSH integration fixture; requires Python paramiko.
+"""回环 SSH 集成夹具，需要 Python paramiko。
 
-Creates disposable keys and never reads/writes the user's SSH configuration.
-The fixture accepts one known test password/key and does not execute commands.
+创建一次性密钥，不访问用户的 SSH 配置；服务端只接受测试凭据，不执行命令。
 """
 import base64
 import hashlib
@@ -64,12 +63,12 @@ def serve(client, host_key, public_key):
             if not data:
                 break
             line += data
-            if b"\n" in line:
+            if b"\n" in line or b"\r" in line:
                 channel.sendall(b"fixture-received:" + line + b"\r\n")
                 channel.send_exit_status(0)
                 channel.shutdown_write()
                 channel.close()
-                transport.join(timeout=2)  # Let OpenSSH receive exit-status and close cleanly.
+                transport.join(timeout=2)  # 等待 OpenSSH 收到退出状态后正常关闭。
                 break
     except (EOFError, OSError, paramiko.SSHException):
         pass
@@ -85,6 +84,10 @@ def main():
         key_path = str(Path(directory) / "id_rsa")
         user_key.write_private_key_file(key_path)
         os.chmod(key_path, 0o600)
+        if os.name == "nt":
+            # Windows OpenSSH 按 ACL 检查私钥，只修改本夹具创建的临时文件。
+            import getpass
+            subprocess.run(["icacls", key_path, "/inheritance:r", "/grant:r", f"{getpass.getuser()}:(R)"], check=True, capture_output=True)
         listener = socket.socket()
         listener.bind(("127.0.0.1", 0))
         listener.listen(8)
@@ -106,7 +109,7 @@ def main():
             "HSHELL_TEST_WRONG_KEY": wrong_key.get_base64(),
         })
         subprocess.run(["cargo", "build", "-p", "ssh-core", "--example", "askpass", "--locked"], check=True)
-        env["HSHELL_TEST_ASKPASS"] = str(Path("target/debug/examples/askpass").resolve())
+        env["HSHELL_TEST_ASKPASS"] = str(Path("target/debug/examples/askpass" + (".exe" if os.name == "nt" else "")).resolve())
         try:
             result = subprocess.run(["cargo", "test", "-p", "ssh-core", "openssh_fixture", "--", "--ignored", "--nocapture"], env=env, timeout=90)
         finally:

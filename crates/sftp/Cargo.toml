@@ -4,6 +4,9 @@ version = "0.3.0"
 edition = "2021"
 rust-version = "1.90"
 
+[features]
+windows-fixture = ["ssh-core/test-support"]
+
 [dependencies]
 ssh-core = { path = "../ssh-core" }
 openssh-sftp-client = "0.15.12"

@@ -97,17 +97,21 @@ impl Transfer {
         remote: PathBuf,
         state: &Path,
     ) -> Result<Self, String> {
-        if !local.is_absolute() || !remote.is_absolute() {
+        if !local.is_absolute() || !crate::remote_absolute(&remote) {
             return Err("传输路径必须为绝对路径".into());
         }
         let id = uuid::Uuid::new_v4().to_string();
-        let destination = if direction == Direction::Upload {
-            &remote
+        let partial = if direction == Direction::Upload {
+            crate::remote_join(
+                &crate::remote_parent(&remote)?,
+                &format!(".hshell-{id}.part"),
+            )?
         } else {
-            &local
+            local
+                .parent()
+                .ok_or("目标路径无父目录")?
+                .join(format!(".hshell-{id}.part"))
         };
-        let parent = destination.parent().ok_or("目标路径无父目录")?;
-        let partial = parent.join(format!(".hshell-{id}.part"));
         let job = Self {
             id: id.clone(),
             profile,
@@ -156,18 +160,26 @@ impl Transfer {
                 return Err("续传记录身份不匹配".into());
             }
             job.profile.validate()?;
-            let destination = if job.direction == Direction::Upload {
-                &job.remote
+            let expected = if job.direction == Direction::Upload {
+                crate::remote_join(
+                    &crate::remote_parent(&job.remote)?,
+                    &format!(".hshell-{}.part", job.id),
+                )?
             } else {
-                &job.local
+                job.local
+                    .parent()
+                    .ok_or("续传目标无父目录")?
+                    .join(format!(".hshell-{}.part", job.id))
             };
-            let expected = destination
-                .parent()
-                .ok_or("续传目标无父目录")?
-                .join(format!(".hshell-{}.part", job.id));
-            if job.partial != expected
+            // Windows Path 的组件比较会把反斜杠视为分隔符，远程路径必须比较原始字符串。
+            let partial_valid = if job.direction == Direction::Upload {
+                job.partial.as_os_str() == expected.as_os_str()
+            } else {
+                job.partial == expected
+            };
+            if !partial_valid
                 || !job.local.is_absolute()
-                || !job.remote.is_absolute()
+                || !crate::remote_absolute(&job.remote)
                 || job.done > job.total
             {
                 return Err("续传记录路径或进度无效".into());
@@ -356,9 +368,6 @@ impl Transfer {
         self.save()?;
         let mut last_saved = self.done;
         let mut last_time = Instant::now();
-        let mut writer = Box::pin(openssh_sftp_client::file::TokioCompatFile::new(
-            remote.clone(),
-        ));
         let mut buffer = vec![0; BLOCK * 8];
         while self.done < self.total {
             if upload {
@@ -367,10 +376,7 @@ impl Transfer {
                     .read_exact(&mut buffer[..length])
                     .await
                     .map_err(|e| e.to_string())?;
-                writer
-                    .write_all(&buffer[..length])
-                    .await
-                    .map_err(|e| e.to_string())?;
+                remote_write_batch(&remote, self.done, &buffer[..length]).await?;
                 self.done += length as u64;
             } else {
                 for bytes in remote_batch(&remote, self.done, self.total).await? {
@@ -384,7 +390,6 @@ impl Transfer {
                 || self.done == self.total
             {
                 if upload {
-                    writer.flush().await.map_err(|e| e.to_string())?;
                     if connection.sftp.support_fsync() {
                         remote.sync_all().await.map_err(|e| e.to_string())?;
                     }
@@ -401,9 +406,6 @@ impl Transfer {
                 verifying: false,
             });
         }
-        if upload {
-            writer.flush().await.map_err(|e| e.to_string())?;
-        }
         if upload && connection.sftp.support_fsync() {
             remote.sync_all().await.map_err(|e| e.to_string())?;
         }
@@ -418,7 +420,6 @@ impl Transfer {
         if final_revision != initial {
             return Err("源文件在传输期间改变，未替换目标文件".into());
         }
-        drop(writer);
         remote.close().await.map_err(|e| e.to_string())?;
         drop(local);
         self.publishing = true;
@@ -572,6 +573,24 @@ impl Transfer {
         self.forget()?;
         Ok(true)
     }
+}
+
+async fn remote_write_batch(file: &RemoteFile, offset: u64, bytes: &[u8]) -> Result<(), String> {
+    // 每批等待所有写入确认并释放克隆句柄，确保发布前的显式关闭真正完成。
+    let mut pending = FuturesOrdered::new();
+    for (index, chunk) in bytes.chunks(BLOCK).enumerate() {
+        let mut writer = file.clone();
+        pending.push_back(async move {
+            writer
+                .seek(SeekFrom::Start(offset + (index * BLOCK) as u64))
+                .await?;
+            writer.write_all(chunk).await
+        });
+    }
+    while let Some(result) = pending.next().await {
+        result.map_err(|e| e.to_string())?;
+    }
+    Ok(())
 }
 
 async fn remote_batch(file: &RemoteFile, offset: u64, total: u64) -> Result<Vec<BytesMut>, String> {
