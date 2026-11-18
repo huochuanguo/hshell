@@ -1726,7 +1726,7 @@ dependencies = [
 
 [[package]]
 name = "hshell-native"
-version = "0.3.4"
+version = "0.3.5"
 dependencies = [
  "gtk",
  "hshell-sftp",

@@ -2,7 +2,7 @@
 
 面向日常服务器运维的轻量 SSH 桌面工作空间。支持连接管理、多标签终端和 SFTP，目标平台为 Ubuntu 22.04 / 24.04 和 Windows 10 1809+ / Windows 11。Windows 构建与验证范围见 [Windows 客户端](docs/windows.md)。
 
-Ubuntu 0.3.4 使用 **Rust + GTK 3 + VTE + 系统 OpenSSH**，终端直接读取 PTY，不启动 WebKit 或本地 HTTP 服务。Windows 使用 Tauri 2 / xterm.js 前端与共享 Rust SSH/SFTP 核心，已通过 Windows 11 回环 SSH、SFTP 双向续传及凭据管理器验证。密码可选存入系统凭据库。详细取舍见 [技术方案](docs/architecture.md)，实测边界见 [验证记录](docs/verification.md)。
+Ubuntu 原生版使用 **Rust + GTK 3 + VTE + 系统 OpenSSH**，终端直接读取 PTY，不启动 WebKit 或本地 HTTP 服务。Windows 使用 Tauri 2 / xterm.js 前端与共享 Rust SSH/SFTP 核心，已通过 Windows 11 回环 SSH、SFTP 双向续传及凭据管理器验证。密码可选存入系统凭据库。详细取舍见 [技术方案](docs/architecture.md)，实测边界见 [验证记录](docs/verification.md)。
 
 ## 已实现
 
@@ -53,22 +53,16 @@ npm run dev
 
 0.3.0 新增 SFTP 的专项验收见 [验证记录](docs/verification.md)，未将旧版长时结果作为本版 SFTP 的长时证明。
 
-Ubuntu 原生 **HShell 0.3.4** 的 amd64 包位于 `target/native-ubuntu22/release/bundle/deb/hshell_0.3.4_amd64.deb`，命令为 `hshell`。安装时自动替换旧 `qizhan-ssh` 包；请先退出旧客户端，再安装并从启动器打开 HShell。原连接配置、保存的密码及 OpenSSH 信任记录继续使用，无需导出迁移。
+Ubuntu 原生 **HShell 0.3.5** 在本机打包后生成 `target/release/bundle/deb/hshell_0.3.5_amd64.deb`，命令为 `hshell`。安装时自动替换旧 `qizhan-ssh` 包；请先退出旧客户端，再安装并从启动器打开 HShell。原连接配置、保存的密码及 OpenSSH 信任记录继续使用，无需导出迁移。
 
 新图标将 H 与终端提示符结合，提供 Linux 多尺寸 PNG / SVG 和 Windows ICO。矢量源为 [hshell.svg](src/assets/hshell.svg)，运行 `python3 scripts/generate_icons.py` 可重新生成（开发时需 `rsvg-convert` 与 Pillow）。
 
-安装本次构建产物：
-
-```bash
-sudo apt install ./target/native-ubuntu22/release/bundle/deb/hshell_0.3.4_amd64.deb
-```
-
-在本机重新构建：
+构建 Ubuntu 原生包并安装：
 
 ```bash
 cargo build -p hshell-native --release --locked
-python3 scripts/package_native.py target/release/hshell \
-  --output target/release/bundle/deb/hshell_0.3.4_amd64.deb
+python3 scripts/package_native.py target/release/hshell
+sudo apt install ./target/release/bundle/deb/hshell_0.3.5_amd64.deb
 ```
 
 Ubuntu 22.04 的发布包必须在 Ubuntu 22.04 构建，再在 22.04 和 24.04 安装验收。**不能用 Ubuntu 24.04 构建结果宣称兼容 22.04**，因为 glibc 基线可能不兼容。CI 已定义两套 Ubuntu 构建及 Windows 构建，但添加工作流不代表已实际运行。
