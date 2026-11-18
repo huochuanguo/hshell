@@ -885,8 +885,8 @@ h1 {
 }
 .terminal-pane {
   position: absolute;
-  inset: 0;
-  padding: 17px 9px 8px 22px;
+  /* 将留白设为外侧间距，终端按完整可用区域计算行列。 */
+  inset: 17px 9px 8px 22px;
   overflow: hidden;
 }
 .terminal-pane .xterm {
