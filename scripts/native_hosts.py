@@ -24,7 +24,7 @@ args = parser.parse_args()
 binary = Path(args.binary).resolve()
 with tempfile.TemporaryDirectory(prefix='hshell-host-filter-') as directory:
     root = Path(directory)
-    config = root / 'io.qizhan.ssh/profiles.json'
+    config = root / 'io.hshell.ssh/profiles.json'
     config.parent.mkdir()
     profiles = [dict(id=f'bench-{i}', name=f'bench-node-{i}', host=f'host-{i}',
                      username='fixture', port=None, identityFile='', group=f'Group {i % 10}',

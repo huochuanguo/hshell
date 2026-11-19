@@ -1,6 +1,8 @@
 # Windows 客户端
 
-Windows 使用 Tauri 2 / WebView2 + xterm.js + ConPTY，共享 Rust SSH 和 SFTP 核心。Windows 桌面端版本为 0.3.7；配置标识 `io.qizhan.ssh` 和凭据命名空间保持不变。
+Windows 使用 Tauri 2 / WebView2 + xterm.js + ConPTY，共享 Rust SSH 和 SFTP 核心。应用标识为 `io.hshell.ssh`，连接配置位于 `%APPDATA%\io.hshell.ssh\profiles.json`，终端字号随 `%LOCALAPPDATA%\io.hshell.ssh` 下的 WebView2 设置保存。
+
+从旧标识版本升级时，请先退出所有旧版窗口并在安装程序中保留应用数据。曾自定义安装目录的用户，升级时请确认安装位置。新版启动时迁移旧目录，已保存的密码在使用时迁移到新的凭据服务。若新旧目录同时存在，保留两边并使用新版目录。
 
 ## 功能与系统要求
 
@@ -52,7 +54,7 @@ SSH 测试使用临时密钥、临时 SSH 配置及临时 known_hosts，覆盖�
 
 SFTP 测试只监听回环地址，使用一次性 Paramiko 服务端和固定测试密码；32 MiB 文件上传及下载分别在独立进程重启后续传，核对前缀和 SHA256，并验证中文路径、目录操作及重命名拒绝覆盖。结果保存到 `target/windows-sftp.json`。它不代表公网网络、生产 sshd、跳板机或长时验收。
 
-凭据管理器测试使用随机 UUID 创建、读取、替换并删除自己的测试条目，不访问已有连接密码。
+凭据管理器测试使用随机 UUID 验证旧密码迁移、新密码替换和删除后不回退到旧密码，不访问已有连接密码。
 
 ## 界面夹具
 

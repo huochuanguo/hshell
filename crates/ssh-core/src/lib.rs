@@ -1,3 +1,4 @@
+mod app_directory;
 mod askpass;
 mod connection_backup;
 mod credentials;
@@ -24,6 +25,7 @@ pub use snippets::{load_snippets, save_snippets, validate_snippet_text, Snippet}
 pub use subsystem::sftp_command_with_config;
 pub use subsystem::{sftp_command, SubsystemAuthentication};
 
+pub use app_directory::{prepare_app_directory, APP_ID};
 pub use askpass::run_askpass_helper;
 pub use connection_backup::{export_connections, import_connections, ImportResult};
 pub use credentials::{

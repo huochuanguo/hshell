@@ -39,7 +39,7 @@ Ubuntu 24 的 VTE 0.76 在测试中对 `vte_terminal_set_pty(terminal, NULL)` �
 
 OpenSSH 参数逐项传给子进程，不通过 shell 拼接。主机地址拒绝选项前缀和 shell 语法；用户名、端口留空时沿用用户 SSH 配置。保留别名、agent、私钥、ProxyJump，强制主机校验、禁用 LocalCommand 和连接复用主进程，一个标签对应一个可清理的 SSH 进程。
 
-HShell 保留 `io.qizhan.ssh` 配置路径和 `io.qizhan.ssh.password` 凭据服务名，使改名升级继续读写原有数据。Linux 的可执行名、桌面文件、图标名与包名改为 `hshell`，显示名为 HShell。Windows 保留 Tauri 安装标识，显示名与主程序名改为 HShell。
+两端统一使用应用及配置标识 `io.hshell.ssh`，凭据服务名为 `io.hshell.ssh.password`。在打开工作空间前，同级迁移旧配置目录，已有新版目录时保留两边。Windows 在创建 WebView 前一并迁移本地数据目录，保留终端字号。访问保存的密码时优先读新版凭据，缺失时尝试迁移旧条目；替换或删除密码会同时处理旧条目。
 
 连接 JSON 采用同目录临时文件、同步、原子替换；Linux 目录 0700 / 文件 0600。损坏配置禁止覆盖。最多 1,000 条连接，不额外引入数据库。原生连接准备复用经过校验的 Arc 快照，Unix 下每次检查路径、dev/inode、ctime、mtime 和文件大小；读前后复核，变化时重新解析，损坏时返回错误。Windows 保持即时读取，等待同等文件身份检查的实机验证。快照不存密码，每次连接仍读取系统凭据并检查目标绑定。
 

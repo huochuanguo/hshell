@@ -9,8 +9,9 @@ use std::{
 };
 use tauri::{
     ipc::{Channel, InvokeResponseBody, IpcResponse},
-    Manager, State,
+    Manager, State, WebviewWindowBuilder,
 };
+use tauri_plugin_dialog::{DialogExt, MessageDialogKind};
 
 struct AppState {
     sessions: SessionManager,
@@ -283,6 +284,17 @@ fn perf_result(app: tauri::AppHandle, result: String) {
     app.exit(0);
 }
 
+fn prepare_app_data(app: &tauri::App) -> Result<PathBuf, String> {
+    let config_root = app.path().config_dir().map_err(|e| e.to_string())?;
+    let config = ssh_core::prepare_app_directory(&config_root)?;
+    // 在创建 WebView 前迁移本地数据，保留终端字号等设置。
+    let local_root = app.path().local_data_dir().map_err(|e| e.to_string())?;
+    if local_root != config_root {
+        ssh_core::prepare_app_directory(&local_root)?;
+    }
+    Ok(config)
+}
+
 fn main() {
     if let Some(code) = ssh_core::run_askpass_helper() {
         std::process::exit(code);
@@ -291,7 +303,18 @@ fn main() {
         .plugin(tauri_plugin_dialog::init())
         .plugin(tauri_plugin_clipboard_manager::init())
         .setup(|app| {
-            let config = app.path().app_config_dir()?;
+            let config = match prepare_app_data(app) {
+                Ok(config) => config,
+                Err(error) => {
+                    let handle = app.handle().clone();
+                    app.dialog()
+                        .message(error)
+                        .title("无法打开 HShell")
+                        .kind(MessageDialogKind::Error)
+                        .show(move |_| handle.exit(1));
+                    return Ok(());
+                }
+            };
             app.manage(files::Files::new(
                 app.handle().clone(),
                 config.join("profiles.json"),
@@ -299,9 +322,10 @@ fn main() {
             ));
             app.manage(AppState {
                 sessions: SessionManager::default(),
-                profiles_path: app.path().app_config_dir()?.join("profiles.json"),
+                profiles_path: config.join("profiles.json"),
                 config_lock: Arc::new(Mutex::new(())),
             });
+            WebviewWindowBuilder::from_config(app, &app.config().app.windows[0])?.build()?;
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

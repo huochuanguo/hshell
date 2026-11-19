@@ -56,7 +56,7 @@ npm run dev
 
 0.3.0 新增 SFTP 的专项验收见 [验证记录](docs/verification.md)，未将旧版长时结果作为本版 SFTP 的长时证明。
 
-Ubuntu 原生 **HShell 0.3.7** 在本机打包后生成 `target/release/bundle/deb/hshell_0.3.7_amd64.deb`，命令为 `hshell`。安装时自动替换旧 `qizhan-ssh` 包；请先退出旧客户端，再安装并从启动器打开 HShell。原连接配置、保存的密码及 OpenSSH 信任记录继续使用，无需导出迁移。
+Ubuntu 原生 **HShell 0.3.8** 在本机打包后生成 `target/release/bundle/deb/hshell_0.3.8_amd64.deb`，命令为 `hshell`。安装时自动替换旧 `qizhan-ssh` 包；请先退出旧客户端，再安装并从启动器打开 HShell。原连接配置、保存的密码及 OpenSSH 信任记录继续使用，无需导出迁移。
 
 新图标将 H 与终端提示符结合，提供 Linux 多尺寸 PNG / SVG 和 Windows ICO。矢量源为 [hshell.svg](src/assets/hshell.svg)，运行 `python3 scripts/generate_icons.py` 可重新生成（开发时需 `rsvg-convert` 与 Pillow）。
 
@@ -65,7 +65,7 @@ Ubuntu 原生 **HShell 0.3.7** 在本机打包后生成 `target/release/bundle/d
 ```bash
 cargo build -p hshell-native --release --locked
 python3 scripts/package_native.py target/release/hshell
-sudo apt install ./target/release/bundle/deb/hshell_0.3.7_amd64.deb
+sudo apt install ./target/release/bundle/deb/hshell_0.3.8_amd64.deb
 ```
 
 Ubuntu 22.04 的发布包必须在 Ubuntu 22.04 构建，再在 22.04 和 24.04 安装验收。**不能用 Ubuntu 24.04 构建结果宣称兼容 22.04**，因为 glibc 基线可能不兼容。CI 已定义两套 Ubuntu 构建及 Windows 构建，但添加工作流不代表已实际运行。
@@ -112,7 +112,7 @@ Host internal
     ProxyJump dev
 ```
 
-为兼容改名前的安装，内部配置及系统凭据命名空间保持稳定。连接配置路径：Linux 通常为 `~/.config/io.qizhan.ssh/profiles.json`，Windows 通常为 `%APPDATA%\io.qizhan.ssh\profiles.json`；应用的工作空间信息中展示实际位置。密钥本体仍由用户自行保管。信任记录使用 OpenSSH 的 `known_hosts`。
+连接配置路径：Linux 通常为 `~/.config/io.hshell.ssh/profiles.json`，Windows 通常为 `%APPDATA%\io.hshell.ssh\profiles.json`。工作空间信息会显示实际位置。升级前请退出旧版；新版首次启动会将旧目录中的连接、命令片段和 SFTP 续传记录一起迁移。若新旧目录已同时存在，使用新版目录，保留旧目录。已保存的密码在下次使用时从系统凭据库迁移；私钥文件和 OpenSSH 的 `known_hosts` 不变。
 
 ## 验证
 

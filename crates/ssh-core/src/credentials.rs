@@ -1,11 +1,13 @@
 //! Passwords live in the OS credential store, never in profiles.json.
 use crate::{load_profiles, save_profiles, Profile};
 use serde::{Deserialize, Serialize};
-use std::path::Path;
+use std::{path::Path, sync::Mutex};
 use zeroize::Zeroizing;
 
-const SERVICE: &str = "io.qizhan.ssh.password";
-// Stable credential namespace: HShell must still read and remove older entries.
+const SERVICE: &str = "io.hshell.ssh.password";
+const LEGACY_SERVICE: &str = "io.qizhan.ssh.password";
+// 防止后台会话读取旧条目时，与同一客户端的密码替换或删除交错。
+static CREDENTIAL_LOCK: Mutex<()> = Mutex::new(());
 
 pub trait CredentialStore {
     fn get(&self, id: &str) -> Result<Option<Zeroizing<String>>, String>;
@@ -14,31 +16,65 @@ pub trait CredentialStore {
 }
 
 pub struct SystemCredentials;
-fn entry(id: &str) -> Result<keyring::Entry, String> {
-    keyring::Entry::new(SERVICE, id).map_err(|_| "无法访问系统凭据库".into())
+
+struct KeyringStore(&'static str);
+fn entry(service: &str, id: &str) -> Result<keyring::Entry, String> {
+    keyring::Entry::new(service, id).map_err(|_| "无法访问系统凭据库".into())
 }
 #[cfg(not(windows))]
 const STORE_ERROR: &str = "系统凭据库不可用或未解锁。请启动并解锁“密码和密钥”（GNOME Keyring / Secret Service），或取消保存密码后重试。";
 #[cfg(windows)]
 const STORE_ERROR: &str = "Windows 凭据管理器不可用，请检查系统凭据服务，或取消保存密码后重试。";
-impl CredentialStore for SystemCredentials {
+impl CredentialStore for KeyringStore {
     fn get(&self, id: &str) -> Result<Option<Zeroizing<String>>, String> {
-        match entry(id)?.get_password() {
+        match entry(self.0, id)?.get_password() {
             Ok(secret) => Ok(Some(Zeroizing::new(secret))),
             Err(keyring::Error::NoEntry) => Ok(None),
             Err(_) => Err(STORE_ERROR.into()),
         }
     }
     fn set(&self, id: &str, secret: &str) -> Result<(), String> {
-        entry(id)?
+        entry(self.0, id)?
             .set_password(secret)
             .map_err(|_| STORE_ERROR.into())
     }
     fn delete(&self, id: &str) -> Result<(), String> {
-        match entry(id)?.delete_credential() {
+        match entry(self.0, id)?.delete_credential() {
             Ok(()) | Err(keyring::Error::NoEntry) => Ok(()),
             Err(_) => Err(STORE_ERROR.into()),
         }
+    }
+}
+
+impl CredentialStore for SystemCredentials {
+    fn get(&self, id: &str) -> Result<Option<Zeroizing<String>>, String> {
+        let _guard = CREDENTIAL_LOCK.lock().map_err(|_| STORE_ERROR)?;
+        let current = KeyringStore(SERVICE);
+        if let Some(secret) = current.get(id)? {
+            return Ok(Some(secret));
+        }
+        let legacy = KeyringStore(LEGACY_SERVICE);
+        let saved = legacy.get(id)?;
+        if let Some(secret) = &saved {
+            // 先确认新条目保存成功，再清理旧条目；无法写入时仍可使用旧密码。
+            if current.set(id, secret).is_ok() {
+                let _ = legacy.delete(id);
+            }
+        }
+        Ok(saved)
+    }
+
+    fn set(&self, id: &str, secret: &str) -> Result<(), String> {
+        let _guard = CREDENTIAL_LOCK.lock().map_err(|_| STORE_ERROR)?;
+        // 新条目写好后再清理旧凭据，写入失败时旧密码仍在。
+        KeyringStore(SERVICE).set(id, secret)?;
+        KeyringStore(LEGACY_SERVICE).delete(id)
+    }
+
+    fn delete(&self, id: &str) -> Result<(), String> {
+        let _guard = CREDENTIAL_LOCK.lock().map_err(|_| STORE_ERROR)?;
+        KeyringStore(LEGACY_SERVICE).delete(id)?;
+        KeyringStore(SERVICE).delete(id)
     }
 }
 

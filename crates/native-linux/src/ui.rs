@@ -138,7 +138,7 @@ pub fn job<T: Send + 'static>(
 }
 
 impl Client {
-    pub fn new(app: &gtk::Application) -> Rc<Self> {
+    pub fn new(app: &gtk::Application, profiles_path: PathBuf) -> Rc<Self> {
         load_fonts();
         #[cfg(feature = "native-probe")]
         crate::timing::mark("fonts-ready");
@@ -301,8 +301,6 @@ impl Client {
         statusbar.pack_start(&status, true, true, 0);
         statusbar.pack_end(&label("UTF-8  xterm-256color", "dim"), false, false, 0);
         root.pack_end(&statusbar, false, false, 0);
-        let profiles_path = glib::user_config_dir().join("io.qizhan.ssh/profiles.json");
-        // Keep the existing storage namespace so renaming never loses saved hosts.
         let client = Rc::new(Self {
             window,
             tabs: RefCell::new(Vec::new()),

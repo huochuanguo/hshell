@@ -54,7 +54,7 @@ fn main() {
     };
     #[cfg(feature = "native-probe")]
     timing::mark("before-application");
-    let app = gtk::Application::new(Some("io.hshell.ssh"), flags);
+    let app = gtk::Application::new(Some(ssh_core::APP_ID), flags);
     #[cfg(feature = "native-probe")]
     timing::mark("application-created");
     let state: Rc<RefCell<Option<Rc<ui::Client>>>> = Rc::new(RefCell::new(None));
@@ -66,7 +66,24 @@ fn main() {
             client.window.present();
             return;
         }
-        let client = ui::Client::new(app);
+        let config = match ssh_core::prepare_app_directory(&gtk::glib::user_config_dir()) {
+            Ok(config) => config,
+            Err(error) => {
+                let dialog = gtk::MessageDialog::new(
+                    None::<&gtk::Window>,
+                    gtk::DialogFlags::MODAL,
+                    gtk::MessageType::Error,
+                    gtk::ButtonsType::Close,
+                    "无法打开 HShell",
+                );
+                dialog.set_secondary_text(Some(&error));
+                dialog.run();
+                dialog.close();
+                app.quit();
+                return;
+            }
+        };
+        let client = ui::Client::new(app, config.join("profiles.json"));
         #[cfg(feature = "native-probe")]
         if std::env::var_os("HSHELL_NATIVE_PROBE").is_some() {
             probe::run(client.clone());

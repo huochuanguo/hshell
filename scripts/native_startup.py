@@ -27,7 +27,7 @@ for count in [0, 1000]:
     for run in range(args.runs):
         with tempfile.TemporaryDirectory(prefix='hshell-startup-') as directory:
             root = Path(directory)
-            config = root / 'io.qizhan.ssh/profiles.json'
+            config = root / 'io.hshell.ssh/profiles.json'
             config.parent.mkdir()
             config.write_text(json.dumps([dict(id=f'bench-{i}', name=f'bench-node-{i}', host=f'host-{i}',
                 username='fixture', port=None, identityFile='', group=f'Group {i % 10}', favorite=i % 2 == 0)

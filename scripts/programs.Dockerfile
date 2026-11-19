@@ -1,4 +1,4 @@
-ARG BASE_IMAGE=qizhan-build:native-test-ubuntu22
+ARG BASE_IMAGE=ubuntu:22.04
 FROM ${BASE_IMAGE}
 ENV DEBIAN_FRONTEND=noninteractive
 RUN apt-get update \
