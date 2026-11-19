@@ -10,7 +10,7 @@
     <script type="module">
       // 仅用于浏览器界面回归；所有 IPC 均为模拟，不读取配置或建立网络连接。
       import { mockIPC, mockWindows } from "@tauri-apps/api/mocks";
-      import { emit } from "@tauri-apps/api/event";
+      import { emit, TauriEvent } from "@tauri-apps/api/event";
       const profile = {
         id: "windows-ui-fixture",
         name: "Windows 界面夹具",
@@ -22,6 +22,12 @@
         favorite: true,
         passwordSaved: false,
       };
+      const flags = new URLSearchParams(location.search);
+      window.addEventListener("hshell-fixture-drag", ({ detail }) => {
+        void emit(TauriEvent[detail.event], detail.payload);
+      });
+      let profiles = [profile];
+      let snippets = [];
       let browser,
         terminal,
         tasks = [],
@@ -55,7 +61,26 @@
       mockIPC(
         async (cmd, args) => {
           record(cmd, args);
-          if (cmd === "get_profiles") return [profile];
+          if (cmd === "get_profiles") return profiles;
+          if (cmd === "get_snippets") return snippets;
+          if (cmd === "store_snippets")
+            snippets = structuredClone(args.snippets);
+          if (cmd === "export_connections") return profiles.length;
+          if (cmd === "import_connections") {
+            const added = profiles.length === 1 ? 1 : 0;
+            if (added)
+              profiles = [
+                ...profiles,
+                {
+                  ...profile,
+                  id: "imported-fixture",
+                  name: "迁移主机",
+                  host: "import.invalid",
+                  identityFile: "",
+                },
+              ];
+            return { profiles, added, skipped: 1 - added };
+          }
           if (cmd === "environment")
             return {
               platform: "windows",
@@ -63,8 +88,25 @@
               configPath: "仅模拟数据，不读取用户配置",
             };
           if (cmd === "sftp_tasks") return tasks;
+          if (cmd === "plugin:path|join") return args.paths.join("\\");
           if (cmd === "start_session") {
             terminal = args.onEvent;
+            if (flags.has("connectionFailure")) {
+              setTimeout(() => {
+                terminal.onmessage(
+                  new TextEncoder().encode(
+                    "ssh: connect to host fixture.invalid port 22: Connection refused\r\n",
+                  ).buffer,
+                );
+                terminal.onmessage({
+                  type: "exit",
+                  code: 255,
+                  error:
+                    "SSH 连接被拒绝。请确认服务器上的 SSH 服务已启动，并核对地址和端口。",
+                });
+              }, 30);
+              return;
+            }
             setTimeout(
               () =>
                 terminal.onmessage(
@@ -124,11 +166,31 @@
               );
             }
           }
+          if (
+            cmd === "plugin:dialog|open" &&
+            args.options.title === "选择连接备份"
+          )
+            return "C:\\Temp\\hshell-connections.json";
+          if (cmd === "plugin:dialog|open" && args.options.directory)
+            return "C:\\Temp\\下载夹具";
           if (cmd === "plugin:dialog|open")
-            return "C:\\Users\\测试用户\\上传 文件.txt";
+            return new URLSearchParams(location.search).has("batch")
+              ? [
+                  "C:\\Users\\测试用户\\上传 文件.txt",
+                  "C:\\Temp\\server.ts",
+                  "C:\\Temp\\中文 目录",
+                ]
+              : ["C:\\Users\\测试用户\\上传 文件.txt"];
+          if (
+            cmd === "plugin:dialog|save" &&
+            args.options.filters?.[0]?.extensions?.includes("json")
+          )
+            return "C:\\Temp\\hshell-export.json";
           if (cmd === "plugin:dialog|save")
             return "C:\\Users\\测试用户\\下载 文件.txt";
           if (cmd === "sftp_enqueue") {
+            if (args.skipExisting && args.local.endsWith("image.png"))
+              return null;
             const task = {
               id: crypto.randomUUID(),
               name: profile.name,

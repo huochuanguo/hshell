@@ -64,7 +64,9 @@ def serve(client, host_key, public_key):
                 break
             line += data
             if b"\n" in line or b"\r" in line:
-                channel.sendall(b"fixture-received:" + line + b"\r\n")
+                # ConPTY 会把回显中的 Tab 渲染成光标移动，先标记服务器收到的字节。
+                received = line.replace(b"\t", b"<TAB>")
+                channel.sendall(b"fixture-received:" + received + b"\r\n")
                 channel.send_exit_status(0)
                 channel.shutdown_write()
                 channel.close()

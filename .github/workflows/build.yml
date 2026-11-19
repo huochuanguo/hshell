@@ -81,12 +81,13 @@ jobs:
           xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_hosts.py target/release/hshell --updates --max-replaced-rows 1 --output target/native-host-updates.json
           xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_hosts.py target/release/hshell --updates --interleave --max-replaced-rows 1 --output target/native-host-interleave.json
           xvfb-run -a /tmp/hshell-test-venv/bin/python scripts/native_vte.py target/release/hshell --stress --partial-load --output target/native-stress.json
-      - name: Native SFTP integration
+      - name: Native terminal programs and SFTP integration
         if: runner.os == 'Linux'
         env:
           NO_AT_BRIDGE: '1'
         run: |
           docker build --build-arg BASE_IMAGE=ubuntu:22.04 -f scripts/programs.Dockerfile -t hshell-test:programs-ubuntu22 .
+          xvfb-run -a python3 scripts/native_programs.py target/release/hshell --output target/native-programs.json
           cargo build -p hshell-sftp --example verify --release --locked
           xvfb-run -a python3 scripts/sftp_smoke.py target/release/examples/verify --gui target/release/hshell --output target/sftp-integration.json
       - name: Ubuntu native package

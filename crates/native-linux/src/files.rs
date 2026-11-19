@@ -7,6 +7,7 @@ use hshell_sftp::{
 use ssh_core::{Profile, SubsystemAuthentication};
 use std::{
     cell::{Cell, RefCell},
+    collections::HashSet,
     path::{Path, PathBuf},
     rc::Rc,
     sync::mpsc,
@@ -162,8 +163,11 @@ pub struct FilePane {
     receiver: RefCell<Option<mpsc::Receiver<BrowserEvent>>>,
     generation: Cell<u64>,
     loading: Cell<bool>,
+    listed: Cell<bool>,
+    choosing: Cell<bool>,
     path: RefCell<PathBuf>,
     address: gtk::Entry,
+    search: gtk::SearchEntry,
     host: gtk::Label,
     status: gtk::Label,
     model: gtk::ListStore,
@@ -212,10 +216,19 @@ impl FilePane {
         let mkdir = icon_button("folder-new-symbolic", "新建目录");
         let rename = icon_button("document-edit-symbolic", "重命名");
         let delete = icon_button("edit-delete-symbolic", "删除文件或空目录");
-        for button in [&upload, &download, &mkdir, &rename, &delete] {
+        let copy_path = icon_button("edit-copy-symbolic", "复制远程路径");
+        upload.set_tooltip_text(Some("选择本地文件，或将文件拖到远程列表上传"));
+        download.set_tooltip_text(Some("Ctrl 多选 · Shift 连选 · 下载所选普通文件"));
+        for button in [&copy_path, &download, &rename, &delete] {
+            button.set_sensitive(false);
+        }
+        for button in [&upload, &download, &mkdir, &rename, &delete, &copy_path] {
             actions.pack_start(button, false, false, 0);
         }
         root.pack_start(&actions, false, false, 0);
+        let search = gtk::SearchEntry::new();
+        search.set_placeholder_text(Some("筛选文件名"));
+        root.pack_start(&search, false, false, 0);
         let columns = gtk::Box::new(gtk::Orientation::Horizontal, 8);
         columns.pack_start(&label("名称", "dim"), true, true, 4);
         columns.pack_end(&label("大小", "dim"), false, false, 8);
@@ -228,7 +241,28 @@ impl FilePane {
             String::static_type(),
             i32::static_type(),
         ]);
-        let tree = gtk::TreeView::with_model(&model);
+        let filtered = gtk::TreeModelFilter::new(&model, None);
+        let query = Rc::new(RefCell::new(String::new()));
+        let visible_query = query.clone();
+        filtered.set_visible_func(move |model, iter| {
+            let query = visible_query.borrow();
+            query.is_empty()
+                || model
+                    .value(iter, 1)
+                    .get::<String>()
+                    .is_ok_and(|name| name.to_lowercase().contains(query.as_str()))
+        });
+        let tree = gtk::TreeView::with_model(&filtered);
+        tree.selection().set_mode(gtk::SelectionMode::Multiple);
+        tree.drag_dest_set(
+            gtk::DestDefaults::ALL,
+            &[gtk::TargetEntry::new(
+                "text/uri-list",
+                gtk::TargetFlags::empty(),
+                0,
+            )],
+            gtk::gdk::DragAction::COPY,
+        );
         tree.set_search_column(1);
         tree.set_headers_visible(false);
         tree.set_enable_tree_lines(false);
@@ -282,8 +316,11 @@ impl FilePane {
             receiver: RefCell::new(None),
             generation: Cell::new(0),
             loading: Cell::new(false),
+            listed: Cell::new(false),
+            choosing: Cell::new(false),
             path: RefCell::new(PathBuf::from(".")),
             address,
+            search,
             host,
             status,
             model,
@@ -331,15 +368,81 @@ impl FilePane {
             }
         });
         let weak = Rc::downgrade(&pane);
+        pane.search.connect_changed(move |entry| {
+            let Some(p) = weak.upgrade() else { return };
+            p.tree.selection().unselect_all();
+            query.replace(entry.text().trim().to_lowercase());
+            filtered.refilter();
+            if !p.loading.get() && p.browser.borrow().is_some() {
+                p.list_status();
+            }
+        });
+        let weak = Rc::downgrade(&pane);
+        let single_buttons = [copy_path.clone(), rename.clone(), delete.clone()];
+        let download_button = download.clone();
+        pane.tree.selection().connect_changed(move |_| {
+            if let Some(p) = weak.upgrade() {
+                let selection = p.selected_entries();
+                for button in &single_buttons {
+                    button.set_sensitive(selection.len() == 1);
+                }
+                download_button.set_sensitive(selection.iter().any(Self::downloadable));
+            }
+        });
+        let weak = Rc::downgrade(&pane);
+        pane.tree
+            .connect_drag_data_received(move |tree, _, _, _, data, _, _| {
+                // 此列表只接收文件 URI，不让 GtkTreeView 尝试插入模型行。
+                tree.stop_signal_emission_by_name("drag-data-received");
+                let Some(pane) = weak.upgrade() else { return };
+                if !pane.can_transfer()
+                    || pane.choosing.get()
+                    || gtk::Window::list_toplevels().iter().any(|window| {
+                        window.is_visible()
+                            && window
+                                .downcast_ref::<gtk::Window>()
+                                .is_some_and(GtkWindowExt::is_modal)
+                    })
+                {
+                    return;
+                }
+                let files = data
+                    .uris()
+                    .iter()
+                    .filter_map(|uri| {
+                        let (path, host) = glib::filename_from_uri(uri).ok()?;
+                        (path.is_absolute()
+                            && host
+                                .as_deref()
+                                .is_none_or(|host| host.eq_ignore_ascii_case("localhost")))
+                        .then_some(path)
+                    })
+                    .collect();
+                let generation = pane.generation.get();
+                let weak = Rc::downgrade(&pane);
+                glib::idle_add_local_once(move || {
+                    if let Some(pane) = weak.upgrade() {
+                        if pane.can_transfer() && !pane.choosing.replace(true) {
+                            pane.upload_paths(files, generation);
+                            pane.choosing.set(false);
+                        }
+                    }
+                });
+            });
+        let weak = Rc::downgrade(&pane);
+        copy_path.connect_clicked(move |_| {
+            if let Some(p) = weak.upgrade() {
+                p.copy_selected_path();
+            }
+        });
+        let weak = Rc::downgrade(&pane);
         pane.tree.connect_row_activated(move |_, _, _| {
             if let Some(p) = weak.upgrade() {
-                if let Some(item) = p.selected() {
-                    if item.directory || item.symlink {
-                        let path = p.path.borrow().join(item.name);
-                        p.navigate(path);
-                    } else {
-                        p.download();
-                    }
+                if let Some(item) = p.selected().filter(|item| item.directory || item.symlink) {
+                    let path = p.path.borrow().join(item.name);
+                    p.navigate(path);
+                } else {
+                    p.download();
                 }
             }
         });
@@ -416,12 +519,15 @@ impl FilePane {
                 || old.port != profile.port
         });
         if changed {
+            self.listed.set(false);
+            self.generation.set(self.generation.get().wrapping_add(1));
             self.browser.borrow_mut().take();
             self.receiver.borrow_mut().take();
             self.model.clear();
             self.entries.borrow_mut().clear();
             self.path.replace(PathBuf::from("."));
             self.address.set_text(".");
+            self.search.set_text("");
             self.profile.replace(Some(profile));
         }
         self.root.set_no_show_all(false);
@@ -432,6 +538,8 @@ impl FilePane {
     }
     pub fn hide(&self) {
         self.root.hide();
+        self.listed.set(false);
+        self.generation.set(self.generation.get().wrapping_add(1));
         self.browser.borrow_mut().take();
         self.receiver.borrow_mut().take();
         self.loading.set(false);
@@ -460,6 +568,7 @@ impl FilePane {
         let Some(profile) = self.profile.borrow().clone() else {
             return;
         };
+        self.listed.set(false);
         self.host.set_text(&format!("文件 · {}", profile.name));
         self.status.set_text("正在连接 SFTP…");
         let (sender, receiver) = mpsc::sync_channel(8);
@@ -492,6 +601,7 @@ impl FilePane {
         self.generation.set(generation);
         if self.request(BrowseRequest::List { generation, path }) {
             self.loading.set(true);
+            self.listed.set(false);
             self.model.clear();
             self.entries.borrow_mut().clear();
             self.status.set_text("正在读取目录…");
@@ -511,13 +621,49 @@ impl FilePane {
             true
         }
     }
-    fn selected(&self) -> Option<Entry> {
-        if self.loading.get() {
-            return None;
+    fn list_status(&self) {
+        let total = self.entries.borrow().len();
+        let visible = self
+            .tree
+            .model()
+            .map_or(0, |model| model.iter_n_children(None));
+        if self.search.text().trim().is_empty() {
+            self.status
+                .set_text(&format!("{total} 项 · 双击目录进入，双击文件下载"));
+        } else if visible == 0 {
+            self.status.set_text("没有匹配的文件或目录");
+        } else {
+            self.status.set_text(&format!("{visible} / {total} 项"));
         }
-        let (model, iter) = self.tree.selection().selected()?;
-        let index = model.value(&iter, 3).get::<u32>().ok()? as usize;
-        self.entries.borrow().get(index).cloned()
+    }
+    fn copy_selected_path(&self) {
+        let Some(item) = self.selected() else { return };
+        let path = self.path.borrow().join(item.name);
+        if let Some(path) = path.to_str() {
+            gtk::Clipboard::get(&gtk::gdk::SELECTION_CLIPBOARD).set_text(path);
+            self.status.set_text("已复制远程路径");
+        } else {
+            self.status.set_text("该路径不是 UTF-8，无法复制");
+        }
+    }
+    fn selected_entries(&self) -> Vec<Entry> {
+        if self.loading.get() {
+            return Vec::new();
+        }
+        let (paths, model) = self.tree.selection().selected_rows();
+        let entries = self.entries.borrow();
+        paths
+            .iter()
+            .filter_map(|path| {
+                let iter = model.iter(path)?;
+                let index = model.value(&iter, 3).get::<u32>().ok()? as usize;
+                entries.get(index).cloned()
+            })
+            .collect()
+    }
+    fn selected(&self) -> Option<Entry> {
+        let mut entries = self.selected_entries();
+        (entries.len() == 1).then(|| entries.pop()).flatten()
     }
     fn ensure_poll(self: &Rc<Self>) {
         self.poll_dirty.set(true);
@@ -588,12 +734,12 @@ impl FilePane {
                     self.loading.set(false);
                     match result {
                         Ok(path) => {
+                            self.listed.set(true);
                             self.address.set_text(&path.to_string_lossy());
-                            self.path.replace(path);
-                            self.status.set_text(&format!(
-                                "{} 项 · 双击目录进入，双击文件下载",
-                                self.entries.borrow().len()
-                            ));
+                            if self.path.replace(path.clone()) != path {
+                                self.search.set_text("");
+                            }
+                            self.list_status();
                         }
                         Err(error) => {
                             self.address.set_text(&self.path.borrow().to_string_lossy());
@@ -618,6 +764,7 @@ impl FilePane {
                     self.authenticate(auth, id, prompt, confirm);
                 }
                 BrowserEvent::Closed(error) => {
+                    self.listed.set(false);
                     self.browser.borrow_mut().take();
                     self.receiver.borrow_mut().take();
                     self.loading.set(false);
@@ -790,10 +937,22 @@ impl FilePane {
             ));
         }
     }
+    fn can_transfer(&self) -> bool {
+        !self.closed.get()
+            && !self.restoring.get()
+            && self.root.is_visible()
+            && self.listed.get()
+            && !self.loading.get()
+            && self.browser.borrow().is_some()
+    }
+    fn downloadable(item: &Entry) -> bool {
+        !item.directory && !item.symlink
+    }
     fn upload(self: &Rc<Self>) {
-        if self.loading.get() || !self.path.borrow().is_absolute() {
+        if !self.can_transfer() || self.choosing.replace(true) {
             return;
         }
+        let generation = self.generation.get();
         let chooser = gtk::FileChooserDialog::new(
             Some("上传文件"),
             Some(&self.window),
@@ -806,70 +965,174 @@ impl FilePane {
         chooser.set_select_multiple(true);
         let alive = dialog_guard(&chooser);
         let accepted = chooser.run() == gtk::ResponseType::Accept;
-        let files = chooser.filenames();
+        let files = if alive.get() {
+            chooser.filenames()
+        } else {
+            Vec::new()
+        };
         dismiss(&chooser, &alive);
-        if !accepted {
+        if accepted {
+            self.upload_paths(files, generation);
+        }
+        self.choosing.set(false);
+    }
+    fn upload_paths(self: &Rc<Self>, files: Vec<PathBuf>, generation: u64) {
+        if !self.can_transfer() || self.generation.get() != generation {
             return;
         }
+        let directory = self.path.borrow().clone();
         let mut selected = Vec::new();
+        let mut skipped = 0;
+        let mut names = HashSet::new();
+        let mut conflicts = Vec::new();
         for local in files {
             let Some(name) = local.file_name() else {
+                skipped += 1;
                 continue;
             };
-            let remote = self.path.borrow().join(name);
-            let exists = self
+            let same = self
                 .entries
                 .borrow()
                 .iter()
-                .any(|entry| entry.name.as_os_str() == name);
-            let replace = exists
-                && self.confirm(
-                    "替换远程同名文件？",
-                    &format!("{}\n传输完成后才替换原文件。", name.to_string_lossy()),
-                );
-            if !exists || replace {
-                selected.push((Direction::Upload, local, remote, replace));
+                .find(|entry| entry.name.as_os_str() == name)
+                .cloned();
+            if !std::fs::symlink_metadata(&local).is_ok_and(|metadata| metadata.is_file())
+                || same
+                    .as_ref()
+                    .is_some_and(|entry| entry.directory || entry.symlink)
+                || !names.insert(name.to_owned())
+            {
+                skipped += 1;
+                continue;
             }
+            let remote = directory.join(name);
+            if same.is_some() {
+                conflicts.push(name.to_string_lossy().into_owned());
+            }
+            selected.push((Direction::Upload, local, remote, same.is_some()));
         }
-        self.enqueue(selected);
+        if !conflicts.is_empty()
+            && !self.confirm(
+                "替换远程同名文件？",
+                &format!(
+                    "{}{}\n取消将跳过同名文件，其他文件照常上传。",
+                    conflicts
+                        .iter()
+                        .take(6)
+                        .cloned()
+                        .collect::<Vec<_>>()
+                        .join("、"),
+                    if conflicts.len() > 6 {
+                        format!(" 等 {} 项", conflicts.len())
+                    } else {
+                        String::new()
+                    },
+                ),
+            )
+        {
+            let previous = selected.len();
+            selected.retain(|(_, _, _, replace)| !replace);
+            skipped += previous - selected.len();
+        }
+        if !self.can_transfer() || self.generation.get() != generation {
+            return;
+        }
+        if selected.is_empty() {
+            self.status.set_text("没有可上传的普通文件");
+        } else {
+            self.enqueue_with_skipped(selected, skipped);
+        }
     }
     fn download(self: &Rc<Self>) {
-        let Some(item) = self.selected() else {
-            self.status.set_text("请选择文件");
+        if !self.can_transfer() || self.choosing.get() {
             return;
-        };
-        if item.directory {
+        }
+        let mut items = self.selected_entries();
+        let batch = items.len() > 1;
+        let original = items.len();
+        items.retain(Self::downloadable);
+        if items.is_empty() {
             self.status.set_text("请选择普通文件下载");
             return;
         }
+        self.choosing.set(true);
+        let generation = self.generation.get();
         let chooser = gtk::FileChooserDialog::new(
-            Some("下载文件"),
+            Some(if batch {
+                "选择批量下载目录（跳过已有文件）"
+            } else {
+                "下载文件"
+            }),
             Some(&self.window),
-            gtk::FileChooserAction::Save,
+            if batch {
+                gtk::FileChooserAction::SelectFolder
+            } else {
+                gtk::FileChooserAction::Save
+            },
         );
         chooser.add_buttons(&[
             ("取消", gtk::ResponseType::Cancel),
             ("下载", gtk::ResponseType::Accept),
         ]);
-        chooser.set_do_overwrite_confirmation(true);
-        chooser.set_current_name(&item.name.to_string_lossy());
+        if !batch {
+            chooser.set_do_overwrite_confirmation(true);
+            chooser.set_current_name(&items[0].name.to_string_lossy());
+        }
         let alive = dialog_guard(&chooser);
         let accepted = chooser.run() == gtk::ResponseType::Accept;
-        let local = chooser.filename();
+        let local = alive.get().then(|| chooser.filename()).flatten();
         dismiss(&chooser, &alive);
-        if accepted {
-            if let Some(local) = local {
-                let replace = local.exists();
-                self.enqueue(vec![(
-                    Direction::Download,
-                    local,
-                    self.path.borrow().join(item.name),
-                    replace,
-                )]);
+        self.choosing.set(false);
+        let Some(local) = local
+            .filter(|_| accepted && self.can_transfer() && self.generation.get() == generation)
+        else {
+            return;
+        };
+        let remote = self.path.borrow().clone();
+        let mut skipped = original - items.len();
+        let mut transfers = Vec::new();
+        for item in items {
+            let target = if batch {
+                local.join(&item.name)
+            } else {
+                local.clone()
+            };
+            if batch {
+                match std::fs::symlink_metadata(&target) {
+                    Ok(_) => {
+                        skipped += 1;
+                        continue;
+                    }
+                    Err(error) if error.kind() == std::io::ErrorKind::NotFound => {}
+                    Err(error) => {
+                        self.status.set_text(&format!("检查下载目标失败：{error}"));
+                        return;
+                    }
+                }
             }
+            transfers.push((
+                Direction::Download,
+                target,
+                remote.join(item.name),
+                !batch && local.exists(),
+            ));
+        }
+        if transfers.is_empty() {
+            self.status
+                .set_text(&format!("没有新增下载，跳过 {skipped} 项"));
+        } else {
+            self.enqueue_with_skipped(transfers, skipped);
         }
     }
+    #[cfg(feature = "native-probe")]
     fn enqueue(self: &Rc<Self>, files: Vec<(Direction, PathBuf, PathBuf, bool)>) {
+        self.enqueue_with_skipped(files, 0);
+    }
+    fn enqueue_with_skipped(
+        self: &Rc<Self>,
+        files: Vec<(Direction, PathBuf, PathBuf, bool)>,
+        skipped: usize,
+    ) {
         if self.restoring.get() {
             self.status.set_text("正在恢复传输记录，请稍后");
             return;
@@ -918,6 +1181,12 @@ impl FilePane {
                     p.creating.set(p.creating.get().saturating_sub(creating));
                     match result {
                         Ok(tasks) => {
+                            if skipped > 0 {
+                                p.status.set_text(&format!(
+                                    "已加入 {} 项传输，跳过 {skipped} 项",
+                                    tasks.len()
+                                ));
+                            }
                             for task in tasks {
                                 p.add_task(task, true);
                             }
@@ -1348,6 +1617,35 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
             pane.status.text()
         ));
     }
+    pane.search.set_text("FILE-09999");
+    let shown = pane.tree.model().ok_or("No filtered model")?;
+    if shown.iter_n_children(None) != 1 {
+        return Err("Filename filter did not find the only matching result".into());
+    }
+    pane.tree
+        .selection()
+        .select_path(&gtk::TreePath::from_indicesv(&[0]));
+    let selected = pane.selected().ok_or("No visible file was selected")?;
+    if selected.name != Path::new("file-09999") {
+        return Err(format!(
+            "Unexpected filtered selection: {:?}",
+            selected.name
+        ));
+    }
+    let expected = pane.path.borrow().join("file-09999");
+    if !expected.is_absolute() {
+        return Err(format!("Expected an absolute SFTP path: {expected:?}"));
+    }
+    pane.copy_selected_path();
+    let clipboard = gtk::Clipboard::get(&gdk::SELECTION_CLIPBOARD);
+    let copied = clipboard.wait_for_text();
+    if copied.as_deref().map(Path::new) != Some(expected.as_path()) {
+        return Err(format!("Copied path {copied:?}, expected {expected:?}"));
+    }
+    pane.search.set_text("没有匹配项");
+    if shown.iter_n_children(None) != 0 || pane.selected().is_some() {
+        return Err("Filtering did not clear a hidden selection".into());
+    }
     pane.navigate(PathBuf::from("/fixture/data"));
     until(|| !pane.loading.get(), "Directory navigation stalled").await?;
     let upload = root.join("gui-upload.local");
@@ -1524,6 +1822,6 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         "Close during transfer did not finish",
     )
     .await?;
-    let output = serde_json::json!({"phase":"complete","largeDirectory":10000,"directoryTickP95Ms":p95(&directory_ticks),"inputP95Ms":p95(&input),"inputSamples":input.len(),"scrollTickP95Ms":p95(&scroll_ticks),"simultaneousTransferTicks":simultaneous,"transferredMiB":1536,"pauseResume":true,"exitDuringTransfer":true,"hiddenIdleTimerStopped":true,"minimumTerminalWidth":terminal_width,"notes":"Synthetic GTK keyboard/scroll events to real SSH; echo ends at VTE parsing, scroll timing is main-loop scheduling, not physical display latency."});
+    let output = serde_json::json!({"phase":"complete","largeDirectory":10000,"filenameFilterAndCopy":true,"directoryTickP95Ms":p95(&directory_ticks),"inputP95Ms":p95(&input),"inputSamples":input.len(),"scrollTickP95Ms":p95(&scroll_ticks),"simultaneousTransferTicks":simultaneous,"transferredMiB":1536,"pauseResume":true,"exitDuringTransfer":true,"hiddenIdleTimerStopped":true,"minimumTerminalWidth":terminal_width,"notes":"Synthetic GTK keyboard/scroll events to real SSH; echo ends at VTE parsing, scroll timing is main-loop scheduling, not physical display latency."});
     std::fs::write(result, output.to_string()).map_err(|e| e.to_string())
 }

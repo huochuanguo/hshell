@@ -276,6 +276,8 @@ impl SessionManager {
         thread::spawn(move || {
             let mut buf = vec![0; OUTPUT_CHUNK];
             let mut read_error = None;
+            const DIAGNOSTIC_LIMIT: usize = 4096;
+            let mut recent = Vec::with_capacity(DIAGNOSTIC_LIMIT);
             loop {
                 {
                     let mut flow = session.flow.lock().unwrap();
@@ -305,6 +307,10 @@ impl SessionManager {
                     // 主动关闭时继续排空管道，避免 ClosePseudoConsole 等待读取而阻塞。
                     continue;
                 }
+                // 只保留诊断所需的少量尾部，不记录或持久化终端输出。
+                let chunk = &buf[length.saturating_sub(DIAGNOSTIC_LIMIT)..length];
+                recent.drain(..(recent.len() + chunk.len()).saturating_sub(DIAGNOSTIC_LIMIT));
+                recent.extend_from_slice(chunk);
                 session.flow.lock().unwrap().pending += 1;
                 if !sink(SessionEvent::Data(buf[..length].to_vec())) {
                     session.stop();
@@ -322,7 +328,14 @@ impl SessionManager {
                 .recv()
                 .unwrap_or_else(|error| Err(std::io::Error::other(error)));
             let (code, error) = match result {
-                Ok(status) => (Some(status.exit_code()), read_error),
+                Ok(status) => {
+                    let code = status.exit_code();
+                    let hint = (code == 255)
+                        .then(|| crate::ssh_failure_hint(&String::from_utf8_lossy(&recent)))
+                        .flatten()
+                        .map(str::to_owned);
+                    (Some(code), read_error.or(hint))
+                }
                 Err(e) => (None, Some(e.to_string())),
             };
             manager.sessions.lock().unwrap().remove(&id);
@@ -495,6 +508,7 @@ mod tests {
         let config = dir.path().join("empty_config");
         fs::write(&config, "").unwrap();
         let manager = SessionManager::default();
+        let refused = std::net::UdpSocket::bind((std::net::Ipv4Addr::LOCALHOST, 0)).unwrap();
         for method in [
             "saved-password",
             "saved-wrong-fallback",
@@ -505,6 +519,7 @@ mod tests {
             "sink-closed",
             "changed-host",
             "saved-changed-host",
+            "refused-port",
         ] {
             if method == "changed-host" || method == "saved-changed-host" {
                 fs::write(
@@ -524,7 +539,12 @@ mod tests {
                 name: "fixture".into(),
                 host: "127.0.0.1".into(),
                 username: "fixture".into(),
-                port: Some(port),
+                port: Some(if method == "refused-port" {
+                    // 仅在本机回环地址验证连接被拒绝。
+                    refused.local_addr().unwrap().port()
+                } else {
+                    port
+                }),
                 identity_file: env::var("HSHELL_TEST_KEY").unwrap(),
                 group: String::new(),
                 favorite: false,
@@ -673,6 +693,7 @@ mod tests {
                                 continue;
                             }
                             manager.resize(&id, 100, 35).unwrap();
+                            manager.write(&id, b"\t").unwrap();
                             manager
                                 .write(
                                     &id,
@@ -688,8 +709,31 @@ mod tests {
                         }
                     }
                     SessionEvent::Exit { code, error } => {
-                        assert!(error.is_none(), "{error:?}");
-                        if method == "changed-host" || method == "saved-changed-host" {
+                        if !matches!(
+                            method,
+                            "changed-host"
+                                | "saved-changed-host"
+                                | "saved-host-declined"
+                                | "refused-port"
+                        ) {
+                            assert!(error.is_none(), "{error:?}");
+                        }
+                        if method == "refused-port" {
+                            assert_eq!(code, Some(255), "{output}");
+                            assert!(
+                                error
+                                    .as_deref()
+                                    .is_some_and(|hint| hint.contains("连接被拒绝")),
+                                "{error:?}: {output}"
+                            );
+                            assert!(!sent);
+                        } else if method == "changed-host" || method == "saved-changed-host" {
+                            assert!(
+                                error
+                                    .as_deref()
+                                    .is_some_and(|hint| hint.contains("主机身份未通过")),
+                                "{error:?}: {output}"
+                            );
                             assert_eq!(code, Some(255), "{output}");
                             assert!(
                                 output.contains("REMOTE HOST IDENTIFICATION HAS CHANGED"),
@@ -704,7 +748,10 @@ mod tests {
                             assert!(!sent);
                         } else {
                             assert_eq!(code, Some(0), "{output}");
-                            assert!(output.contains("fixture-received:hello-中文"), "{output}");
+                            assert!(
+                                output.contains("fixture-received:<TAB>hello-中文"),
+                                "{output}"
+                            );
                             assert!(
                                 !output.contains("fixture-only"),
                                 "password must not be echoed"

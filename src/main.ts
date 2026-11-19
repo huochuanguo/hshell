@@ -1,5 +1,6 @@
 import { invoke, isTauri } from "@tauri-apps/api/core";
 import { getCurrentWindow } from "@tauri-apps/api/window";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import {
   createElement,
   Plus,
@@ -30,6 +31,7 @@ import type { TerminalView } from "./terminal";
 import { parseQuickConnection } from "./connection";
 import { createCloseHandler } from "./window-close";
 import { FilesPane } from "./files";
+import { bindSnippetLibrary } from "./snippets";
 import { copyText } from "./clipboard";
 import {
   DEFAULT_TERMINAL_FONT_SIZE,
@@ -108,10 +110,10 @@ $("#app").innerHTML = `
   <header class="app-toolbar">
     <button class="brand" id="brand" aria-label="新建会话"><img src="${brandIcon}" alt="" width="24" height="24"><strong>HShell</strong></button>
     <div class="toolbar-actions"><button id="new-connection" class="tool-button">${icon("Plus", 15)} 新建连接</button><button id="toggle-sidebar" class="tool-button" aria-label="切换主机栏" aria-expanded="true">${icon("PanelLeft", 15)}<span>主机栏</span></button></div>
-    <div class="toolbar-right"><button id="toggle-files" class="tool-button" aria-expanded="false" aria-controls="files-pane">${icon("Folder", 15)} 文件</button><span id="platform-name">SSH 客户端</span><button id="settings" class="icon-button" aria-label="客户端信息与快捷键">${icon("CircleHelp", 17)}</button></div>
+    <div class="toolbar-right"><button id="open-snippets" class="tool-button" ${desktop ? "" : "hidden"}>${icon("Command", 15)} 命令片段</button><button id="toggle-files" class="tool-button" aria-expanded="false" aria-controls="files-pane">${icon("Folder", 15)} 文件</button><span id="platform-name">SSH 客户端</span><button id="settings" class="icon-button" aria-label="客户端信息与快捷键">${icon("CircleHelp", 17)}</button></div>
   </header>
   <aside class="sidebar" aria-label="主机与会话">
-    <div class="sidebar-heading"><h2>主机</h2><span id="all-count" class="count">0</span><button class="icon-button" id="sidebar-add" aria-label="添加主机">${icon("Plus", 16)}</button></div>
+    <div class="sidebar-heading"><h2>主机</h2><span id="all-count" class="count">0</span><button class="icon-button" id="open-connection-backup" aria-label="导入或导出连接" title="导入或导出连接" ${desktop ? "" : "hidden"}>${icon("MoreHorizontal", 16)}</button><button class="icon-button" id="sidebar-add" aria-label="添加主机">${icon("Plus", 16)}</button></div>
     <label class="sidebar-search">${icon("Search", 14)}<input id="host-search" placeholder="搜索主机…" aria-label="搜索连接"><kbd>/</kbd></label>
     <nav class="filters" aria-label="连接筛选"><button data-filter="all" class="selected">全部</button><button data-filter="favorites">${icon("Star", 12)} 收藏 <span id="favorite-count">0</span></button></nav>
     <div id="host-list" class="host-list"></div>
@@ -129,14 +131,15 @@ $("#app").innerHTML = `
       <div class="start-footnote"><span>SSH 配置与密钥由本机 OpenSSH 管理</span><span>新建连接 <kbd>Ctrl Shift T</kbd></span></div>
     </section>
     <section id="terminal-workspace" class="terminal-workspace" hidden>
-      <div class="terminal-toolbar"><div>${icon("TerminalSquare", 13)}<span id="terminal-address"></span><span class="tiny-dot" id="session-dot"></span><span id="session-status"></span></div><div><div class="terminal-font-controls" role="group" aria-label="终端字号"><button id="terminal-font-decrease" class="icon-button" aria-label="缩小终端字号" title="缩小终端字号 Ctrl+−">${icon("Minus", 13)}</button><button id="terminal-font-reset" class="terminal-font-value" title="恢复默认字号 Ctrl+0"><span id="terminal-font-size" aria-live="polite"></span></button><button id="terminal-font-increase" class="icon-button" aria-label="放大终端字号" title="放大终端字号 Ctrl++">${icon("Plus", 13)}</button></div><button id="terminal-copy" class="icon-button" aria-label="复制选中内容" title="复制选中内容">${icon("Copy", 14)}</button><button id="terminal-search-button" class="icon-button" aria-label="搜索终端内容" title="搜索 Ctrl+Shift+F">${icon("Search", 14)}</button><button id="reconnect" class="dark-button" hidden>${icon("RotateCw", 14)} 重连</button><button id="disconnect" class="dark-button" title="断开 SSH 会话">${icon("Square", 11)} 断开</button></div></div>
-      <div class="terminal-search" id="terminal-search" hidden><input id="terminal-query" aria-label="搜索终端内容" placeholder="查找终端内容"><span id="search-result"></span><button class="icon-button" id="search-prev" aria-label="上一个结果">${icon("ChevronUp", 16)}</button><button class="icon-button" id="search-next" aria-label="下一个结果">${icon("ChevronDown", 16)}</button><button class="icon-button" id="search-close" aria-label="关闭搜索">${icon("X", 16)}</button></div><div id="terminal-panes" class="terminal-panes"></div><div id="exit-banner" class="exit-banner" hidden></div>
+      <div class="terminal-toolbar"><div>${icon("TerminalSquare", 13)}<span id="terminal-address"></span><span class="tiny-dot" id="session-dot"></span><span id="session-status"></span></div><div><div class="terminal-font-controls" role="group" aria-label="终端字号"><button id="terminal-font-decrease" class="icon-button" aria-label="缩小终端字号" title="缩小终端字号 Ctrl+−">${icon("Minus", 13)}</button><button id="terminal-font-reset" class="terminal-font-value" title="恢复默认字号 Ctrl+0"><span id="terminal-font-size" aria-live="polite"></span></button><button id="terminal-font-increase" class="icon-button" aria-label="放大终端字号" title="放大终端字号 Ctrl++">${icon("Plus", 13)}</button></div><button id="terminal-tab-key" class="dark-button" aria-label="向远程终端发送 Tab" title="发送 Tab，由远程 Shell 补全" disabled>Tab</button><button id="terminal-copy" class="icon-button" aria-label="复制选中内容" title="复制选中内容">${icon("Copy", 14)}</button><button id="terminal-search-button" class="icon-button" aria-label="搜索终端内容" title="搜索 Ctrl+Shift+F">${icon("Search", 14)}</button><button id="reconnect" class="dark-button" hidden>${icon("RotateCw", 14)} 重连</button><button id="disconnect" class="dark-button" title="断开 SSH 会话">${icon("Square", 11)} 断开</button></div></div>
+      <div class="terminal-search" id="terminal-search" hidden><input id="terminal-query" aria-label="搜索终端内容" placeholder="查找终端内容"><span id="search-result"></span><button class="icon-button" id="search-prev" aria-label="上一个结果">${icon("ChevronUp", 16)}</button><button class="icon-button" id="search-next" aria-label="下一个结果">${icon("ChevronDown", 16)}</button><button class="icon-button" id="search-close" aria-label="关闭搜索">${icon("X", 16)}</button></div><div id="terminal-panes" class="terminal-panes"></div><div id="exit-banner" class="exit-banner" role="status" hidden></div>
     </section></div><aside id="files-pane" class="files-pane" aria-label="SFTP 文件与传输" hidden></aside></div>
   </main>
   <footer class="status-bar"><div><span class="tiny-dot" id="app-state-dot"></span><span id="app-state">就绪</span><span class="status-divider"></span><span id="session-count">0 个运行会话</span></div><div><span id="terminal-size"></span><span>UTF-8</span><span>xterm-256color</span><button id="status-help" aria-label="查看快捷键">${icon("Command", 12)} 快捷键</button></div></footer>
   <dialog id="profile-dialog" aria-labelledby="editor-title"><form id="profile-form"><div class="dialog-heading"><div><span class="eyebrow">CONNECTION</span><h2 id="editor-title">新建连接</h2></div><button type="button" class="icon-button" data-close="profile-dialog" aria-label="关闭">${icon("X", 20)}</button></div><p class="dialog-description">保存常用服务器。密码可加密保存在本机系统凭据库。</p><label>连接名称<input name="name" required maxlength="80" placeholder="例如：开发服务器" autocomplete="off"></label><label>主机地址或 SSH 别名<input name="host" required maxlength="253" placeholder="192.168.1.10 或 my-server" spellcheck="false" autocomplete="off"></label><div class="form-row"><label>用户名 <span>可选</span><input name="username" maxlength="128" placeholder="沿用 SSH 配置" autocomplete="off" spellcheck="false"></label><label class="port-field">端口 <span>可选</span><input name="port" type="number" min="1" max="65535" placeholder="配置 / 22"></label></div><label>登录密码 <span>可选</span><input name="password" type="password" autocomplete="new-password" maxlength="4096" placeholder="输入要保存的密码"><small id="password-hint">勾选下方选项后保存到系统凭据库。</small></label><label class="checkbox-label remember-password"><input name="rememberPassword" type="checkbox">保存密码到本机系统凭据库</label><label>私钥路径 <span>可选</span><input name="identityFile" placeholder="~/.ssh/id_ed25519" maxlength="4096" spellcheck="false" autocomplete="off"><small>留空使用 ssh-agent、默认密钥或密码认证。</small></label><div class="form-row"><label>分组 <span>可选</span><input name="group" maxlength="40" placeholder="例如：工作" list="groups"></label><label class="checkbox-label"><input name="favorite" type="checkbox">${icon("Star", 16)} 收藏连接</label></div><datalist id="groups"></datalist><p id="form-error" class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="danger-text" id="delete-profile" hidden>删除连接</button><span></span><button type="button" class="secondary" data-close="profile-dialog">取消</button><button class="primary" id="save-profile" type="submit">${icon("Check", 16)} 保存连接</button></div></form></dialog>
   <dialog id="confirm-dialog" aria-labelledby="confirm-title"><div class="dialog-heading"><h2 id="confirm-title"></h2></div><p id="confirm-message" class="dialog-description"></p><div class="dialog-actions"><span></span><button class="secondary" id="confirm-cancel">取消</button><button class="primary" id="confirm-ok">确定</button></div></dialog>
-  <dialog id="info-dialog" aria-labelledby="info-title"><div class="dialog-heading"><div><span class="eyebrow">WORKSPACE</span><h2 id="info-title">HShell</h2></div><button class="icon-button" data-close="info-dialog" aria-label="关闭">${icon("X", 20)}</button></div><div class="shortcut-list"><div><span>快速连接</span><kbd>Ctrl Shift K</kbd></div><div><span>显示 / 隐藏主机栏</span><kbd>Ctrl Shift B</kbd></div><div><span>新建连接</span><kbd>Ctrl Shift T</kbd></div><div><span>关闭当前终端</span><kbd>Ctrl Shift W</kbd></div><div><span>查找终端内容</span><kbd>Ctrl Shift F</kbd></div><div><span>复制 / 粘贴</span><kbd>Ctrl Shift C / V</kbd></div><div><span>终端字号放大 / 缩小</span><kbd>Ctrl + / −</kbd></div><div><span>恢复默认终端字号</span><kbd>Ctrl 0</kbd></div><div><span>切换终端</span><kbd>Alt 1 … 9</kbd></div><div><span>搜索主机（新建会话页）</span><kbd>/</kbd></div></div><div class="environment-details" id="environment-details"></div><p class="info-note">首次连接时，请核对主机指纹。已保存密码的连接会自动登录；其他连接在终端内输入密码。多行粘贴会先提示确认。</p><span class="version-label">HShell · 0.3.6</span></dialog>
+  <dialog id="connection-backup" aria-labelledby="backup-title"><div class="dialog-heading"><h2 id="backup-title">连接配置迁移</h2><button class="icon-button" id="backup-close" aria-label="关闭">${icon("X", 20)}</button></div><p class="dialog-description">导出为新的 JSON 文件，包含主机、用户名、端口、分组和收藏。密码、私钥及其路径留在本机。导入时追加新连接，跳过重复项。</p><p class="form-error" id="backup-error" role="alert"></p><div class="dialog-actions"><span></span><button type="button" class="secondary" id="backup-import">导入连接</button><button type="button" class="primary" id="backup-export">导出连接</button></div></dialog>
+  <dialog id="info-dialog" aria-labelledby="info-title"><div class="dialog-heading"><div><span class="eyebrow">WORKSPACE</span><h2 id="info-title">HShell</h2></div><button class="icon-button" data-close="info-dialog" aria-label="关闭">${icon("X", 20)}</button></div><div class="shortcut-list"><div><span>快速连接</span><kbd>Ctrl Shift K</kbd></div><div><span>显示 / 隐藏主机栏</span><kbd>Ctrl Shift B</kbd></div><div><span>新建连接</span><kbd>Ctrl Shift T</kbd></div><div><span>关闭当前终端</span><kbd>Ctrl Shift W</kbd></div><div><span>查找终端内容</span><kbd>Ctrl Shift F</kbd></div><div><span>复制 / 粘贴</span><kbd>Ctrl Shift C / V</kbd></div><div><span>终端字号放大 / 缩小</span><kbd>Ctrl + / −</kbd></div><div><span>恢复默认终端字号</span><kbd>Ctrl 0</kbd></div><div><span>切换终端</span><kbd>Alt 1 … 9</kbd></div><div><span>搜索主机（新建会话页）</span><kbd>/</kbd></div></div><div class="environment-details" id="environment-details"></div><p class="info-note">首次连接时，请核对主机指纹。已保存密码的连接会自动登录；其他连接在终端内输入密码。多行粘贴会先提示确认。</p><span class="version-label">HShell · 0.3.7</span></dialog>
   <div id="toast" class="toast" role="status" hidden></div>
 `;
 
@@ -249,6 +252,69 @@ function renderProfiles() {
     .join("");
   highlightActiveHost();
 }
+const backupDialog = $<HTMLDialogElement>("#connection-backup");
+const backupImport = $<HTMLButtonElement>("#backup-import");
+const backupExport = $<HTMLButtonElement>("#backup-export");
+const backupClose = $<HTMLButtonElement>("#backup-close");
+let transferringBackup = false;
+$("#open-connection-backup").onclick = () => {
+  $("#backup-error").textContent = "";
+  backupDialog.showModal();
+  backupImport.focus();
+};
+backupClose.onclick = () => backupDialog.close();
+backupDialog.oncancel = (event) => {
+  if (transferringBackup) event.preventDefault();
+};
+backupImport.onclick = () => void transferBackup("import");
+backupExport.onclick = () => void transferBackup("export");
+
+async function transferBackup(action: "import" | "export") {
+  if (transferringBackup || saving) return;
+  transferringBackup = saving = true;
+  backupImport.disabled = backupExport.disabled = backupClose.disabled = true;
+  const error = $("#backup-error");
+  error.textContent = "";
+  const filters = [{ name: "连接备份", extensions: ["json"] }];
+  try {
+    if (action === "import") {
+      const source = await open({ title: "选择连接备份", filters });
+      if (!source) return;
+      const result = await invoke<{
+        profiles: Profile[];
+        added: number;
+        skipped: number;
+      }>("import_connections", { source });
+      profiles = result.profiles;
+      configHealthy = true;
+      renderProfiles();
+      notify(
+        `已导入 ${result.added} 个连接，跳过 ${result.skipped} 个重复项。`,
+      );
+    } else {
+      const destination = await save({
+        title: "导出连接（请使用新的文件名）",
+        defaultPath: "hshell-connections.json",
+        filters,
+      });
+      if (!destination) return;
+      const count = await invoke<number>("export_connections", { destination });
+      notify(`已导出 ${count} 个连接。`);
+    }
+    backupDialog.close();
+  } catch (failure) {
+    error.textContent = String(failure);
+  } finally {
+    transferringBackup = saving = false;
+    backupImport.disabled =
+      backupExport.disabled =
+      backupClose.disabled =
+        false;
+    if (backupDialog.open)
+      (action === "import" ? backupImport : backupExport).focus();
+  }
+}
+
 function highlightActiveHost() {
   const profileId = sessions.get(active)?.profile.id;
   document
@@ -525,6 +591,9 @@ function renderTabs() {
   $("#session-count").textContent =
     `${[...sessions.values()].filter((s) => s.status !== "exited" && !s.preview).length} 个运行会话`;
   const view = sessions.get(active);
+  $("#terminal-tab-key").hidden = !view || view.preview;
+  $<HTMLButtonElement>("#terminal-tab-key").disabled =
+    !view || view.preview || view.status !== "running";
   if (view) {
     $("#terminal-address").textContent = view.preview
       ? "本地终端预览"
@@ -541,7 +610,8 @@ function renderTabs() {
     $("#exit-banner").hidden = view.status !== "exited";
     $("#exit-banner").textContent = view.preview
       ? "本地演示已结束。可以关闭标签，或新建一个终端预览。"
-      : `SSH 进程已结束${view.exitCode !== null ? `（退出码 ${view.exitCode}）` : ""}。终端输出已保留，可以点击右上角重新连接。`;
+      : (view.exitDetail ??
+        `SSH 进程已结束${view.exitCode !== null ? `（退出码 ${view.exitCode}）` : ""}。终端输出已保留，可以点击右上角重新连接。`);
     $("#reconnect").hidden = view.status !== "exited" || view.preview;
     $("#disconnect").hidden = view.status === "exited" || view.preview;
   } else {
@@ -691,6 +761,7 @@ for (const [id, delta] of [
     if (event.detail > 0) sessions.get(active)?.term.focus();
   };
 }
+$("#terminal-tab-key").onclick = () => sessions.get(active)?.sendTab();
 $("#disconnect").onclick = () => void disconnectSession();
 $("#host-search").oninput = (event) => {
   query = (event.target as HTMLInputElement).value;
@@ -805,6 +876,18 @@ async function boot() {
   }
 }
 files = new FilesPane($("#files-pane"), notify, confirmAction);
+bindSnippetLibrary($("#open-snippets"), notify, confirmAction, (command) => {
+  const view = sessions.get(active);
+  if (!view?.insertSnippet(command)) return false;
+  requestAnimationFrame(() => {
+    if (
+      sessions.get(active) === view &&
+      !document.querySelector("dialog[open]")
+    )
+      view.term.focus();
+  });
+  return true;
+});
 $("#toggle-files").onclick = () =>
   desktop ? files.toggle() : notify("SFTP 文件传输请使用桌面客户端。");
 const bootReady = boot().catch((error) => notify(String(error)));

@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Real vim/tmux via disposable loopback sshd, never a user's SSH destination."""
+"""通过隔离的回环 sshd 验证 Bash 补全及 Vim、tmux 交互。"""
 import argparse
 import hashlib
 import json
@@ -37,8 +37,10 @@ StrictModes no
 PrintMotd no
 ForceCommand /fixture/shell
 ''')
-        (root/'shell').write_text('#!/bin/sh\nexport LANG=C.UTF-8 PS1="fixture-ready> "\nexec /bin/bash --noprofile --norc -i\n')
+        (root/'shell').write_text('#!/bin/sh\nexport LANG=C.UTF-8 INPUTRC=/dev/null PS1="fixture-ready> "\nexec /bin/bash --noprofile --norc -i\n')
         (root/'shell').chmod(0o755)
+        (root/'tab-file.txt').write_text('TAB_FILE_CONTENT\n')
+        (root/'button-file.txt').write_text('BUTTON_FILE_CONTENT\n')
         container=None;process=None;server=None
         if args.local_server:
             assert os.geteuid()==0 and Path('/.dockerenv').is_file(), 'Local sshd fixture is container-only'
@@ -83,7 +85,7 @@ ForceCommand /fixture/shell
                 except (OSError,ValueError):
                     assert process.poll() is None, process.stderr.read().decode()
                     time.sleep(.05)
-            assert final and final['phase']=='complete', final
+            assert final and final['phase']=='complete' and final['bashTabCompletion'] and final['snippetInsertOnly'], final
             process.wait(timeout=10)
             assert process.returncode==0
             stderr=process.stderr.read().decode()

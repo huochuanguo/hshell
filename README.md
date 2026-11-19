@@ -6,14 +6,16 @@ Ubuntu 原生版使用 **Rust + GTK 3 + VTE + 系统 OpenSSH**，终端直接读
 
 ## 已实现
 
-- 连接新增、编辑、删除、分组、收藏、搜索；配置在本地原子写入。
+- 连接新增、编辑、删除、分组、收藏、搜索；配置在本地原子写入。主机栏可导入和导出 JSON 备份，适用于 Windows 与 Ubuntu 之间迁移。导入追加连接并跳过重复项；密码、私钥及私钥路径不随备份迁移。
 - 桌面客户端布局：可收起的分组主机栏、可拖动会话标签、完整终端画布；石墨灰与冷蓝配色。
 - 本地内置 IBM Plex Sans 界面字体与 JetBrains Mono 终端字体，中文使用系统字体回退；终端默认 15px。
 - 快速连接支持 `用户名@主机` / SSH 别名 / IPv6，支持另存为主机。
 - 多标签交互终端，尺寸同步、终端搜索、复制选中内容、断开并保留输出、手动重连。
+- 聚焦 SSH 终端后按 `Tab`，也可点击终端工具栏的「Tab」。例如在远端 Bash 中输入 `cat te`，当前目录下唯一匹配的是 `test.txt` 时会补全文件名；候选由远端 Shell 提供，仍需按 Enter 才会执行命令。
+- 工具栏「命令片段」支持新建、编辑、分组和搜索本地命令。选中的单行命令只会插入当前 SSH 终端，由用户按 Enter 执行。
 - 系统 OpenSSH 密码 / 私钥 / ssh-agent 认证；用户名和端口留空时沿用 SSH 配置。
 - 主机别名、ProxyJump 等能力直接复用 `~/.ssh/config`。
-- 首次主机指纹由 OpenSSH 提示确认，指纹变化时拒绝连接。
+- 首次主机指纹由 OpenSSH 提示确认，指纹变化时拒绝连接。能识别的连接失败会给出 DNS、端口、网络、认证或主机身份方面的排查提示，原始输出仍保留。
 - 多行粘贴确认，关闭会话及退出应用确认，退出时清理 SSH 进程。
 - 每终端 3,000 行回滚、最多 12 个终端、单次粘贴上限 1 MiB。
 - 主机列表按行增量更新，首次加载分批创建；配置校验快照在文件身份变化后刷新，避免每次连接重复解析。
@@ -21,6 +23,7 @@ Ubuntu 原生版使用 **Rust + GTK 3 + VTE + 系统 OpenSSH**，终端直接读
 - Ubuntu 终端由 VTE 直接解析、渲染、滚动，不经过 JS 或 IPC；隐藏标签继续处理输出。Tauri 前端保留二进制 IPC 与输出背压。
 - 连接表单支持保存、替换、清除登录密码；Linux 使用 Secret Service，Windows 使用 Credential Manager。
 - Ubuntu / Windows SFTP：右侧文件栏、目录导航、上传/下载、双向断点续传、暂停/继续、重启后恢复、新建目录、重命名及删除文件/空目录。最多两路传输，文件内容不进入界面线程。
+- Ubuntu 与 Windows 都可一次选择多个文件，或把本地文件拖到 SFTP 文件列表中上传。使用 Ctrl 多选或 Shift 连选后点「下载」，选择一次本地目录；批量下载跳过已有同名文件。文件栏支持按名称筛选当前目录并复制单个项目的远端绝对路径。
 - 文件栏按类型区分图标：目录柔金色、链接青绿色、代码冷蓝色、压缩包淡紫色、图片灰绿色；目录与链接名称同步着色，普通文件名保持浅灰。六类图标缓存复用，不增加远程查询。
 
 在终端会话中点击「文件」打开 SFTP。收起文件栏会断开浏览连接，后台传输继续；退出应用保留断点，再次打开文件栏后点击「继续」。续传会在后台完整核对已传前缀，大文件可能有一段校验时间。移除未完成任务会明确保留临时文件路径，按需清理。断点记录不含密码。详见 [SFTP 设计](docs/sftp-design.md)。
@@ -53,7 +56,7 @@ npm run dev
 
 0.3.0 新增 SFTP 的专项验收见 [验证记录](docs/verification.md)，未将旧版长时结果作为本版 SFTP 的长时证明。
 
-Ubuntu 原生 **HShell 0.3.6** 在本机打包后生成 `target/release/bundle/deb/hshell_0.3.6_amd64.deb`，命令为 `hshell`。安装时自动替换旧 `qizhan-ssh` 包；请先退出旧客户端，再安装并从启动器打开 HShell。原连接配置、保存的密码及 OpenSSH 信任记录继续使用，无需导出迁移。
+Ubuntu 原生 **HShell 0.3.7** 在本机打包后生成 `target/release/bundle/deb/hshell_0.3.7_amd64.deb`，命令为 `hshell`。安装时自动替换旧 `qizhan-ssh` 包；请先退出旧客户端，再安装并从启动器打开 HShell。原连接配置、保存的密码及 OpenSSH 信任记录继续使用，无需导出迁移。
 
 新图标将 H 与终端提示符结合，提供 Linux 多尺寸 PNG / SVG 和 Windows ICO。矢量源为 [hshell.svg](src/assets/hshell.svg)，运行 `python3 scripts/generate_icons.py` 可重新生成（开发时需 `rsvg-convert` 与 Pillow）。
 
@@ -62,7 +65,7 @@ Ubuntu 原生 **HShell 0.3.6** 在本机打包后生成 `target/release/bundle/d
 ```bash
 cargo build -p hshell-native --release --locked
 python3 scripts/package_native.py target/release/hshell
-sudo apt install ./target/release/bundle/deb/hshell_0.3.6_amd64.deb
+sudo apt install ./target/release/bundle/deb/hshell_0.3.7_amd64.deb
 ```
 
 Ubuntu 22.04 的发布包必须在 Ubuntu 22.04 构建，再在 22.04 和 24.04 安装验收。**不能用 Ubuntu 24.04 构建结果宣称兼容 22.04**，因为 glibc 基线可能不兼容。CI 已定义两套 Ubuntu 构建及 Windows 构建，但添加工作流不代表已实际运行。
@@ -132,7 +135,7 @@ python3 scripts/native_hosts.py target/release/hshell --updates --interleave \
   --max-replaced-rows 1 --output /tmp/hosts.json
 # 独立 DBus / IBus / libpinyin 的组词提交（需 ibus-libpinyin / python3-gi）：
 python3 scripts/native_vte.py target/release/hshell --ime --output /tmp/ime.json
-# 真实 sshd / vim / tmux（使用一次性容器，只发布回环端口）：
+# 真实 sshd / Bash Tab 补全 / vim / tmux（一次性容器，只发布回环端口）：
 docker build -f scripts/programs.Dockerfile -t hshell-test:programs-ubuntu22 .
 python3 scripts/native_programs.py target/release/hshell --output /tmp/programs.json
 # 测完后必须重新构建不带 native-probe 的发布版本。

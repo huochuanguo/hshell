@@ -47,7 +47,6 @@ extern "C" {
     fn vte_regex_unref(regex: *mut c_void);
     fn vte_terminal_search_find_next(terminal: *mut c_void) -> i32;
     fn vte_terminal_search_find_previous(terminal: *mut c_void) -> i32;
-    #[cfg(feature = "native-probe")]
     fn vte_terminal_get_text_range(
         terminal: *mut c_void,
         start_row: i64,
@@ -58,9 +57,7 @@ extern "C" {
         data: *mut c_void,
         attrs: *mut c_void,
     ) -> *mut c_char;
-    #[cfg(feature = "native-probe")]
     fn vte_terminal_get_cursor_position(terminal: *mut c_void, column: *mut i64, row: *mut i64);
-    #[cfg(feature = "native-probe")]
     fn vte_terminal_feed_child(terminal: *mut c_void, data: *const u8, length: isize);
     #[cfg(feature = "native-probe")]
     fn vte_terminal_select_all(terminal: *mut c_void);
@@ -163,6 +160,14 @@ impl Terminal {
             vte_terminal_feed(self.raw(), text.as_ptr(), text.len() as isize);
         }
     }
+    pub fn insert_snippet(&self, text: &str) -> bool {
+        if !self.alive.get() || ssh_core::validate_snippet_text(text).is_err() {
+            return false;
+        }
+        self.paste(text);
+        true
+    }
+
     pub fn paste(&self, text: &str) {
         if !self.alive.get() {
             return;
@@ -234,7 +239,6 @@ impl Terminal {
     pub fn text(&self) -> String {
         self.recent_text(3100)
     }
-    #[cfg(feature = "native-probe")]
     pub fn recent_text(&self, lines: i64) -> String {
         if !self.alive.get() {
             return String::new();
@@ -286,8 +290,11 @@ impl Terminal {
             }
         }
     }
-    #[cfg(feature = "native-probe")]
-    pub fn send(&self, text: &str) {
+    pub fn send_tab(&self) {
+        self.send("\t");
+    }
+
+    pub(crate) fn send(&self, text: &str) {
         if !self.alive.get() {
             return;
         }

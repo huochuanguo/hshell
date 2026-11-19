@@ -12,18 +12,18 @@ Gitee `origin` 保存源码，GitHub 私有镜像运行构建与发布。Ubuntu 
 
 ## 示例
 
-以下以 `0.3.6` 为例。先推送包含版本和说明的提交，再创建草稿并上传 Windows 安装包。示例假设已配置 `github` 镜像 remote，且 GitHub CLI 已登录。
+以下以 `0.3.7` 为例。先推送包含版本和说明的提交，再创建草稿并上传 Windows 安装包。示例假设已配置 `github` 镜像 remote，且 GitHub CLI 已登录。
 
 ```bash
 git push origin main
 git push github main
-gh release create v0.3.6 --repo huochuanguo/hshell --draft --target "$(git rev-parse HEAD)" \
-  --title 'HShell 0.3.6' --notes-file docs/releases/0.3.6.md \
-  target/release/bundle/nsis/HShell_0.3.6_x64-setup.exe \
-  target/release/bundle/nsis/HShell_0.3.6_x64-setup.exe.sha256
-git tag -a v0.3.6 -m '发布 HShell 0.3.6'
-git push origin v0.3.6
-git push github v0.3.6
+gh release create v0.3.7 --repo huochuanguo/hshell --draft --target "$(git rev-parse HEAD)" \
+  --title 'HShell 0.3.7' --notes-file docs/releases/0.3.7.md \
+  target/release/bundle/nsis/HShell_0.3.7_x64-setup.exe \
+  target/release/bundle/nsis/HShell_0.3.7_x64-setup.exe.sha256
+git tag -a v0.3.7 -m '发布 HShell 0.3.7'
+git push origin v0.3.7
+git push github v0.3.7
 ```
 
 构建状态见 [Actions](https://github.com/huochuanguo/hshell/actions)，正式安装包见 [Releases](https://github.com/huochuanguo/hshell/releases)。仅推送 Gitee 不会触发 GitHub Actions。安装包不提交到 Git，构建中间产物保留 7 天。

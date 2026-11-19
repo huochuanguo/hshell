@@ -66,6 +66,63 @@ async fn store_profiles(
 }
 
 #[tauri::command]
+async fn get_snippets(state: State<'_, AppState>) -> Result<Vec<ssh_core::Snippet>, String> {
+    let path = state.profiles_path.with_file_name("commands.json");
+    let lock = state.config_lock.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = lock.lock().unwrap();
+        ssh_core::load_snippets(&path)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn store_snippets(
+    state: State<'_, AppState>,
+    snippets: Vec<ssh_core::Snippet>,
+) -> Result<(), String> {
+    let path = state.profiles_path.with_file_name("commands.json");
+    let lock = state.config_lock.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = lock.lock().unwrap();
+        ssh_core::save_snippets(&path, &snippets)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn export_connections(
+    state: State<'_, AppState>,
+    destination: PathBuf,
+) -> Result<usize, String> {
+    let path = state.profiles_path.clone();
+    let lock = state.config_lock.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = lock.lock().unwrap();
+        ssh_core::export_connections(&path, &destination)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
+async fn import_connections(
+    state: State<'_, AppState>,
+    source: PathBuf,
+) -> Result<ssh_core::ImportResult, String> {
+    let path = state.profiles_path.clone();
+    let lock = state.config_lock.clone();
+    tauri::async_runtime::spawn_blocking(move || {
+        let _guard = lock.lock().unwrap();
+        ssh_core::import_connections(&path, &source)
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 async fn start_session(
     state: State<'_, AppState>,
     id: String,
@@ -250,6 +307,10 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             get_profiles,
             store_profiles,
+            get_snippets,
+            store_snippets,
+            export_connections,
+            import_connections,
             start_session,
             write_session,
             resize_session,

@@ -1,6 +1,6 @@
 # Windows 客户端
 
-Windows 使用 Tauri 2 / WebView2 + xterm.js + ConPTY，共享 Rust SSH 和 SFTP 核心。Windows 桌面端版本为 0.3.6；配置标识 `io.qizhan.ssh` 和凭据命名空间保持不变。
+Windows 使用 Tauri 2 / WebView2 + xterm.js + ConPTY，共享 Rust SSH 和 SFTP 核心。Windows 桌面端版本为 0.3.7；配置标识 `io.qizhan.ssh` 和凭据命名空间保持不变。
 
 ## 功能与系统要求
 

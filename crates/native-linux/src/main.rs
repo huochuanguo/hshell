@@ -12,6 +12,8 @@ mod probe_stats;
 mod program_probe;
 #[cfg(target_os = "linux")]
 mod reclaim;
+#[cfg(target_os = "linux")]
+mod snippets;
 #[cfg(all(target_os = "linux", feature = "native-probe"))]
 mod stress;
 #[cfg(target_os = "linux")]

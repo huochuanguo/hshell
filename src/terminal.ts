@@ -25,6 +25,7 @@ export class TerminalView {
   readonly profile: Profile;
   status: "starting" | "running" | "exited" = "starting";
   exitCode: number | null = null;
+  exitDetail: string | null = null;
   private authAbort = new AbortController();
   private fit = new FitAddon();
   private search = new SearchAddon();
@@ -131,6 +132,25 @@ export class TerminalView {
     this.observer.observe(this.element);
   }
 
+  insertSnippet(command: string): boolean {
+    if (this.preview || this.disposed || this.status !== "running")
+      return false;
+    if (
+      !command.trim() ||
+      /[\x00-\x1f\x7f-\x9f]/.test(command) ||
+      new TextEncoder().encode(command).length > 4096
+    )
+      return false;
+    this.term.paste(command);
+    return true;
+  }
+
+  sendTab() {
+    if (this.preview || this.disposed || this.status !== "running") return;
+    this.term.focus();
+    this.term.input("\t", true);
+  }
+
   private async paste(text: string) {
     if (!text || this.disposed || this.status !== "running") return;
     if (new TextEncoder().encode(text).length > INPUT_LIMIT) {
@@ -198,6 +218,7 @@ export class TerminalView {
         this.authAbort.abort();
         this.status = "exited";
         this.exitCode = event.code;
+        this.exitDetail = event.error;
         this.queue = [];
         this.queuedBytes = 0;
         this.term.options.disableStdin = true;

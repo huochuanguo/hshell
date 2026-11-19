@@ -424,10 +424,24 @@ pub async fn sftp_enqueue(
     local: PathBuf,
     remote_path: String,
     replace: bool,
-) -> Result<String, String> {
+    skip_existing: Option<bool>,
+) -> Result<Option<String>, String> {
     profile.validate()?;
     let files = files.inner().clone();
     tauri::async_runtime::spawn_blocking(move || {
+        if direction == Direction::Upload {
+            let metadata =
+                std::fs::symlink_metadata(&local).map_err(|e| format!("读取本地文件失败：{e}"))?;
+            if !metadata.is_file() {
+                return Err("上传仅支持普通文件".into());
+            }
+        } else if skip_existing == Some(true) {
+            match std::fs::symlink_metadata(&local) {
+                Ok(_) => return Ok(None),
+                Err(e) if e.kind() == std::io::ErrorKind::NotFound => {}
+                Err(e) => return Err(format!("检查下载目标失败：{e}")),
+            }
+        }
         let mut inner = files.inner.lock().unwrap();
         if inner.shutting_down {
             return Err("应用正在退出".into());
@@ -456,7 +470,7 @@ pub async fn sftp_enqueue(
         inner.queue.push_back(id.clone());
         drop(inner);
         files.pump();
-        Ok(id)
+        Ok(Some(id))
     })
     .await
     .map_err(|e| e.to_string())?

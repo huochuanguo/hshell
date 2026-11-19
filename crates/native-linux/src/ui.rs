@@ -77,6 +77,7 @@ pub struct Client {
     session_address: gtk::Label,
     disconnect: gtk::Button,
     reconnect: gtk::Button,
+    pub(crate) tab_key: gtk::Button,
     files: RefCell<Option<Rc<crate::files::FilePane>>>,
     terminal_pane: gtk::Paned,
 }
@@ -183,6 +184,9 @@ impl Client {
         toolbar.pack_start(&toggle, false, false, 0);
         let info = icon_button("help-about-symbolic", "客户端信息与快捷键");
         toolbar.pack_end(&info, false, false, 0);
+        let snippets = gtk::Button::with_label("命令片段");
+        snippets.set_image(Some(&icon("utilities-terminal-symbolic")));
+        toolbar.pack_end(&snippets, false, false, 0);
         root.pack_start(&toolbar, false, false, 0);
         let pane = gtk::Paned::new(gtk::Orientation::Horizontal);
         pane.set_position(244);
@@ -194,6 +198,8 @@ impl Client {
         sidebar_title.pack_start(&label("主机", "heading"), true, true, 8);
         let add = icon_button("list-add-symbolic", "添加主机");
         sidebar_title.pack_end(&add, false, false, 0);
+        let connection_backup = icon_button("document-save-as-symbolic", "导入或导出连接");
+        sidebar_title.pack_end(&connection_backup, false, false, 0);
         sidebar.pack_start(&sidebar_title, false, false, 0);
         let host_search = gtk::SearchEntry::new();
         host_search.set_placeholder_text(Some("搜索主机…"));
@@ -245,6 +251,10 @@ impl Client {
         sessionbar.pack_start(&files, false, false, 0);
         let copy = icon_button("edit-copy-symbolic", "复制选中内容 · Ctrl Shift C");
         let find = icon_button("edit-find-symbolic", "搜索终端 · Ctrl Shift F");
+        let tab_key = gtk::Button::with_label("Tab");
+        tab_key.set_tooltip_text(Some("发送 Tab，由远程 Shell 补全"));
+        tab_key.set_sensitive(false);
+        sessionbar.pack_start(&tab_key, false, false, 0);
         sessionbar.pack_start(&copy, false, false, 0);
         sessionbar.pack_start(&find, false, false, 0);
         workspace.pack_start(&sessionbar, false, false, 0);
@@ -325,6 +335,7 @@ impl Client {
             session_address,
             disconnect,
             reconnect,
+            tab_key,
             files: RefCell::new(None),
             terminal_pane,
         });
@@ -341,6 +352,9 @@ impl Client {
         for button in [&new, &add, &home_new] {
             Self::button(button, &client, |client| client.editor(None));
         }
+        Self::button(&connection_backup, &client, |client| {
+            client.connection_backup()
+        });
         Self::button(&toggle, &client, |client| client.toggle_sidebar());
         Self::button(&info, &client, |client| client.info());
         Self::button(&quick, &client, |client| client.quick_connect());
@@ -393,6 +407,25 @@ impl Client {
                 let profile = tab.profile.clone();
                 client.close_tab(&tab.id, false);
                 client.connect_profile(profile);
+            }
+        });
+        let weak = Rc::downgrade(&client);
+        snippets.connect_clicked(move |button| {
+            if let Some(client) = weak.upgrade() {
+                crate::snippets::open(
+                    &client,
+                    button,
+                    client.profiles_path.with_file_name("commands.json"),
+                );
+            }
+        });
+        Self::button(&client.tab_key, &client, |client| {
+            if let Some(tab) = client
+                .active()
+                .filter(|tab| tab.phase.get() == Phase::Running)
+            {
+                tab.terminal.widget.grab_focus();
+                tab.terminal.send_tab();
             }
         });
         let weak = Rc::downgrade(&client);
@@ -609,7 +642,13 @@ impl Client {
         if self.closing.get() {
             return;
         }
-        if let Some(tab) = self.active() {
+        let active = self.active();
+        self.tab_key.set_sensitive(
+            active
+                .as_ref()
+                .is_some_and(|tab| tab.phase.get() == Phase::Running),
+        );
+        if let Some(tab) = active {
             self.session_address.set_text(&format!(
                 "{} · {}",
                 tab.profile.name,
@@ -1128,7 +1167,9 @@ impl Client {
         scroll.add(&terminal.widget);
         root.pack_start(&scroll, true, true, 0);
         let banner = label("", "dim");
+        banner.set_line_wrap(true);
         banner.set_margin_start(16);
+        banner.set_margin_end(16);
         banner.set_margin_top(8);
         banner.set_margin_bottom(8);
         banner.set_no_show_all(true);
@@ -1232,7 +1273,9 @@ impl Client {
                                     client.authenticate(&tab, request_id, prompt, confirm);
                                 }
                                 client.update_session();
-                                client.notice("会话运行中");
+                                if tab.phase.get() == Phase::Running {
+                                    client.notice("会话运行中");
+                                }
                             }
                             Err(error) => {
                                 tab.phase.set(Phase::Exited);
@@ -1275,6 +1318,7 @@ impl Client {
                 tab.session.borrow_mut().take();
                 tab.label
                     .set_text(&format!("{} · 已结束", tab.profile.name));
+                let pending_hint = code == Some(255) && error.is_none();
                 tab.banner.set_text(&error.unwrap_or_else(|| {
                     format!(
                         "SSH 进程已结束（退出码 {}）。输出已保留，可关闭标签或重新连接。",
@@ -1282,6 +1326,22 @@ impl Client {
                     )
                 }));
                 tab.banner.show();
+                if pending_hint {
+                    let weak = Rc::downgrade(tab);
+                    // 子进程退出与 VTE 读取 PTY 是独立事件，先让 VTE 处理最后一批输出。
+                    glib::timeout_add_local_once(
+                        std::time::Duration::from_millis(160),
+                        move || {
+                            if let Some(tab) = weak.upgrade().filter(|tab| !tab.closed.get()) {
+                                if let Some(hint) =
+                                    ssh_core::ssh_failure_hint(&tab.terminal.recent_text(24))
+                                {
+                                    tab.banner.set_text(hint);
+                                }
+                            }
+                        },
+                    );
+                }
                 self.update_session();
             }
             SessionEvent::Data(_) => unreachable!("VTE consumes PTY output directly"),
@@ -1647,6 +1707,115 @@ impl Client {
         let alive = dialog_guard(&dialog);
         dialog.run();
         dismiss(&dialog, &alive);
+    }
+
+    fn connection_backup(self: &Rc<Self>) {
+        let dialog = gtk::MessageDialog::new(
+            Some(&self.window),
+            gtk::DialogFlags::MODAL | gtk::DialogFlags::DESTROY_WITH_PARENT,
+            gtk::MessageType::Question,
+            gtk::ButtonsType::None,
+            "连接配置迁移",
+        );
+        dialog.set_secondary_text(Some(
+            "导出为新的 JSON 文件。密码、私钥及其路径留在本机。导入时追加新连接，跳过重复项。",
+        ));
+        dialog.add_buttons(&[
+            ("取消", gtk::ResponseType::Cancel),
+            ("导入连接", gtk::ResponseType::Apply),
+            ("导出连接", gtk::ResponseType::Accept),
+        ]);
+        let alive = dialog_guard(&dialog);
+        let response = dialog.run();
+        dismiss(&dialog, &alive);
+        let importing = match response {
+            gtk::ResponseType::Apply => true,
+            gtk::ResponseType::Accept => false,
+            _ => return,
+        };
+        let chooser = gtk::FileChooserDialog::new(
+            Some(if importing {
+                "选择连接备份"
+            } else {
+                "导出连接（请使用新的文件名）"
+            }),
+            Some(&self.window),
+            if importing {
+                gtk::FileChooserAction::Open
+            } else {
+                gtk::FileChooserAction::Save
+            },
+        );
+        chooser.set_modal(true);
+        if !importing {
+            chooser.set_current_name("hshell-connections.json");
+        }
+        let filter = gtk::FileFilter::new();
+        filter.set_name(Some("连接备份（JSON）"));
+        filter.add_pattern("*.json");
+        chooser.add_filter(filter);
+        chooser.add_buttons(&[
+            ("取消", gtk::ResponseType::Cancel),
+            (
+                if importing { "导入" } else { "导出" },
+                gtk::ResponseType::Accept,
+            ),
+        ]);
+        let alive = dialog_guard(&chooser);
+        let accepted = chooser.run() == gtk::ResponseType::Accept;
+        let chosen = alive.get().then(|| chooser.filename()).flatten();
+        dismiss(&chooser, &alive);
+        let Some(chosen) = chosen.filter(|_| accepted && !self.closing.get()) else {
+            return;
+        };
+        if self.saving.replace(true) {
+            self.error("正在保存连接，请稍后。");
+            return;
+        }
+        let config = self.profiles_path.clone();
+        let lock = self.config_lock.clone();
+        let weak = Rc::downgrade(self);
+        if importing {
+            job(
+                move || {
+                    let _guard = lock.lock().unwrap();
+                    ssh_core::import_connections(&config, &chosen)
+                },
+                move |result| {
+                    if let Some(client) = weak.upgrade() {
+                        client.saving.set(false);
+                        match result {
+                            Ok(report) => {
+                                client.writable.set(true);
+                                client.profiles.replace(report.profiles);
+                                client.render_hosts();
+                                client.notice(&format!(
+                                    "已导入 {} 个连接，跳过 {} 个重复项。",
+                                    report.added, report.skipped
+                                ));
+                            }
+                            Err(e) => client.error(&e),
+                        }
+                    }
+                },
+            );
+        } else {
+            job(
+                move || {
+                    let _guard = lock.lock().unwrap();
+                    ssh_core::export_connections(&config, &chosen)
+                },
+                move |result| {
+                    if let Some(client) = weak.upgrade() {
+                        client.saving.set(false);
+                        match result {
+                            Ok(count) => client.notice(&format!("已导出 {count} 个连接。")),
+                            Err(e) => client.error(&e),
+                        }
+                    }
+                },
+            );
+        }
     }
 
     fn persist(

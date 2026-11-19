@@ -1262,3 +1262,36 @@ form > .remember-password {
 .auth-dialog input {
   width: 100%;
 }
+
+#snippet-list,
+#snippet-command {
+  display: block;
+  width: 100%;
+  padding: 7px 9px;
+  color: var(--text);
+  background: var(--input);
+  border: 1px solid var(--line);
+  border-radius: 3px;
+}
+#snippet-list optgroup {
+  color: var(--muted);
+}
+#snippet-list option {
+  color: var(--text);
+}
+#snippet-command,
+.snippet-preview {
+  font: 12px var(--mono);
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+#snippet-command {
+  resize: vertical;
+}
+.snippet-preview {
+  min-height: 24px;
+  max-height: 7em;
+  overflow: auto;
+  margin: 8px 0;
+  color: var(--muted);
+}
