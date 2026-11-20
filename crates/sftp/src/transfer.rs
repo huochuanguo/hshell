@@ -15,7 +15,7 @@ const BLOCK: usize = 64 * 1024;
 const PIPELINE: usize = 32;
 const CHECKPOINT: u64 = 8 * 1024 * 1024;
 
-fn is_missing(error: &openssh_sftp_client::Error) -> bool {
+pub(crate) fn is_missing(error: &openssh_sftp_client::Error) -> bool {
     matches!(
         error,
         openssh_sftp_client::Error::SftpError(
@@ -60,6 +60,8 @@ pub struct Transfer {
     journal: PathBuf,
     #[serde(default)]
     publishing: bool,
+    #[serde(default)]
+    upload_root: Option<PathBuf>,
 }
 
 fn local_revision(metadata: &std::fs::Metadata) -> Result<Revision, String> {
@@ -97,6 +99,33 @@ impl Transfer {
         remote: PathBuf,
         state: &Path,
     ) -> Result<Self, String> {
+        Self::new_task(direction, profile, local, remote, state, (None, false))
+    }
+    pub(crate) fn new_upload(
+        profile: Profile,
+        local: PathBuf,
+        remote: PathBuf,
+        root: PathBuf,
+        replace: bool,
+        state: &Path,
+    ) -> Result<Self, String> {
+        Self::new_task(
+            Direction::Upload,
+            profile,
+            local,
+            remote,
+            state,
+            (Some(root), replace),
+        )
+    }
+    fn new_task(
+        direction: Direction,
+        profile: Profile,
+        local: PathBuf,
+        remote: PathBuf,
+        state: &Path,
+        (upload_root, replace): (Option<PathBuf>, bool),
+    ) -> Result<Self, String> {
         if !local.is_absolute() || !crate::remote_absolute(&remote) {
             return Err("传输路径必须为绝对路径".into());
         }
@@ -120,11 +149,12 @@ impl Transfer {
             remote,
             total: 0,
             done: 0,
-            replace: false,
+            replace,
             partial,
             source: None,
             journal: state.join(format!("{id}.json")),
             publishing: false,
+            upload_root,
         };
         job.save()?;
         Ok(job)
@@ -139,8 +169,11 @@ impl Transfer {
             if file.extension().is_none_or(|e| e != "json") {
                 continue;
             }
-            if jobs.len() >= 128 {
-                return Err("未完成传输超过 128 条，请先处理已有任务".into());
+            if jobs.len() >= crate::MAX_TRANSFERS {
+                return Err(format!(
+                    "未完成传输超过 {} 条，请先处理已有任务",
+                    crate::MAX_TRANSFERS
+                ));
             }
             let mut bytes = Vec::new();
             std::fs::File::open(&file)
@@ -180,6 +213,11 @@ impl Transfer {
             if !partial_valid
                 || !job.local.is_absolute()
                 || !crate::remote_absolute(&job.remote)
+                || job.upload_root.as_ref().is_some_and(|root| {
+                    !root.is_absolute()
+                        || !job.local.starts_with(root)
+                        || job.direction != Direction::Upload
+                })
                 || job.done > job.total
             {
                 return Err("续传记录路径或进度无效".into());
@@ -234,6 +272,11 @@ impl Transfer {
         connection: &Connection,
         mut progress: impl FnMut(Progress),
     ) -> Result<(), String> {
+        if let Some(root) = &self.upload_root {
+            crate::upload::require_remote_folder(connection, &crate::remote_parent(&self.remote)?)
+                .await?;
+            crate::upload::check_local_upload(root, &self.local)?;
+        }
         // A crash can occur after atomic publication and before journal removal.
         // Only accept the final name after checking every byte against the
         // unchanged source. Never append to the public destination.
@@ -422,6 +465,13 @@ impl Transfer {
         }
         remote.close().await.map_err(|e| e.to_string())?;
         drop(local);
+        if self.upload_root.is_some() {
+            crate::upload::require_remote_folder(connection, &crate::remote_parent(&self.remote)?)
+                .await?;
+            if self.replace {
+                crate::upload::require_replaceable(connection, &self.remote).await?;
+            }
+        }
         self.publishing = true;
         self.save()?;
         if upload {

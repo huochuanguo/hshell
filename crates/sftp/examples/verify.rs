@@ -137,6 +137,96 @@ async fn main() {
         }
         assert_eq!(checks[0]["fingerprintConfirmations"], 1);
         println!("{}", serde_json::json!({"sftpAuthentication":checks}));
+    } else if mode == "folder-upload" {
+        #[cfg(unix)]
+        {
+            use hshell_sftp::UploadPlan;
+            use std::{fs, os::unix::fs::symlink};
+            let connection = connect().await;
+            let directory = connection
+                .list(Path::new("/fixture/data"), |_| Ok(()))
+                .await
+                .unwrap();
+            let source = root.join("目录 样例");
+            let target = root.join("data/目录 样例");
+            let outside = root.join("data/外部目录");
+            fs::create_dir_all(source.join("嵌套/空目录")).unwrap();
+            fs::create_dir_all(source.join("冲突的目录")).unwrap();
+            fs::create_dir_all(source.join("链接的目录")).unwrap();
+            fs::create_dir_all(target.join("嵌套")).unwrap();
+            fs::create_dir_all(&outside).unwrap();
+            fs::write(source.join("嵌套/保留.txt"), "新内容").unwrap();
+            fs::write(source.join("嵌套/新增.txt"), "新增内容").unwrap();
+            fs::write(source.join("冲突的目录/不上传.txt"), "不写入").unwrap();
+            fs::write(source.join("链接的目录/不上传.txt"), "不写入").unwrap();
+            fs::write(target.join("嵌套/保留.txt"), "旧内容").unwrap();
+            fs::write(target.join("冲突的目录"), "不能替换").unwrap();
+            symlink(&outside, target.join("链接的目录")).unwrap();
+            symlink(&outside, source.join("本地链接")).unwrap();
+            let state = root.join("state-folder");
+            let inspect =
+                || UploadPlan::inspect(&connection, directory.clone(), vec![source.clone()], None);
+            let plan = inspect().await.unwrap();
+            assert_eq!(plan.preview().files, 2);
+            assert_eq!(plan.preview().conflicts, 1);
+            assert_eq!(plan.preview().skipped, 5);
+            assert!(!target.join("嵌套/空目录").exists());
+            let prepared = plan.prepare(&connection, false, 1).await.unwrap();
+            assert_eq!(prepared.folders, 1);
+            assert_eq!(prepared.skipped, 6);
+            for mut task in prepared.create_transfers(profile(), &state).unwrap() {
+                task.run(&connection, |_| {}).await.unwrap();
+            }
+            assert_eq!(
+                fs::read_to_string(target.join("嵌套/保留.txt")).unwrap(),
+                "旧内容"
+            );
+            assert_eq!(
+                fs::read_to_string(target.join("嵌套/新增.txt")).unwrap(),
+                "新增内容"
+            );
+            assert!(target.join("嵌套/空目录").is_dir());
+            let plan = inspect().await.unwrap();
+            assert_eq!(plan.preview().conflicts, 2);
+            for mut task in plan
+                .prepare(&connection, true, 2)
+                .await
+                .unwrap()
+                .create_transfers(profile(), &state)
+                .unwrap()
+            {
+                task.run(&connection, |_| {}).await.unwrap();
+            }
+            assert_eq!(
+                fs::read_to_string(target.join("嵌套/保留.txt")).unwrap(),
+                "新内容"
+            );
+            let prepared = inspect()
+                .await
+                .unwrap()
+                .prepare(&connection, true, 2)
+                .await
+                .unwrap();
+            prepared.create_transfers(profile(), &state).unwrap();
+            fs::rename(target.join("嵌套"), target.join("改名后")).unwrap();
+            symlink(&outside, target.join("嵌套")).unwrap();
+            for mut task in Transfer::restore(&state).unwrap() {
+                assert!(task
+                    .run(&connection, |_| {})
+                    .await
+                    .unwrap_err()
+                    .contains("变成链接"));
+                task.forget().unwrap();
+            }
+            assert_eq!(fs::read_dir(&outside).unwrap().count(), 0);
+            connection.close().await;
+            println!(
+                "{}",
+                serde_json::json!({"folderUpload":true,"emptyFolder":true,"merge":true,"overwriteConfirmation":true,"linksSkipped":true,"changedRemoteParentRefused":true})
+            );
+        }
+        #[cfg(not(unix))]
+        panic!("该夹具需要 Unix 符号链接");
     } else if mode == "suite" {
         let connection = connect().await;
         let mut output = serde_json::Map::new();

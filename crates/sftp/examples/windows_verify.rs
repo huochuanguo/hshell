@@ -77,15 +77,36 @@ mod fixture {
         let destination = root.join("中文 下载文件.bin");
         let state = root.join("journals");
         if mode == "pause-upload" {
-            data(&source);
-            let mut transfer = Transfer::new(
-                Direction::Upload,
-                profile(),
-                source,
-                "/data/中文 远程文件.bin".into(),
-                &state,
-            )
-            .unwrap();
+            let folder = source;
+            let nested = folder.join("嵌套");
+            std::fs::create_dir_all(nested.join("空目录")).unwrap();
+            data(&nested.join("中文 远程文件.bin"));
+            let inspect = || {
+                hshell_sftp::UploadPlan::inspect(
+                    &connection,
+                    "/data".into(),
+                    vec![folder.clone()],
+                    None,
+                )
+            };
+            let plan = inspect().await.unwrap();
+            assert_eq!(plan.preview().folders, 3);
+            assert_eq!(plan.preview().files, 1);
+            let remote = root.join("remote/data").join(folder.file_name().unwrap());
+            assert!(plan.prepare(&connection, false, 0).await.is_err());
+            assert!(!remote.exists());
+            let prepared = inspect()
+                .await
+                .unwrap()
+                .prepare(&connection, false, 1)
+                .await
+                .unwrap();
+            assert_eq!(prepared.folders, 3);
+            assert!(remote.join("嵌套/空目录").is_dir());
+            let mut transfer = prepared
+                .create_transfers(profile(), &state)
+                .unwrap()
+                .remove(0);
             let cancel = CancellationToken::new();
             let signal = cancel.clone();
             let result = tokio::select! {
@@ -108,7 +129,7 @@ mod fixture {
                 Direction::Download,
                 profile(),
                 destination,
-                "/data/中文 远程文件.bin".into(),
+                "/data/中文 上传文件.bin/嵌套/中文 远程文件.bin".into(),
                 &state,
             )
             .unwrap();
@@ -129,17 +150,20 @@ mod fixture {
                 .await
                 .unwrap();
             assert!(verified);
-            assert_eq!(digest(&source), digest(&destination));
+            assert_eq!(
+                digest(&source.join("嵌套/中文 远程文件.bin")),
+                digest(&destination)
+            );
             assert!(Transfer::restore(&state).unwrap().is_empty());
             let mut names = Vec::new();
             let path = connection
-                .list(Path::new("/data"), |batch| {
+                .list(Path::new("/data/中文 上传文件.bin/嵌套"), |batch| {
                     names.extend(batch.into_iter().map(|e| e.name));
                     Ok(())
                 })
                 .await
                 .unwrap();
-            assert_eq!(path.to_str(), Some("/data"));
+            assert_eq!(path.to_str(), Some("/data/中文 上传文件.bin/嵌套"));
             assert!(names
                 .iter()
                 .any(|name| name.to_str() == Some("中文 远程文件.bin")));
@@ -150,7 +174,7 @@ mod fixture {
                 .unwrap();
             assert!(connection
                 .rename(
-                    Path::new("/data/中文 远程文件.bin"),
+                    Path::new("/data/中文 上传文件.bin/嵌套/中文 远程文件.bin"),
                     Path::new("/data/新目录")
                 )
                 .await
@@ -160,7 +184,10 @@ mod fixture {
                 .await
                 .unwrap();
             connection
-                .remove(Path::new("/data/中文 远程文件.bin"), false)
+                .remove(
+                    Path::new("/data/中文 上传文件.bin/嵌套/中文 远程文件.bin"),
+                    false,
+                )
                 .await
                 .unwrap();
         }

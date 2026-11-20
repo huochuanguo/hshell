@@ -1,11 +1,11 @@
-use crate::{Connection, Entry, Progress, Transfer};
+use crate::{Connection, Entry, PreparedUpload, Progress, Transfer, UploadPlan, UploadPreview};
 use ssh_core::{Profile, SessionEvent, SubsystemAuthentication};
 use std::{
     path::PathBuf,
     sync::{Arc, Condvar, Mutex},
     time::{Duration, Instant},
 };
-use tokio::sync::mpsc;
+use tokio::sync::{mpsc, oneshot};
 use tokio_util::sync::CancellationToken;
 use zeroize::Zeroizing;
 
@@ -67,10 +67,25 @@ impl Drop for WorkerControl {
 }
 
 pub enum BrowseRequest {
-    List { generation: u64, path: PathBuf },
+    List {
+        generation: u64,
+        path: PathBuf,
+    },
     Mkdir(PathBuf),
     Rename(PathBuf, PathBuf),
     Remove(PathBuf, bool),
+    InspectUpload {
+        directory: PathBuf,
+        paths: Vec<PathBuf>,
+        name: Option<String>,
+        answer: oneshot::Sender<Result<UploadPreview, String>>,
+    },
+    PrepareUpload {
+        id: String,
+        replace: bool,
+        capacity: usize,
+        answer: oneshot::Sender<Result<PreparedUpload, String>>,
+    },
 }
 pub enum BrowserEvent {
     Ready,
@@ -88,6 +103,7 @@ pub enum BrowserEvent {
 pub struct Browser {
     pub control: WorkerControl,
     sender: mpsc::Sender<BrowseRequest>,
+    pub profile: Profile,
 }
 
 fn runtime() -> Result<tokio::runtime::Runtime, String> {
@@ -125,6 +141,7 @@ impl Browser {
         let (sender, mut receiver) = mpsc::channel(4);
         let sink = Arc::new(sink);
         let active = ActiveWorker::new();
+        let browser_profile = profile.clone();
         std::thread::spawn(move || {
             let _active = active;
             let setup = (|| {
@@ -157,8 +174,14 @@ impl Browser {
                 Ok((runtime,command,auth)) => runtime.block_on(async {
                     let connection = tokio::select! { _=cancel.cancelled()=>return, result=Connection::open(command,auth)=>match result {Ok(connection)=>connection,Err(error)=>{sink(BrowserEvent::Closed(error));return;}} };
                     if !sink(BrowserEvent::Ready) { connection.close().await; return; }
+                    let mut upload = None::<UploadPlan>;
                     loop {
                         let request = tokio::select! { _=cancel.cancelled()=>break, request=receiver.recv()=>match request {Some(request)=>request,None=>break} };
+                        let timeout = if matches!(&request, BrowseRequest::InspectUpload {..} | BrowseRequest::PrepareUpload {..}) {
+                            Duration::from_secs(180)
+                        } else {
+                            Duration::from_secs(30)
+                        };
                         let operation = async {
                             match request {
                                 BrowseRequest::List {generation,path} => {
@@ -168,9 +191,25 @@ impl Browser {
                                 BrowseRequest::Mkdir(path)=>{sink(BrowserEvent::Changed(connection.mkdir(&path).await));},
                                 BrowseRequest::Rename(from,to)=>{sink(BrowserEvent::Changed(connection.rename(&from,&to).await));},
                                 BrowseRequest::Remove(path,directory)=>{sink(BrowserEvent::Changed(connection.remove(&path,directory).await));},
+                                BrowseRequest::InspectUpload { directory, paths, name, answer } => {
+                                    upload = None;
+                                    let result = UploadPlan::inspect(&connection, directory, paths, name).await.map(|plan| {
+                                        let preview = plan.preview().clone();
+                                        upload = Some(plan);
+                                        preview
+                                    });
+                                    let _ = answer.send(result);
+                                }
+                                BrowseRequest::PrepareUpload { id, replace, capacity, answer } => {
+                                    let result = match upload.take() {
+                                        Some(plan) if plan.preview().id == id => plan.prepare(&connection, replace, capacity).await,
+                                        _ => Err("上传计划已失效，请重新选择文件或目录".into()),
+                                    };
+                                    let _ = answer.send(result);
+                                }
                             }
                         };
-                        let timed_out=tokio::select! { _=cancel.cancelled()=>break, result=tokio::time::timeout(Duration::from_secs(30),operation)=>result.is_err() };
+                        let timed_out=tokio::select! { _=cancel.cancelled()=>break, result=tokio::time::timeout(timeout,operation)=>result.is_err() };
                         if timed_out {sink(BrowserEvent::Closed("文件操作超时，请重新连接；传输任务不受影响".into()));break;}
                     }
                     connection.close().await;
@@ -178,7 +217,41 @@ impl Browser {
             }
             auth_slot.lock().unwrap().take();
         });
-        Self { control, sender }
+        Self {
+            control,
+            sender,
+            profile: browser_profile,
+        }
+    }
+    pub fn inspect_upload(
+        &self,
+        directory: PathBuf,
+        paths: Vec<PathBuf>,
+        name: Option<String>,
+    ) -> Result<oneshot::Receiver<Result<UploadPreview, String>>, String> {
+        let (answer, receiver) = oneshot::channel();
+        self.request(BrowseRequest::InspectUpload {
+            directory,
+            paths,
+            name,
+            answer,
+        })?;
+        Ok(receiver)
+    }
+    pub fn prepare_upload(
+        &self,
+        id: String,
+        replace: bool,
+        capacity: usize,
+    ) -> Result<oneshot::Receiver<Result<PreparedUpload, String>>, String> {
+        let (answer, receiver) = oneshot::channel();
+        self.request(BrowseRequest::PrepareUpload {
+            id,
+            replace,
+            capacity,
+            answer,
+        })?;
+        Ok(receiver)
     }
     pub fn request(&self, request: BrowseRequest) -> Result<(), String> {
         self.sender

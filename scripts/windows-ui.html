@@ -47,6 +47,7 @@
       mockWindows("main");
       globalThis.isTauri = true;
       const log = [];
+      const uploads = new Map();
       function record(cmd, args) {
         log.push({ cmd, ...args });
         let output = document.querySelector("#fixture-output");
@@ -57,6 +58,28 @@
           document.body.append(output);
         }
         output.textContent = JSON.stringify(log);
+      }
+      async function addTask(args) {
+        const task = {
+          id: crypto.randomUUID(),
+          name: profile.name,
+          host: profile.host,
+          direction: args.direction,
+          local: args.local,
+          remote: args.remotePath,
+          partial: args.local + ".part",
+          status: "running",
+          bytes: 1048576,
+          total: 8388608,
+          verifying: false,
+          error: null,
+        };
+        tasks.push(task);
+        await emit("sftp-transfer", {
+          type: "task",
+          task: structuredClone(task),
+        });
+        return task.id;
       }
       mockIPC(
         async (cmd, args) => {
@@ -171,6 +194,12 @@
             args.options.title === "选择连接备份"
           )
             return "C:\\Temp\\hshell-connections.json";
+          if (
+            cmd === "plugin:dialog|open" &&
+            args.options.directory &&
+            args.options.multiple
+          )
+            return ["C:\\Temp\\上传文件夹"];
           if (cmd === "plugin:dialog|open" && args.options.directory)
             return "C:\\Temp\\下载夹具";
           if (cmd === "plugin:dialog|open")
@@ -188,29 +217,69 @@
             return "C:\\Temp\\hshell-export.json";
           if (cmd === "plugin:dialog|save")
             return "C:\\Users\\测试用户\\下载 文件.txt";
+          if (cmd === "sftp_inspect_upload") {
+            const id = crypto.randomUUID();
+            const items = args.paths
+              .map((local) => {
+                const name = args.name ?? local.split(/[\\/]/).at(-1);
+                const folder = name === "上传文件夹";
+                const remote = `${args.directory}/${name}`;
+                return {
+                  local,
+                  name,
+                  folder,
+                  remote,
+                  replace: name === "server.ts",
+                };
+              })
+              .filter(({ name }) => name !== "中文 目录");
+            const examples = items
+              .filter(({ replace }) => replace)
+              .map(({ remote }) => remote);
+            uploads.set(id, items);
+            return {
+              id,
+              files: items.length,
+              folders: items.filter(({ folder }) => folder).length,
+              conflicts: examples.length,
+              examples,
+              skipped: args.paths.length - items.length,
+            };
+          }
+          if (cmd === "sftp_prepare_upload") {
+            const items = uploads.get(args.plan);
+            uploads.delete(args.plan);
+            let added = 0,
+              folders = 0,
+              skipped = 0;
+            for (const { local, name, folder, remote, replace } of items) {
+              if (replace && !args.replace) {
+                skipped++;
+                continue;
+              }
+              if (folder && !entries.some((entry) => entry.name === name)) {
+                entries.push({
+                  name,
+                  directory: true,
+                  symlink: false,
+                  size: null,
+                  modified: null,
+                });
+                folders++;
+              }
+              await addTask({
+                direction: "Upload",
+                local: folder ? `${local}\\文件.txt` : local,
+                remotePath: folder ? `${remote}/文件.txt` : remote,
+              });
+              added++;
+            }
+            return { added, folders, skipped };
+          }
           if (cmd === "sftp_enqueue") {
             if (args.skipExisting && args.local.endsWith("image.png"))
               return null;
-            const task = {
-              id: crypto.randomUUID(),
-              name: profile.name,
-              host: profile.host,
-              direction: args.direction,
-              local: args.local,
-              remote: args.remotePath,
-              partial: args.local + ".part",
-              status: "running",
-              bytes: 1048576,
-              total: 8388608,
-              verifying: false,
-              error: null,
-            };
-            tasks.push(task);
-            await emit("sftp-transfer", {
-              type: "task",
-              task: structuredClone(task),
-            });
-            return task.id;
+            return addTask(args);
           }
           if (cmd === "sftp_task_action") {
             const task = tasks.find((t) => t.id === args.id);

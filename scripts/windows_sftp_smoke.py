@@ -179,12 +179,12 @@ def main():
             phases = ['pause-upload', 'resume-upload-pause-download', 'resume-download']
             for phase in phases:
                 subprocess.run([str(binary), str(config), str(root), phase], check=True, timeout=120)
-            original = root / '中文 上传文件.bin'
+            original = root / '中文 上传文件.bin/嵌套/中文 远程文件.bin'
             downloaded = root / '中文 下载文件.bin'
             checksum = hashlib.sha256(original.read_bytes()).hexdigest()
             assert hashlib.sha256(downloaded.read_bytes()).hexdigest() == checksum
             result = {'platform': os.name, 'bytes': original.stat().st_size, 'sha256': checksum, 'phases': phases,
-                      'passed': ['saved-password', 'unicode-paths', 'upload-restart-resume', 'download-restart-resume', 'prefix-verification', 'sha256-roundtrip', 'list-mkdir-rename-remove', 'refuse-existing-rename'],
+                      'passed': ['saved-password', 'unicode-paths', 'upload-restart-resume', 'download-restart-resume', 'prefix-verification', 'sha256-roundtrip', 'list-mkdir-rename-remove', 'refuse-existing-rename', 'nested-folder-upload', 'empty-folder', 'queue-capacity-preflight'],
                       'limitations': ['回环 Paramiko 夹具，未替代生产服务器、跳板机或长时验收']}
             output = Path(args.output)
             output.parent.mkdir(parents=True, exist_ok=True)

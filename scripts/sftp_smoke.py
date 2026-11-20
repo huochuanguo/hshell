@@ -20,6 +20,7 @@ def main():
     parser.add_argument('--gui-only',action='store_true')
     parser.add_argument('--authentication-only',action='store_true')
     parser.add_argument('--appearance-only',action='store_true')
+    parser.add_argument('--folder-only',action='store_true')
     parser.add_argument('--ssh-startup-delay',type=float,default=0,help='Test-only SSH startup delay in seconds (0 to 5)')
     args=parser.parse_args()
     if not 0<=args.ssh_startup_delay<=5:parser.error('--ssh-startup-delay must be between 0 and 5')
@@ -81,8 +82,11 @@ Host fixture-password
                 process=subprocess.run([str(binary),mode],env=env,text=True,capture_output=True,timeout=90)
                 assert process.returncode==0,(mode,process.stdout,process.stderr)
                 value=json.loads(process.stdout.strip());results.append(value);print(json.dumps(value,ensure_ascii=False),flush=True)
-            if not args.gui_only and not args.authentication_only:
+            if args.folder_only:
+                run('folder-upload')
+            elif not args.gui_only and not args.authentication_only:
                 run('suite')
+                run('folder-upload')
                 for name in ['upload','download']:
                     run('pause-'+name);run('resume-'+name)
                     # Fresh task after the completed file: the old final file is
@@ -111,7 +115,7 @@ Host fixture-password
                     if paused:subprocess.run(['docker','unpause',container],check=True,stdout=subprocess.DEVNULL);paused=False
                     if process.poll() is None:process.kill();process.wait()
                 run('resume-network')
-            if not args.gui_only:
+            if not args.gui_only and not args.folder_only:
                 run('authentication')
             if args.gui:
                 gui=Path(args.gui).resolve();result=root/'gui.json';snapshot=Path(args.output).resolve().with_suffix('.png')

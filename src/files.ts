@@ -44,6 +44,19 @@ interface Task {
   verifying: boolean;
   error: string | null;
 }
+interface UploadPreview {
+  id: string;
+  files: number;
+  folders: number;
+  conflicts: number;
+  examples: string[];
+  skipped: number;
+}
+interface UploadReport {
+  added: number;
+  folders: number;
+  skipped: number;
+}
 type BrowseEvent =
   | { type: "ready" }
   | { type: "entries"; generation: number; entries: Entry[] }
@@ -155,7 +168,7 @@ export class FilesPane {
       <div class="files-heading"><strong>文件与传输</strong><button class="icon-button" data-action="close" aria-label="收起文件栏">${icon("X")}</button></div>
       <p class="files-host"></p>
       <form class="files-path"><button type="button" class="icon-button" data-action="up" aria-label="上一级目录">${icon("ArrowUp")}</button><input aria-label="远程 Unix 目录" placeholder="/home/user" spellcheck="false"><button type="submit" class="icon-button" aria-label="打开远程目录">${icon("RotateCw")}</button></form>
-      <div class="files-actions"><button class="dark-button" data-action="upload" title="选择本地文件，或将文件拖到远程列表上传">${icon("Upload")} 上传</button><button class="dark-button" data-action="download">${icon("Download")} 下载</button><button class="icon-button" data-action="mkdir" aria-label="新建远程目录">${icon("FolderPlus")}</button><button class="dark-button" data-action="connect">重新连接</button></div>
+      <div class="files-actions"><button class="dark-button" data-action="upload" title="选择本地文件，或拖入本地文件或文件夹">${icon("Upload")} 上传文件</button><button class="dark-button" data-action="upload-folder" title="保留目录结构和空文件夹">${icon("Folder")} 上传文件夹</button><button class="dark-button" data-action="download">${icon("Download")} 下载</button><button class="icon-button" data-action="mkdir" aria-label="新建远程目录">${icon("FolderPlus")}</button><button class="dark-button" data-action="connect">重新连接</button></div>
       <input class="files-filter" type="search" aria-label="按文件名筛选当前目录" placeholder="筛选文件名" autocomplete="off" spellcheck="false">
       <p class="files-message" role="status"></p>
       <p class="files-message files-filter-result" role="status" hidden></p>
@@ -348,14 +361,15 @@ export class FilesPane {
           previous?.error === payload.task.error
         )
           this.updateProgress(payload.task);
-        else this.renderTasks();
+        else this.renderTask(payload.task);
         if (
           payload.task.direction === "Upload" &&
           payload.task.status === "complete" &&
           previous?.status !== "complete" &&
           this.ready &&
           !this.busy &&
-          this.profile?.host === payload.task.host
+          this.profile?.host === payload.task.host &&
+          remoteParent(payload.task.remote) === this.directory
         )
           void this.list(this.directory);
       } else {
@@ -536,7 +550,12 @@ export class FilesPane {
   }
 
   private async list(path: string) {
-    if (!this.ready || this.busy) return;
+    if (
+      !this.ready ||
+      this.busy ||
+      (this.choosingUpload && this.listedDirectory)
+    )
+      return;
     this.busy = true;
     this.entries = [];
     this.clearSelection();
@@ -564,11 +583,12 @@ export class FilesPane {
       const action = button.dataset.action;
       button.disabled =
         action === "connect"
-          ? !this.profile
+          ? !this.profile || this.choosingUpload
           : !this.ready ||
             this.busy ||
-            (action === "upload" &&
-              (this.choosingUpload || !this.listedDirectory)) ||
+            this.choosingUpload ||
+            ((action === "upload" || action === "upload-folder") &&
+              !this.listedDirectory) ||
             (action === "download" &&
               (this.choosingDownload ||
                 ![...this.selection].some(
@@ -577,7 +597,7 @@ export class FilesPane {
             (["rename", "remove", "copy-path"].includes(action ?? "") &&
               !this.selected);
     }
-    this.input.disabled = !this.ready || this.busy;
+    this.input.disabled = !this.ready || this.busy || this.choosingUpload;
     this.filterInput.disabled =
       !this.ready || this.busy || !this.listedDirectory;
   }
@@ -655,6 +675,17 @@ export class FilesPane {
   private renderTasks() {
     const list = this.el(".transfer-list");
     list.replaceChildren();
+    for (const task of this.tasks.values()) this.renderTask(task);
+    if (!this.tasks.size) {
+      const empty = document.createElement("p");
+      empty.className = "files-message";
+      empty.textContent = "暂无传输任务";
+      list.append(empty);
+    }
+  }
+
+  private renderTask(task: Task) {
+    const list = this.el(".transfer-list");
     const status: Record<string, string> = {
       queued: "等待传输",
       running: "传输中",
@@ -662,59 +693,56 @@ export class FilesPane {
       pausing: "正在暂停",
       complete: "已完成",
     };
-    for (const task of this.tasks.values()) {
-      const row = document.createElement("div");
-      row.className = "transfer-row";
-      row.dataset.transferId = task.id;
-      const progress = task.total
-        ? Math.min(100, (task.bytes / task.total) * 100)
-        : 0;
-      row.innerHTML = `<div>${icon(task.direction)}<strong title="${escape(task.local)}">${escape(task.direction === "Upload" ? localBasename(task.local) : (task.remote.split("/").at(-1) ?? task.remote))}</strong><span>${task.verifying ? "校验断点" : (status[task.status] ?? task.status)}</span></div><progress max="100" value="${progress}" aria-label="传输进度"></progress><p>${escape(task.name)} · ${size(task.bytes)} / ${size(task.total)}</p><p class="transfer-error" ${task.error ? "" : "hidden"}></p><div class="transfer-actions"></div>`;
-      row.querySelector(".transfer-error")!.textContent = task.error;
-      const actions = row.querySelector(".transfer-actions")!;
-      if (task.status !== "complete") {
-        const button = document.createElement("button");
-        button.className = "dark-button";
-        const active = ["running", "queued", "pausing"].includes(task.status);
-        button.textContent = active ? "暂停" : "继续";
-        button.disabled = task.status === "pausing";
-        button.onclick = () => {
-          void invoke("sftp_task_action", {
-            id: task.id,
-            action: active ? "pause" : "resume",
-          }).catch((error) => this.notify(String(error)));
-        };
-        actions.append(button);
-      }
-      const remove = document.createElement("button");
-      remove.className = "dark-button";
-      remove.textContent = "移除";
-      remove.disabled = ["running", "pausing"].includes(task.status);
-      remove.onclick = () => {
-        void (async () => {
-          if (
-            task.status !== "complete" &&
-            !(await this.confirm(
-              "移除此传输任务？",
-              `断点记录将删除，临时文件仍保留在：${task.partial}。可按需手动清理。`,
-              "移除任务",
-            ))
-          )
-            return;
-          await invoke("sftp_task_action", { id: task.id, action: "remove" });
-          this.tasks.delete(task.id);
-          this.renderTasks();
-        })().catch((error) => this.notify(String(error)));
+    const row = document.createElement("div");
+    row.className = "transfer-row";
+    row.dataset.transferId = task.id;
+    const progress = task.total
+      ? Math.min(100, (task.bytes / task.total) * 100)
+      : 0;
+    row.innerHTML = `<div>${icon(task.direction)}<strong title="${escape(task.local)}">${escape(task.direction === "Upload" ? localBasename(task.local) : (task.remote.split("/").at(-1) ?? task.remote))}</strong><span>${task.verifying ? "校验断点" : (status[task.status] ?? task.status)}</span></div><progress max="100" value="${progress}" aria-label="传输进度"></progress><p>${escape(task.name)} · ${size(task.bytes)} / ${size(task.total)}</p><p class="transfer-error" ${task.error ? "" : "hidden"}></p><div class="transfer-actions"></div>`;
+    row.querySelector(".transfer-error")!.textContent = task.error;
+    const actions = row.querySelector(".transfer-actions")!;
+    if (task.status !== "complete") {
+      const button = document.createElement("button");
+      button.className = "dark-button";
+      const active = ["running", "queued", "pausing"].includes(task.status);
+      button.textContent = active ? "暂停" : "继续";
+      button.disabled = task.status === "pausing";
+      button.onclick = () => {
+        void invoke("sftp_task_action", {
+          id: task.id,
+          action: active ? "pause" : "resume",
+        }).catch((error) => this.notify(String(error)));
       };
-      actions.append(remove);
-      list.append(row);
+      actions.append(button);
     }
-    if (!this.tasks.size) {
-      const empty = document.createElement("p");
-      empty.className = "files-message";
-      empty.textContent = "暂无传输任务";
-      list.append(empty);
-    }
+    const remove = document.createElement("button");
+    remove.className = "dark-button";
+    remove.textContent = "移除";
+    remove.disabled = ["running", "pausing"].includes(task.status);
+    remove.onclick = () => {
+      void (async () => {
+        if (
+          task.status !== "complete" &&
+          !(await this.confirm(
+            "移除此传输任务？",
+            `断点记录将删除，临时文件仍保留在：${task.partial}。可按需手动清理。`,
+            "移除任务",
+          ))
+        )
+          return;
+        await invoke("sftp_task_action", { id: task.id, action: "remove" });
+        this.tasks.delete(task.id);
+        this.renderTasks();
+      })().catch((error) => this.notify(String(error)));
+    };
+    actions.append(remove);
+    list.querySelector(".files-message")?.remove();
+    const previous = list.querySelector(
+      `[data-transfer-id="${CSS.escape(task.id)}"]`,
+    );
+    if (previous) previous.replaceWith(row);
+    else list.append(row);
   }
 
   private askName(title: string, initial = ""): Promise<string | null> {
@@ -757,14 +785,17 @@ export class FilesPane {
     });
   }
 
-  private async upload(dropped?: string[]) {
+  private async upload(dropped?: string[], folder = false) {
     if (
       this.choosingUpload ||
-      !this.profile ||
+      this.choosingDownload ||
+      !this.ready ||
+      this.busy ||
+      !this.listedDirectory ||
       this.listedDirectory !== this.directory
     )
       return;
-    const { profile, browser, directory, generation } = this;
+    const { browser, directory, generation } = this;
     const current = () =>
       this.ready &&
       !this.busy &&
@@ -773,77 +804,65 @@ export class FilesPane {
       this.listedDirectory === directory;
     this.choosingUpload = true;
     this.controls();
+    let refresh = false;
+    let inspecting = false;
     try {
-      const files =
+      const paths =
         dropped ??
         (await open({
-          title: "选择要上传的文件（可多选）",
+          title: folder
+            ? "选择要上传的文件夹（可多选）"
+            : "选择要上传的文件（可多选）",
           multiple: true,
-          directory: false,
+          directory: folder,
         }));
-      if (!files?.length || !current()) return;
-      const singleName =
-        !dropped && files.length === 1
-          ? await this.askName("上传到远程目录", localBasename(files[0]))
+      if (!paths?.length || !current()) return;
+      const name =
+        !folder && !dropped && paths.length === 1
+          ? await this.askName("上传到远程目录", localBasename(paths[0]))
           : undefined;
-      if (singleName === null || !current()) return;
-
-      const entries = new Map(this.entries.map((entry) => [entry.name, entry]));
-      const names = new Set<string>();
-      const tasks: { local: string; remotePath: string; replace: boolean }[] =
-        [];
-      const conflicts: string[] = [];
-      let skipped = 0;
-      for (const local of files) {
-        const name = singleName ?? localBasename(local);
-        if (
-          !name ||
-          names.has(name) ||
-          entries.get(name)?.directory ||
-          entries.get(name)?.symlink
-        ) {
-          skipped++;
-          continue;
-        }
-        names.add(name);
-        const remotePath = remoteJoin(directory, name);
-        const replace = entries.has(name);
-        if (replace) conflicts.push(name);
-        tasks.push({ local, remotePath, replace });
-      }
+      if (name === null || !current()) return;
+      inspecting = true;
+      this.message("正在扫描本地文件并检查远程目标…");
+      const preview = await invoke<UploadPreview>("sftp_inspect_upload", {
+        id: browser,
+        directory,
+        paths,
+        name,
+      });
+      if (!current()) return;
       const replace =
-        !conflicts.length ||
+        preview.conflicts > 0 &&
         (await this.confirm(
           "替换远程同名文件？",
-          `目录：${directory}\n${conflicts.slice(0, 6).join("、")}${conflicts.length > 6 ? ` 等 ${conflicts.length} 项` : ""}。取消将跳过同名文件，其他文件照常上传。`,
+          `${preview.examples.join("、")}${preview.conflicts > preview.examples.length ? ` 等 ${preview.conflicts} 项` : ""}。取消将跳过同名文件，其他文件照常上传。`,
           "替换同名文件",
         ));
       if (!current()) return;
-      let added = 0;
-      const failures: string[] = [];
-      for (const task of tasks) {
-        if (task.replace && !replace) {
-          skipped++;
-          continue;
-        }
-        try {
-          await invoke("sftp_enqueue", {
-            profile,
-            direction: "Upload",
-            ...task,
-          });
-          added++;
-        } catch (error) {
-          failures.push(String(error));
-        }
-      }
-      if (files.length > 1 || skipped || failures.length)
+      if (preview.files === 0 && preview.folders === 0) {
         this.notify(
-          `已加入 ${added} 项上传${skipped ? `，跳过 ${skipped} 项` : ""}${failures.length ? `，失败 ${failures.length} 项：${failures[0]}` : "。"}`,
+          `没有可上传的项目${preview.skipped ? `，已跳过 ${preview.skipped} 项` : ""}。`,
         );
+        return;
+      }
+      this.message("正在准备远程目录和上传队列…");
+      refresh = true;
+      const report = await invoke<UploadReport>("sftp_prepare_upload", {
+        id: browser,
+        plan: preview.id,
+        replace,
+      });
+      this.notify(
+        `已加入 ${report.added} 项上传，已创建 ${report.folders} 个文件夹${report.skipped ? `，跳过 ${report.skipped} 项` : ""}。`,
+      );
     } finally {
       this.choosingUpload = false;
       this.controls();
+      if (current() && refresh) void this.list(directory);
+      else if (current() && inspecting)
+        this.message(
+          this.entries.length ? `${this.entries.length} 项` : "目录为空",
+        );
     }
   }
 
@@ -939,12 +958,13 @@ export class FilesPane {
       await this.startBrowser();
       return;
     }
-    if (!this.ready || this.busy) return;
+    if (!this.ready || this.busy || this.choosingUpload) return;
     if (action === "up") {
       await this.list(remoteParent(this.directory));
       return;
     }
     if (action === "upload") return this.upload();
+    if (action === "upload-folder") return this.upload(undefined, true);
     const entry = this.selected;
     if (action === "copy-path" && entry) {
       await copyText(remoteJoin(this.directory, entry.name));

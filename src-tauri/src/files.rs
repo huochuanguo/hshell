@@ -1,6 +1,6 @@
 use hshell_sftp::{
     remote_absolute, remote_join, BrowseRequest, Browser, BrowserEvent, Direction, Transfer,
-    TransferEvent, WorkerControl,
+    TransferEvent, UploadPreview, WorkerControl, MAX_TRANSFERS,
 };
 use serde::{Deserialize, Serialize};
 use ssh_core::Profile;
@@ -114,6 +114,7 @@ struct Inner {
     queue: VecDeque<String>,
     restore_error: Option<String>,
     shutting_down: bool,
+    preparing_upload: bool,
 }
 
 #[derive(Clone)]
@@ -122,6 +123,20 @@ pub struct Files {
     profiles: PathBuf,
     journals: PathBuf,
     app: tauri::AppHandle,
+}
+
+struct UploadReservation(Files);
+impl Drop for UploadReservation {
+    fn drop(&mut self) {
+        self.0.inner.lock().unwrap().preparing_upload = false;
+    }
+}
+
+#[derive(Serialize)]
+pub struct UploadReport {
+    added: usize,
+    folders: usize,
+    skipped: usize,
 }
 
 impl Files {
@@ -234,12 +249,12 @@ impl Files {
     }
 
     pub fn busy(&self) -> bool {
-        self.inner
-            .lock()
-            .unwrap()
-            .tasks
-            .values()
-            .any(|t| t.control.is_some() || t.info.status == "queued")
+        let inner = self.inner.lock().unwrap();
+        inner.preparing_upload
+            || inner
+                .tasks
+                .values()
+                .any(|t| t.control.is_some() || t.info.status == "queued")
     }
 
     pub fn shutdown(&self) {
@@ -417,6 +432,93 @@ pub fn sftp_tasks(files: State<Files>) -> Result<Vec<TaskInfo>, String> {
 }
 
 #[tauri::command]
+pub async fn sftp_inspect_upload(
+    files: State<'_, Files>,
+    id: String,
+    directory: String,
+    paths: Vec<PathBuf>,
+    name: Option<String>,
+) -> Result<UploadPreview, String> {
+    let answer = {
+        let inner = files.inner.lock().unwrap();
+        let (_, browser) = inner
+            .browser
+            .as_ref()
+            .filter(|(current, _)| current == &id)
+            .ok_or("文件栏已断开")?;
+        browser.inspect_upload(remote(directory)?, paths, name)?
+    };
+    answer
+        .await
+        .map_err(|_| "SFTP 连接已关闭，未完成上传检查")?
+}
+
+#[tauri::command]
+pub async fn sftp_prepare_upload(
+    files: State<'_, Files>,
+    id: String,
+    plan: String,
+    replace: bool,
+) -> Result<UploadReport, String> {
+    let files = files.inner().clone();
+    let (answer, profile, reservation) = {
+        let mut inner = files.inner.lock().unwrap();
+        if inner.shutting_down || inner.preparing_upload {
+            return Err("当前无法准备上传，请稍后重试".into());
+        }
+        if inner.restore_error.is_some() {
+            return Err("请先修复损坏的续传记录，再创建新任务".into());
+        }
+        let (_, browser) = inner
+            .browser
+            .as_ref()
+            .filter(|(current, _)| current == &id)
+            .ok_or("文件栏已断开")?;
+        let profile = browser.profile.clone();
+        let answer = browser.prepare_upload(
+            plan,
+            replace,
+            MAX_TRANSFERS.saturating_sub(inner.tasks.len()),
+        )?;
+        inner.preparing_upload = true;
+        (answer, profile, UploadReservation(files.clone()))
+    };
+    let prepared = answer
+        .await
+        .map_err(|_| "SFTP 连接已关闭，未完成上传准备")??;
+    tauri::async_runtime::spawn_blocking(move || {
+        let _reservation = reservation;
+        if files.inner.lock().unwrap().shutting_down {
+            return Err("应用正在退出".into());
+        }
+        let (folders, skipped) = (prepared.folders, prepared.skipped);
+        let tasks = prepared.create_transfers(profile, &files.journals)?;
+        let mut inner = files.inner.lock().unwrap();
+        if inner.shutting_down {
+            return Err("应用正在退出，上传任务已保留在续传记录中".into());
+        }
+        let added = tasks.len();
+        for transfer in tasks {
+            let mut task = Task::new(transfer);
+            task.info.status = "queued".into();
+            let id = task.info.id.clone();
+            files.notify(task.info.clone());
+            inner.tasks.insert(id.clone(), task);
+            inner.queue.push_back(id);
+        }
+        drop(inner);
+        files.pump();
+        Ok(UploadReport {
+            added,
+            folders,
+            skipped,
+        })
+    })
+    .await
+    .map_err(|e| e.to_string())?
+}
+
+#[tauri::command]
 pub async fn sftp_enqueue(
     files: State<'_, Files>,
     profile: Profile,
@@ -449,8 +551,13 @@ pub async fn sftp_enqueue(
         if inner.restore_error.is_some() {
             return Err("请先修复损坏的续传记录，再创建新任务".into());
         }
-        if inner.tasks.len() >= 128 {
-            return Err("最多保留 128 个任务，请先移除已完成任务".into());
+        if inner.preparing_upload {
+            return Err("正在准备上传，请稍后重试".into());
+        }
+        if inner.tasks.len() >= MAX_TRANSFERS {
+            return Err(format!(
+                "最多保留 {MAX_TRANSFERS} 个任务，请先移除已完成任务"
+            ));
         }
         let mut transfer = Transfer::new(
             direction,

@@ -2,12 +2,12 @@
 use crate::ui::{dialog_guard, dismiss, entry, icon_button, job, label};
 use gtk::{glib, prelude::*};
 use hshell_sftp::{
-    BrowseRequest, Browser, BrowserEvent, Direction, Entry, Transfer, TransferEvent, WorkerControl,
+    BrowseRequest, Browser, BrowserEvent, Direction, Entry, Transfer, TransferEvent, UploadPreview,
+    WorkerControl, MAX_TRANSFERS,
 };
 use ssh_core::{Profile, SubsystemAuthentication};
 use std::{
     cell::{Cell, RefCell},
-    collections::HashSet,
     path::{Path, PathBuf},
     rc::Rc,
     sync::mpsc,
@@ -165,6 +165,8 @@ pub struct FilePane {
     loading: Cell<bool>,
     listed: Cell<bool>,
     choosing: Cell<bool>,
+    uploading: Cell<bool>,
+    upload_notice: RefCell<Option<String>>,
     path: RefCell<PathBuf>,
     address: gtk::Entry,
     search: gtk::SearchEntry,
@@ -211,18 +213,28 @@ impl FilePane {
         navigation.pack_start(&refresh, false, false, 0);
         root.pack_start(&navigation, false, false, 0);
         let actions = gtk::Box::new(gtk::Orientation::Horizontal, 3);
-        let upload = gtk::Button::with_label("上传");
+        let upload = gtk::Button::with_label("上传文件");
+        let upload_folder = gtk::Button::with_label("上传文件夹");
         let download = gtk::Button::with_label("下载");
         let mkdir = icon_button("folder-new-symbolic", "新建目录");
         let rename = icon_button("document-edit-symbolic", "重命名");
         let delete = icon_button("edit-delete-symbolic", "删除文件或空目录");
         let copy_path = icon_button("edit-copy-symbolic", "复制远程路径");
-        upload.set_tooltip_text(Some("选择本地文件，或将文件拖到远程列表上传"));
+        upload.set_tooltip_text(Some("选择本地文件，或拖入本地文件或文件夹"));
+        upload_folder.set_tooltip_text(Some("保留目录结构和空文件夹"));
         download.set_tooltip_text(Some("Ctrl 多选 · Shift 连选 · 下载所选普通文件"));
         for button in [&copy_path, &download, &rename, &delete] {
             button.set_sensitive(false);
         }
-        for button in [&upload, &download, &mkdir, &rename, &delete, &copy_path] {
+        for button in [
+            &upload,
+            &upload_folder,
+            &download,
+            &mkdir,
+            &rename,
+            &delete,
+            &copy_path,
+        ] {
             actions.pack_start(button, false, false, 0);
         }
         root.pack_start(&actions, false, false, 0);
@@ -318,6 +330,8 @@ impl FilePane {
             loading: Cell::new(false),
             listed: Cell::new(false),
             choosing: Cell::new(false),
+            uploading: Cell::new(false),
+            upload_notice: RefCell::new(None),
             path: RefCell::new(PathBuf::from(".")),
             address,
             search,
@@ -397,6 +411,7 @@ impl FilePane {
                 let Some(pane) = weak.upgrade() else { return };
                 if !pane.can_transfer()
                     || pane.choosing.get()
+                    || pane.uploading.get()
                     || gtk::Window::list_toplevels().iter().any(|window| {
                         window.is_visible()
                             && window
@@ -422,9 +437,8 @@ impl FilePane {
                 let weak = Rc::downgrade(&pane);
                 glib::idle_add_local_once(move || {
                     if let Some(pane) = weak.upgrade() {
-                        if pane.can_transfer() && !pane.choosing.replace(true) {
+                        if !pane.choosing.get() {
                             pane.upload_paths(files, generation);
-                            pane.choosing.set(false);
                         }
                     }
                 });
@@ -449,7 +463,13 @@ impl FilePane {
         let weak = Rc::downgrade(&pane);
         upload.connect_clicked(move |_| {
             if let Some(p) = weak.upgrade() {
-                p.upload();
+                p.upload(false);
+            }
+        });
+        let weak = Rc::downgrade(&pane);
+        upload_folder.connect_clicked(move |_| {
+            if let Some(p) = weak.upgrade() {
+                p.upload(true);
             }
         });
         let weak = Rc::downgrade(&pane);
@@ -543,6 +563,7 @@ impl FilePane {
         self.browser.borrow_mut().take();
         self.receiver.borrow_mut().take();
         self.loading.set(false);
+        self.upload_notice.borrow_mut().take();
     }
     pub fn stop(&self) {
         self.closed.set(true);
@@ -555,11 +576,13 @@ impl FilePane {
         }
     }
     pub fn running(&self) -> usize {
-        self.tasks
-            .borrow()
-            .iter()
-            .filter(|task| task.state == State::Running || task.state == State::Queued)
-            .count()
+        usize::from(self.uploading.get())
+            + self
+                .tasks
+                .borrow()
+                .iter()
+                .filter(|task| task.state == State::Running || task.state == State::Queued)
+                .count()
     }
     fn connect(self: &Rc<Self>) {
         if self.browser.borrow().is_some() {
@@ -593,6 +616,9 @@ impl FilePane {
         }
     }
     fn navigate(&self, path: PathBuf) {
+        if self.uploading.get() && self.listed.get() {
+            return;
+        }
         if self.loading.get() {
             self.status.set_text("目录仍在读取，可收起文件栏停止连接");
             return;
@@ -740,6 +766,9 @@ impl FilePane {
                                 self.search.set_text("");
                             }
                             self.list_status();
+                            if let Some(notice) = self.upload_notice.borrow_mut().take() {
+                                self.status.set_text(&notice);
+                            }
                         }
                         Err(error) => {
                             self.address.set_text(&self.path.borrow().to_string_lossy());
@@ -863,7 +892,7 @@ impl FilePane {
         accepted
     }
     fn edit(&self, rename: bool) {
-        if self.loading.get() {
+        if self.loading.get() || self.uploading.get() {
             return;
         }
         let selected = if rename { self.selected() } else { None };
@@ -920,6 +949,9 @@ impl FilePane {
         });
     }
     fn delete(&self) {
+        if self.uploading.get() {
+            return;
+        }
         let Some(item) = self.selected() else {
             self.status.set_text("请选择要删除的文件或空目录");
             return;
@@ -948,15 +980,23 @@ impl FilePane {
     fn downloadable(item: &Entry) -> bool {
         !item.directory && !item.symlink
     }
-    fn upload(self: &Rc<Self>) {
-        if !self.can_transfer() || self.choosing.replace(true) {
+    fn upload(self: &Rc<Self>, folder: bool) {
+        if !self.can_transfer() || self.uploading.get() || self.choosing.replace(true) {
             return;
         }
         let generation = self.generation.get();
         let chooser = gtk::FileChooserDialog::new(
-            Some("上传文件"),
+            Some(if folder {
+                "上传文件夹"
+            } else {
+                "上传文件"
+            }),
             Some(&self.window),
-            gtk::FileChooserAction::Open,
+            if folder {
+                gtk::FileChooserAction::SelectFolder
+            } else {
+                gtk::FileChooserAction::Open
+            },
         );
         chooser.add_buttons(&[
             ("取消", gtk::ResponseType::Cancel),
@@ -971,80 +1011,147 @@ impl FilePane {
             Vec::new()
         };
         dismiss(&chooser, &alive);
+        self.choosing.set(false);
         if accepted {
             self.upload_paths(files, generation);
         }
-        self.choosing.set(false);
     }
     fn upload_paths(self: &Rc<Self>, files: Vec<PathBuf>, generation: u64) {
-        if !self.can_transfer() || self.generation.get() != generation {
+        if files.is_empty()
+            || !self.can_transfer()
+            || self.generation.get() != generation
+            || self.uploading.get()
+        {
             return;
         }
-        let directory = self.path.borrow().clone();
-        let mut selected = Vec::new();
-        let mut skipped = 0;
-        let mut names = HashSet::new();
-        let mut conflicts = Vec::new();
-        for local in files {
-            let Some(name) = local.file_name() else {
-                skipped += 1;
-                continue;
+        let answer = {
+            let browser = self.browser.borrow();
+            let Some(browser) = browser.as_ref() else {
+                return;
             };
-            let same = self
-                .entries
-                .borrow()
-                .iter()
-                .find(|entry| entry.name.as_os_str() == name)
-                .cloned();
-            if !std::fs::symlink_metadata(&local).is_ok_and(|metadata| metadata.is_file())
-                || same
-                    .as_ref()
-                    .is_some_and(|entry| entry.directory || entry.symlink)
-                || !names.insert(name.to_owned())
-            {
-                skipped += 1;
-                continue;
+            browser.inspect_upload(self.path.borrow().clone(), files, None)
+        };
+        let answer = match answer {
+            Ok(answer) => answer,
+            Err(error) => {
+                self.status.set_text(&error);
+                return;
             }
-            let remote = directory.join(name);
-            if same.is_some() {
-                conflicts.push(name.to_string_lossy().into_owned());
-            }
-            selected.push((Direction::Upload, local, remote, same.is_some()));
-        }
-        if !conflicts.is_empty()
-            && !self.confirm(
+        };
+        self.uploading.set(true);
+        self.status.set_text("正在扫描本地文件并检查远程目标…");
+        let weak = Rc::downgrade(self);
+        job(
+            move || {
+                answer
+                    .blocking_recv()
+                    .map_err(|_| "SFTP 连接已关闭，未完成上传检查")?
+            },
+            move |result| {
+                let Some(pane) = weak.upgrade() else { return };
+                if !pane.can_transfer() || pane.generation.get() != generation {
+                    pane.uploading.set(false);
+                    return;
+                }
+                match result {
+                    Ok(preview) => pane.prepare_upload(preview, generation),
+                    Err(error) => {
+                        pane.uploading.set(false);
+                        pane.status.set_text(&error);
+                    }
+                }
+            },
+        );
+    }
+    fn prepare_upload(self: &Rc<Self>, preview: UploadPreview, generation: u64) {
+        let replace = preview.conflicts > 0
+            && self.confirm(
                 "替换远程同名文件？",
                 &format!(
                     "{}{}\n取消将跳过同名文件，其他文件照常上传。",
-                    conflicts
-                        .iter()
-                        .take(6)
-                        .cloned()
-                        .collect::<Vec<_>>()
-                        .join("、"),
-                    if conflicts.len() > 6 {
-                        format!(" 等 {} 项", conflicts.len())
+                    preview.examples.join("、"),
+                    if preview.conflicts > preview.examples.len() {
+                        format!(" 等 {} 项", preview.conflicts)
                     } else {
                         String::new()
                     },
                 ),
-            )
-        {
-            let previous = selected.len();
-            selected.retain(|(_, _, _, replace)| !replace);
-            skipped += previous - selected.len();
-        }
+            );
         if !self.can_transfer() || self.generation.get() != generation {
+            self.uploading.set(false);
             return;
         }
-        if selected.is_empty() {
-            self.status.set_text("没有可上传的普通文件");
-        } else {
-            self.enqueue_with_skipped(selected, skipped);
+        if preview.files == 0 && preview.folders == 0 {
+            self.uploading.set(false);
+            self.status
+                .set_text(&format!("没有可上传的项目，已跳过 {} 项", preview.skipped));
+            return;
         }
+        let (answer, profile) = {
+            let browser = self.browser.borrow();
+            let Some(browser) = browser.as_ref() else {
+                self.uploading.set(false);
+                return;
+            };
+            let capacity =
+                MAX_TRANSFERS.saturating_sub(self.tasks.borrow().len() + self.creating.get());
+            (
+                browser.prepare_upload(preview.id, replace, capacity),
+                browser.profile.clone(),
+            )
+        };
+        let answer = match answer {
+            Ok(answer) => answer,
+            Err(error) => {
+                self.uploading.set(false);
+                self.status.set_text(&error);
+                return;
+            }
+        };
+        let creating = preview.files - if replace { 0 } else { preview.conflicts };
+        self.creating.set(self.creating.get() + creating);
+        self.status.set_text("正在准备远程目录和上传队列…");
+        let weak = Rc::downgrade(self);
+        let state = self.state_path.clone();
+        job(
+            move || {
+                let prepared = answer
+                    .blocking_recv()
+                    .map_err(|_| "SFTP 连接已关闭，未完成上传准备")??;
+                let (folders, skipped) = (prepared.folders, prepared.skipped);
+                Ok((
+                    prepared.create_transfers(profile, &state)?,
+                    folders,
+                    skipped,
+                ))
+            },
+            move |result| {
+                let Some(pane) = weak.upgrade() else { return };
+                pane.uploading.set(false);
+                pane.creating
+                    .set(pane.creating.get().saturating_sub(creating));
+                let notice = match result {
+                    Ok((tasks, folders, skipped)) => {
+                        let added = tasks.len();
+                        let start = !pane.closed.get();
+                        for task in tasks {
+                            pane.add_task(task, start);
+                        }
+                        format!(
+                            "已加入 {added} 项上传，已创建 {folders} 个文件夹，跳过 {skipped} 项"
+                        )
+                    }
+                    Err(error) => error,
+                };
+                if pane.can_transfer() && pane.generation.get() == generation {
+                    pane.upload_notice.replace(Some(notice));
+                    pane.refresh();
+                }
+            },
+        );
     }
     fn download(self: &Rc<Self>) {
-        if !self.can_transfer() || self.choosing.get() {
+        if !self.can_transfer() || self.choosing.get() || self.uploading.get() {
             return;
         }
         let mut items = self.selected_entries();
@@ -1137,9 +1244,10 @@ impl FilePane {
             self.status.set_text("正在恢复传输记录，请稍后");
             return;
         }
-        if self.tasks.borrow().len() + self.creating.get() + files.len() > 128 {
-            self.status
-                .set_text("传输队列最多 128 条，请先移除已完成任务");
+        if self.tasks.borrow().len() + self.creating.get() + files.len() > MAX_TRANSFERS {
+            self.status.set_text(&format!(
+                "传输队列最多 {MAX_TRANSFERS} 条，请先移除已完成任务"
+            ));
             return;
         }
         let Some(profile) = self.profile.borrow().clone() else {
@@ -1441,7 +1549,7 @@ impl FilePane {
             _ => {}
         }
         drop(tasks);
-        if refresh && !self.loading.get() {
+        if refresh && !self.loading.get() && !self.uploading.get() {
             self.refresh();
         }
     }
@@ -1648,6 +1756,28 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     }
     pane.navigate(PathBuf::from("/fixture/data"));
     until(|| !pane.loading.get(), "Directory navigation stalled").await?;
+    let folder = root.join("上传目录");
+    let nested = folder.join("子目录");
+    let target = root.join("data/上传目录/子目录");
+    std::fs::create_dir_all(nested.join("空目录")).map_err(|e| e.to_string())?;
+    std::fs::write(nested.join("中文.txt"), "GTK 文件夹上传").map_err(|e| e.to_string())?;
+    pane.upload_paths(vec![folder], pane.generation.get());
+    until(
+        || target.join("中文.txt").is_file() && !pane.loading.get() && !pane.uploading.get(),
+        "Directory upload did not finish",
+    )
+    .await?;
+    if !target.join("空目录").is_dir()
+        || std::fs::read_to_string(target.join("中文.txt")).map_err(|e| e.to_string())?
+            != "GTK 文件夹上传"
+        || !pane
+            .entries
+            .borrow()
+            .iter()
+            .any(|entry| entry.name == Path::new("上传目录") && entry.directory)
+    {
+        return Err("Directory upload did not preserve data or refresh the browser".into());
+    }
     let upload = root.join("gui-upload.local");
     let remote_source = root.join("data/gui-source");
     for path in [&upload, &remote_source] {
@@ -1822,6 +1952,6 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         "Close during transfer did not finish",
     )
     .await?;
-    let output = serde_json::json!({"phase":"complete","largeDirectory":10000,"filenameFilterAndCopy":true,"directoryTickP95Ms":p95(&directory_ticks),"inputP95Ms":p95(&input),"inputSamples":input.len(),"scrollTickP95Ms":p95(&scroll_ticks),"simultaneousTransferTicks":simultaneous,"transferredMiB":1536,"pauseResume":true,"exitDuringTransfer":true,"hiddenIdleTimerStopped":true,"minimumTerminalWidth":terminal_width,"notes":"Synthetic GTK keyboard/scroll events to real SSH; echo ends at VTE parsing, scroll timing is main-loop scheduling, not physical display latency."});
+    let output = serde_json::json!({"phase":"complete","largeDirectory":10000,"folderUpload":true,"filenameFilterAndCopy":true,"directoryTickP95Ms":p95(&directory_ticks),"inputP95Ms":p95(&input),"inputSamples":input.len(),"scrollTickP95Ms":p95(&scroll_ticks),"simultaneousTransferTicks":simultaneous,"transferredMiB":1536,"pauseResume":true,"exitDuringTransfer":true,"hiddenIdleTimerStopped":true,"minimumTerminalWidth":terminal_width,"notes":"Synthetic GTK keyboard/scroll events to real SSH; echo ends at VTE parsing, scroll timing is main-loop scheduling, not physical display latency."});
     std::fs::write(result, output.to_string()).map_err(|e| e.to_string())
 }

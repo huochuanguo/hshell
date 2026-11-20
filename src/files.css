@@ -69,6 +69,9 @@
   gap: 4px;
   padding: 5px 8px;
 }
+.files-actions {
+  flex-wrap: wrap;
+}
 .files-actions [data-action="connect"] {
   margin-left: auto;
 }
