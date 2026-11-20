@@ -164,8 +164,14 @@ Host fixture-password
             output={'binarySha256':hashlib.sha256(binary.read_bytes()).hexdigest(),'guiBinarySha256':gui_hash,'results':results,'sshRemaining':0,'osRelease':Path('/etc/os-release').read_text()}
             Path(args.output).write_text(json.dumps(output,indent=2,ensure_ascii=False)+'\n')
         finally:
-            if paused:subprocess.run(['docker','unpause',container],stdout=subprocess.DEVNULL)
-            subprocess.run(['docker','stop','-t','2',container],stdout=subprocess.DEVNULL,check=False)
+            try:
+                if paused:subprocess.run(['docker','unpause',container],stdout=subprocess.DEVNULL)
+                if os.geteuid() != 0:
+                    # SFTP 以容器内的 root 创建目录，交还临时数据的所有权后宿主机才能清理。
+                    owner=f'{os.getuid()}:{os.getgid()}'
+                    subprocess.run(['docker','exec',container,'chown','-hRP','--',owner,'/fixture/data'],check=True)
+            finally:
+                subprocess.run(['docker','stop','-t','2',container],stdout=subprocess.DEVNULL,check=False)
 
 
 if __name__=='__main__':main()
