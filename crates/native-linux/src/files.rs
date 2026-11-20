@@ -169,6 +169,8 @@ pub struct FilePane {
     upload_notice: RefCell<Option<String>>,
     path: RefCell<PathBuf>,
     address: gtk::Entry,
+    upload_button: gtk::Button,
+    local_directory: RefCell<Option<PathBuf>>,
     search: gtk::SearchEntry,
     host: gtk::Label,
     status: gtk::Label,
@@ -213,28 +215,20 @@ impl FilePane {
         navigation.pack_start(&refresh, false, false, 0);
         root.pack_start(&navigation, false, false, 0);
         let actions = gtk::Box::new(gtk::Orientation::Horizontal, 3);
-        let upload = gtk::Button::with_label("上传文件");
-        let upload_folder = gtk::Button::with_label("上传文件夹");
+        let upload = gtk::Button::with_label("上传");
+        upload.set_sensitive(false);
         let download = gtk::Button::with_label("下载");
         let mkdir = icon_button("folder-new-symbolic", "新建目录");
         let rename = icon_button("document-edit-symbolic", "重命名");
         let delete = icon_button("edit-delete-symbolic", "删除文件或空目录");
         let copy_path = icon_button("edit-copy-symbolic", "复制远程路径");
-        upload.set_tooltip_text(Some("选择本地文件，或拖入本地文件或文件夹"));
-        upload_folder.set_tooltip_text(Some("保留目录结构和空文件夹"));
+        upload.set_tooltip_text(Some("也可直接拖入文件或文件夹"));
         download.set_tooltip_text(Some("Ctrl 多选 · Shift 连选 · 下载所选普通文件"));
         for button in [&copy_path, &download, &rename, &delete] {
             button.set_sensitive(false);
         }
-        for button in [
-            &upload,
-            &upload_folder,
-            &download,
-            &mkdir,
-            &rename,
-            &delete,
-            &copy_path,
-        ] {
+        actions.pack_start(&upload, false, false, 0);
+        for button in [&download, &mkdir, &rename, &delete, &copy_path] {
             actions.pack_start(button, false, false, 0);
         }
         root.pack_start(&actions, false, false, 0);
@@ -334,6 +328,8 @@ impl FilePane {
             upload_notice: RefCell::new(None),
             path: RefCell::new(PathBuf::from(".")),
             address,
+            upload_button: upload.clone(),
+            local_directory: RefCell::new(None),
             search,
             host,
             status,
@@ -463,13 +459,7 @@ impl FilePane {
         let weak = Rc::downgrade(&pane);
         upload.connect_clicked(move |_| {
             if let Some(p) = weak.upgrade() {
-                p.upload(false);
-            }
-        });
-        let weak = Rc::downgrade(&pane);
-        upload_folder.connect_clicked(move |_| {
-            if let Some(p) = weak.upgrade() {
-                p.upload(true);
+                p.upload();
             }
         });
         let weak = Rc::downgrade(&pane);
@@ -515,6 +505,7 @@ impl FilePane {
             move |result| {
                 if let Some(p) = weak.upgrade() {
                     p.restoring.set(false);
+                    p.update_upload_button();
                     match result {
                         Ok(tasks) => {
                             for task in tasks {
@@ -564,6 +555,7 @@ impl FilePane {
         self.receiver.borrow_mut().take();
         self.loading.set(false);
         self.upload_notice.borrow_mut().take();
+        self.update_upload_button();
     }
     pub fn stop(&self) {
         self.closed.set(true);
@@ -592,6 +584,7 @@ impl FilePane {
             return;
         };
         self.listed.set(false);
+        self.update_upload_button();
         self.host.set_text(&format!("文件 · {}", profile.name));
         self.status.set_text("正在连接 SFTP…");
         let (sender, receiver) = mpsc::sync_channel(8);
@@ -628,6 +621,7 @@ impl FilePane {
         if self.request(BrowseRequest::List { generation, path }) {
             self.loading.set(true);
             self.listed.set(false);
+            self.update_upload_button();
             self.model.clear();
             self.entries.borrow_mut().clear();
             self.status.set_text("正在读取目录…");
@@ -775,6 +769,7 @@ impl FilePane {
                             self.status.set_text(&error);
                         }
                     }
+                    self.update_upload_button();
                 }
                 BrowserEvent::Changed(result) => match result {
                     Ok(()) => self.refresh(),
@@ -798,6 +793,7 @@ impl FilePane {
                     self.receiver.borrow_mut().take();
                     self.loading.set(false);
                     self.status.set_text(&error);
+                    self.update_upload_button();
                 }
                 _ => {}
             }
@@ -980,41 +976,30 @@ impl FilePane {
     fn downloadable(item: &Entry) -> bool {
         !item.directory && !item.symlink
     }
-    fn upload(self: &Rc<Self>, folder: bool) {
-        if !self.can_transfer() || self.uploading.get() || self.choosing.replace(true) {
+    fn update_upload_button(&self) {
+        self.upload_button
+            .set_sensitive(self.can_transfer() && !self.uploading.get() && !self.choosing.get());
+    }
+    fn set_uploading(&self, active: bool) {
+        self.uploading.set(active);
+        self.update_upload_button();
+    }
+    fn set_choosing(&self, active: bool) {
+        self.choosing.set(active);
+        self.update_upload_button();
+    }
+    fn upload(self: &Rc<Self>) {
+        if !self.can_transfer() || self.uploading.get() || self.choosing.get() {
             return;
         }
+        self.set_choosing(true);
         let generation = self.generation.get();
-        let chooser = gtk::FileChooserDialog::new(
-            Some(if folder {
-                "上传文件夹"
-            } else {
-                "上传文件"
-            }),
-            Some(&self.window),
-            if folder {
-                gtk::FileChooserAction::SelectFolder
-            } else {
-                gtk::FileChooserAction::Open
-            },
-        );
-        chooser.add_buttons(&[
-            ("取消", gtk::ResponseType::Cancel),
-            ("上传", gtk::ResponseType::Accept),
-        ]);
-        chooser.set_select_multiple(true);
-        let alive = dialog_guard(&chooser);
-        let accepted = chooser.run() == gtk::ResponseType::Accept;
-        let files = if alive.get() {
-            chooser.filenames()
-        } else {
-            Vec::new()
-        };
-        dismiss(&chooser, &alive);
-        self.choosing.set(false);
-        if accepted {
-            self.upload_paths(files, generation);
-        }
+        let previous = self.local_directory.borrow().clone();
+        let target = self.path.borrow().clone();
+        let (last_directory, files) = crate::upload_picker::choose(&self.window, &target, previous);
+        self.local_directory.replace(last_directory);
+        self.set_choosing(false);
+        self.upload_paths(files, generation);
     }
     fn upload_paths(self: &Rc<Self>, files: Vec<PathBuf>, generation: u64) {
         if files.is_empty()
@@ -1038,7 +1023,7 @@ impl FilePane {
                 return;
             }
         };
-        self.uploading.set(true);
+        self.set_uploading(true);
         self.status.set_text("正在扫描本地文件并检查远程目标…");
         let weak = Rc::downgrade(self);
         job(
@@ -1050,13 +1035,13 @@ impl FilePane {
             move |result| {
                 let Some(pane) = weak.upgrade() else { return };
                 if !pane.can_transfer() || pane.generation.get() != generation {
-                    pane.uploading.set(false);
+                    pane.set_uploading(false);
                     return;
                 }
                 match result {
                     Ok(preview) => pane.prepare_upload(preview, generation),
                     Err(error) => {
-                        pane.uploading.set(false);
+                        pane.set_uploading(false);
                         pane.status.set_text(&error);
                     }
                 }
@@ -1078,32 +1063,33 @@ impl FilePane {
                 ),
             );
         if !self.can_transfer() || self.generation.get() != generation {
-            self.uploading.set(false);
+            self.set_uploading(false);
             return;
         }
         if preview.files == 0 && preview.folders == 0 {
-            self.uploading.set(false);
+            self.set_uploading(false);
             self.status
                 .set_text(&format!("没有可上传的项目，已跳过 {} 项", preview.skipped));
             return;
         }
         let (answer, profile) = {
             let browser = self.browser.borrow();
-            let Some(browser) = browser.as_ref() else {
-                self.uploading.set(false);
+            let Some(connection) = browser.as_ref() else {
+                drop(browser);
+                self.set_uploading(false);
                 return;
             };
             let capacity =
                 MAX_TRANSFERS.saturating_sub(self.tasks.borrow().len() + self.creating.get());
             (
-                browser.prepare_upload(preview.id, replace, capacity),
-                browser.profile.clone(),
+                connection.prepare_upload(preview.id, replace, capacity),
+                connection.profile.clone(),
             )
         };
         let answer = match answer {
             Ok(answer) => answer,
             Err(error) => {
-                self.uploading.set(false);
+                self.set_uploading(false);
                 self.status.set_text(&error);
                 return;
             }
@@ -1127,7 +1113,7 @@ impl FilePane {
             },
             move |result| {
                 let Some(pane) = weak.upgrade() else { return };
-                pane.uploading.set(false);
+                pane.set_uploading(false);
                 pane.creating
                     .set(pane.creating.get().saturating_sub(creating));
                 let notice = match result {
@@ -1162,7 +1148,7 @@ impl FilePane {
             self.status.set_text("请选择普通文件下载");
             return;
         }
-        self.choosing.set(true);
+        self.set_choosing(true);
         let generation = self.generation.get();
         let chooser = gtk::FileChooserDialog::new(
             Some(if batch {
@@ -1189,7 +1175,7 @@ impl FilePane {
         let accepted = chooser.run() == gtk::ResponseType::Accept;
         let local = alive.get().then(|| chooser.filename()).flatten();
         dismiss(&chooser, &alive);
-        self.choosing.set(false);
+        self.set_choosing(false);
         let Some(local) = local
             .filter(|_| accepted && self.can_transfer() && self.generation.get() == generation)
         else {

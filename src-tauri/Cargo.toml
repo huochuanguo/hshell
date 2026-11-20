@@ -1,6 +1,6 @@
 [package]
 name = "hshell-desktop"
-version = "0.3.11"
+version = "0.3.12"
 description = "A quiet, lightweight SSH workspace"
 edition = "2021"
 rust-version = "1.90"
@@ -19,3 +19,6 @@ hshell-sftp = { path = "../crates/sftp" }
 tauri-plugin-dialog = "2"
 tauri-plugin-clipboard-manager = "2"
 uuid = { version = "1", features = ["v4"] }
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.61", features = ["Win32_Storage_FileSystem"] }

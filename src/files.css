@@ -33,6 +33,7 @@
   border-bottom: 1px solid var(--line);
 }
 .files-host {
+  flex-shrink: 0;
   margin: 8px 10px;
   color: var(--muted);
   overflow: hidden;
@@ -173,6 +174,9 @@
   overflow: auto;
   scrollbar-width: thin;
 }
+.transfer-list:has(> .files-message) {
+  min-height: 0;
+}
 .transfer-row {
   padding: 8px 10px;
   border-bottom: 1px solid var(--line);
@@ -235,5 +239,277 @@
   }
   #session-status {
     display: none;
+  }
+}
+
+.upload-picker {
+  width: 720px;
+  padding: 20px;
+}
+.upload-picker-heading {
+  margin-bottom: 14px;
+}
+.upload-picker-heading h2 {
+  color: var(--text-bright);
+  font-size: 18px;
+  font-weight: 600;
+}
+.upload-picker-target {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  white-space: nowrap;
+}
+.upload-picker-target span,
+.upload-picker-name > span {
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.upload-picker-target span {
+  font-family: var(--mono);
+  color: var(--text);
+}
+.upload-picker-browser {
+  --upload-columns: minmax(0, 1fr) 76px;
+  display: grid;
+  grid-template-columns: 141px minmax(0, 1fr);
+  grid-template-rows: minmax(0, 1fr);
+  height: clamp(164px, calc(100dvh - 186px), 380px);
+  overflow: clip;
+  border: 1px solid var(--line-strong);
+  border-radius: 5px;
+  background: var(--surface);
+}
+.upload-picker-places {
+  min-width: 0;
+  overflow: auto;
+  padding: 8px;
+  border-inline-end: 1px solid var(--line);
+  background: var(--bar);
+  scrollbar-width: thin;
+}
+.upload-picker-places > p {
+  margin: 4px 8px 6px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.upload-picker-places > p:not(:first-child) {
+  margin-top: 13px;
+}
+.upload-picker-place {
+  justify-content: flex-start;
+  gap: 9px;
+  width: 100%;
+  min-height: 32px;
+  padding: 4px 8px;
+  border-radius: 3px;
+  text-align: start;
+}
+.upload-picker-place:hover,
+.upload-picker-row:hover {
+  background: var(--hover);
+}
+.upload-picker-place[aria-current="true"],
+.upload-picker-row[aria-selected="true"] {
+  background: var(--selected);
+  color: var(--text-bright);
+}
+.upload-picker-place svg,
+.upload-picker-name svg {
+  color: var(--muted);
+}
+.upload-picker-place[aria-current="true"] svg {
+  color: var(--accent);
+}
+.upload-picker-drive-buttons:empty {
+  min-height: 16px;
+}
+.upload-picker-drive-message {
+  margin: 3px 8px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.upload-picker-content {
+  display: grid;
+  grid-template-rows: auto auto minmax(0, 1fr);
+  min-width: 0;
+}
+.upload-picker-location {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 10px;
+}
+.upload-picker-location .icon-button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid var(--line-strong);
+}
+.upload-picker-path {
+  display: flex;
+  align-items: center;
+  flex: 1;
+  min-width: 0;
+  height: 32px;
+  border: 1px solid var(--line-strong);
+  border-radius: 3px;
+  background: var(--input);
+}
+.upload-picker-path:focus-within {
+  border-color: var(--accent);
+}
+.upload-picker-path input {
+  flex: 1;
+  width: 0;
+  height: 100%;
+  padding: 0 8px;
+  border: 0;
+  background: transparent;
+  color: var(--text);
+  font-family: var(--mono);
+}
+.upload-picker-path button {
+  align-self: stretch;
+  padding: 0 10px;
+  margin: 2px;
+  border-radius: 2px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+.upload-picker-path button:hover:not(:disabled) {
+  background: var(--hover);
+  color: var(--text-bright);
+}
+.upload-picker-columns,
+.upload-picker-row {
+  display: grid;
+  grid-template-columns: var(--upload-columns);
+  gap: 12px;
+  align-items: center;
+  min-width: 0;
+  padding: 0 13px;
+  text-align: start;
+}
+.upload-picker-columns {
+  min-height: 27px;
+  overflow: hidden;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+  border-block: 1px solid var(--line);
+  background: var(--bar);
+  color: var(--muted);
+  font-size: 12px;
+}
+.upload-picker-entries {
+  position: relative;
+  min-height: 0;
+  background: var(--input);
+}
+.upload-picker-list,
+.upload-picker-drive-overview {
+  height: 100%;
+  overflow: auto;
+  overscroll-behavior: contain;
+  padding: 4px;
+  scrollbar-width: thin;
+  scrollbar-gutter: stable;
+}
+.upload-picker-list:focus-visible {
+  outline: 1px solid var(--accent);
+  outline-offset: -1px;
+}
+.upload-picker-list:focus-visible [data-focused] {
+  box-shadow: inset 0 0 0 1px var(--accent);
+}
+.upload-picker-row {
+  width: 100%;
+  min-height: 31px;
+  padding-inline: 9px;
+  border-radius: 3px;
+  cursor: default;
+  user-select: none;
+}
+button.upload-picker-row {
+  cursor: pointer;
+}
+.upload-picker-name {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  min-width: 0;
+}
+.upload-picker-row[data-directory] svg {
+  color: var(--warning);
+}
+.upload-picker-kind {
+  color: var(--muted);
+  font-size: 12px;
+}
+.upload-picker-empty {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  margin: 0;
+  padding: 12px;
+  color: var(--muted);
+  text-align: center;
+  pointer-events: none;
+}
+.upload-picker-footer {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 13px;
+}
+.upload-picker-feedback {
+  flex: 1;
+  min-width: 0;
+}
+.upload-picker-status,
+#upload-picker-help {
+  overflow: hidden;
+  margin: 0;
+  font-size: 12px;
+  line-height: 19px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.upload-picker-status[data-error] {
+  color: var(--danger);
+}
+#upload-picker-help {
+  color: var(--muted);
+}
+.upload-picker .dialog-actions {
+  flex-shrink: 0;
+  margin-top: 0;
+}
+.upload-picker [data-accept]:disabled {
+  cursor: default;
+}
+@media (max-width: 540px) {
+  .upload-picker {
+    padding: 13px;
+  }
+  .upload-picker-browser {
+    --upload-columns: minmax(0, 1fr);
+    grid-template-columns: 100px minmax(0, 1fr);
+  }
+  .upload-picker-columns > :nth-child(2),
+  .upload-picker-kind {
+    display: none;
+  }
+  .upload-picker-places {
+    padding: 6px;
+  }
+  .upload-picker-place,
+  .upload-picker-name {
+    gap: 6px;
   }
 }

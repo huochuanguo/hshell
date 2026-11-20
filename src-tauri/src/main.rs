@@ -348,6 +348,8 @@ fn main() {
             files::sftp_auth,
             files::sftp_tasks,
             files::sftp_enqueue,
+            files::sftp_local_upload_drives,
+            files::sftp_local_upload_directory,
             files::sftp_inspect_upload,
             files::sftp_prepare_upload,
             files::sftp_task_action,

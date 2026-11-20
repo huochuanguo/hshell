@@ -432,6 +432,33 @@ pub fn sftp_tasks(files: State<Files>) -> Result<Vec<TaskInfo>, String> {
 }
 
 #[tauri::command]
+pub fn sftp_local_upload_drives() -> Result<Vec<String>, String> {
+    #[cfg(windows)]
+    {
+        // 位掩码来自系统盘符表，列出磁盘时无需逐盘读取根目录。
+        let mask = unsafe { windows_sys::Win32::Storage::FileSystem::GetLogicalDrives() };
+        if mask == 0 {
+            return Err(format!("无法读取盘符：{}", std::io::Error::last_os_error()));
+        }
+        Ok((b'A'..=b'Z')
+            .filter(|letter| mask & (1 << (letter - b'A')) != 0)
+            .map(|letter| format!("{}:\\", char::from(letter)))
+            .collect())
+    }
+    #[cfg(not(windows))]
+    Ok(Vec::new())
+}
+
+#[tauri::command]
+pub async fn sftp_local_upload_directory(
+    path: Option<PathBuf>,
+) -> Result<hshell_sftp::LocalDirectory, String> {
+    tauri::async_runtime::spawn_blocking(move || hshell_sftp::list_local_upload(path))
+        .await
+        .map_err(|error| error.to_string())?
+}
+
+#[tauri::command]
 pub async fn sftp_inspect_upload(
     files: State<'_, Files>,
     id: String,

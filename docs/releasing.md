@@ -1,6 +1,6 @@
 # 发布 Ubuntu 与 Windows 安装包
 
-Gitee `origin` 保存源码，GitHub 私有镜像运行构建与发布。Ubuntu 和 Windows 共用同一个版本号、标签和 GitHub Release。
+Gitee `origin` 保存源码，GitHub 公开镜像运行构建与发布。Ubuntu 和 Windows 共用同一个版本号、标签和 GitHub Release。
 
 ## 发布流程
 

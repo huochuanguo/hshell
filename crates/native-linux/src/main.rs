@@ -22,6 +22,8 @@ mod terminal;
 mod timing;
 #[cfg(target_os = "linux")]
 mod ui;
+#[cfg(target_os = "linux")]
+mod upload_picker;
 
 #[cfg(target_os = "linux")]
 use gtk::{gio, prelude::*};

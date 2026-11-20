@@ -2,6 +2,7 @@
 <html lang="zh-CN">
   <head>
     <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/src/assets/hshell.svg" />
     <title>HShell Windows UI 夹具</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   </head>
@@ -194,22 +195,74 @@
             args.options.title === "选择连接备份"
           )
             return "C:\\Temp\\hshell-connections.json";
-          if (
-            cmd === "plugin:dialog|open" &&
-            args.options.directory &&
-            args.options.multiple
-          )
-            return ["C:\\Temp\\上传文件夹"];
           if (cmd === "plugin:dialog|open" && args.options.directory)
             return "C:\\Temp\\下载夹具";
-          if (cmd === "plugin:dialog|open")
-            return new URLSearchParams(location.search).has("batch")
-              ? [
-                  "C:\\Users\\测试用户\\上传 文件.txt",
-                  "C:\\Temp\\server.ts",
-                  "C:\\Temp\\中文 目录",
-                ]
-              : ["C:\\Users\\测试用户\\上传 文件.txt"];
+          if (cmd === "sftp_local_upload_drives")
+            return ["C:\\", "D:\\", "E:\\"];
+          if (cmd === "sftp_local_upload_directory") {
+            if (args.path === "E:\\") {
+              await new Promise((resolve) => setTimeout(resolve, 350));
+              throw new Error("设备未就绪");
+            }
+            if (args.path === "D:\\")
+              return {
+                path: args.path,
+                parent: null,
+                entries: [
+                  {
+                    name: "上传文件夹",
+                    path: "D:\\上传文件夹",
+                    directory: true,
+                  },
+                  {
+                    name: "上传 文件.txt",
+                    path: "D:\\上传 文件.txt",
+                    directory: false,
+                  },
+                  ...Array.from({ length: 17 }, (_, index) => ({
+                    name: `目录 ${index + 1}`,
+                    path: `D:\\目录 ${index + 1}`,
+                    directory: true,
+                  })),
+                ],
+              };
+            const root = "C:\\Temp";
+            const folder = "上传文件夹";
+            const file = "上传 文件.txt";
+            if (args.path === `${root}\\${folder}`)
+              return {
+                path: args.path,
+                parent: root,
+                entries: [
+                  {
+                    name: "子文件.txt",
+                    path: `${args.path}\\子文件.txt`,
+                    directory: false,
+                  },
+                ],
+              };
+            if (args.path && args.path !== root && args.path !== "C:\\")
+              throw new Error("无法读取本地目录");
+            if (args.path === "C:\\")
+              return {
+                path: args.path,
+                parent: null,
+                entries: [{ name: "Temp", path: root, directory: true }],
+              };
+            return {
+              path: root,
+              parent: "C:\\",
+              entries: [
+                { name: folder, path: `${root}\\${folder}`, directory: true },
+                { name: file, path: `${root}\\${file}`, directory: false },
+                {
+                  name: "server.ts",
+                  path: `${root}\\server.ts`,
+                  directory: false,
+                },
+              ],
+            };
+          }
           if (
             cmd === "plugin:dialog|save" &&
             args.options.filters?.[0]?.extensions?.includes("json")
@@ -229,7 +282,8 @@
                   name,
                   folder,
                   remote,
-                  replace: name === "server.ts",
+                  replace:
+                    !folder && entries.some((entry) => entry.name === name),
                 };
               })
               .filter(({ name }) => name !== "中文 目录");

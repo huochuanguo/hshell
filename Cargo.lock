@@ -1712,7 +1712,7 @@ dependencies = [
 
 [[package]]
 name = "hshell-desktop"
-version = "0.3.11"
+version = "0.3.12"
 dependencies = [
  "hshell-sftp",
  "serde",
@@ -1722,11 +1722,12 @@ dependencies = [
  "tauri-plugin-clipboard-manager",
  "tauri-plugin-dialog",
  "uuid",
+ "windows-sys 0.61.2",
 ]
 
 [[package]]
 name = "hshell-native"
-version = "0.3.11"
+version = "0.3.12"
 dependencies = [
  "gtk",
  "hshell-sftp",

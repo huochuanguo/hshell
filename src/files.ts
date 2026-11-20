@@ -18,6 +18,7 @@ import {
   FolderPlus,
   X,
 } from "lucide";
+import { UploadPicker } from "./upload-picker";
 import { copyText } from "./clipboard";
 import { requestAuthentication } from "./auth";
 import type { Profile } from "./types";
@@ -153,6 +154,7 @@ export class FilesPane {
   private authAbort = new AbortController();
   private transferAuth = new Map<string, AbortController>();
   private paths = new Map<string, string>();
+  private uploadPicker = new UploadPicker();
   private nameDialog: HTMLDialogElement;
 
   constructor(
@@ -168,7 +170,7 @@ export class FilesPane {
       <div class="files-heading"><strong>文件与传输</strong><button class="icon-button" data-action="close" aria-label="收起文件栏">${icon("X")}</button></div>
       <p class="files-host"></p>
       <form class="files-path"><button type="button" class="icon-button" data-action="up" aria-label="上一级目录">${icon("ArrowUp")}</button><input aria-label="远程 Unix 目录" placeholder="/home/user" spellcheck="false"><button type="submit" class="icon-button" aria-label="打开远程目录">${icon("RotateCw")}</button></form>
-      <div class="files-actions"><button class="dark-button" data-action="upload" title="选择本地文件，或拖入本地文件或文件夹">${icon("Upload")} 上传文件</button><button class="dark-button" data-action="upload-folder" title="保留目录结构和空文件夹">${icon("Folder")} 上传文件夹</button><button class="dark-button" data-action="download">${icon("Download")} 下载</button><button class="icon-button" data-action="mkdir" aria-label="新建远程目录">${icon("FolderPlus")}</button><button class="dark-button" data-action="connect">重新连接</button></div>
+      <div class="files-actions"><button type="button" class="dark-button" data-action="upload" aria-haspopup="dialog" title="选择文件和文件夹，也可直接拖入">${icon("Upload")} 上传</button><button class="dark-button" data-action="download">${icon("Download")} 下载</button><button class="icon-button" data-action="mkdir" aria-label="新建远程目录">${icon("FolderPlus")}</button><button class="dark-button" data-action="connect">重新连接</button></div>
       <input class="files-filter" type="search" aria-label="按文件名筛选当前目录" placeholder="筛选文件名" autocomplete="off" spellcheck="false">
       <p class="files-message" role="status"></p>
       <p class="files-message files-filter-result" role="status" hidden></p>
@@ -303,7 +305,11 @@ export class FilesPane {
     this.controls();
   }
 
-  private canDrop() {
+  private get uploadButton() {
+    return this.el<HTMLButtonElement>('[data-action="upload"]');
+  }
+
+  private canUpload() {
     return (
       this.opened &&
       this.ready &&
@@ -311,14 +317,15 @@ export class FilesPane {
       !this.choosingUpload &&
       !this.choosingDownload &&
       !!this.listedDirectory &&
-      !document.querySelector("dialog[open]")
+      this.listedDirectory === this.directory
     );
   }
 
   private dragDrop(event: DragDropEvent) {
     const active =
       event.type !== "leave" &&
-      this.canDrop() &&
+      this.canUpload() &&
+      !document.querySelector("dialog[open]") &&
       this.root.contains(
         document.elementFromPoint(
           event.position.x / devicePixelRatio,
@@ -437,6 +444,7 @@ export class FilesPane {
   private stopBrowser() {
     const id = this.browser;
     this.browser = "";
+    this.uploadPicker.close();
     this.ready = false;
     this.busy = false;
     this.listedDirectory = "";
@@ -507,6 +515,7 @@ export class FilesPane {
           this.controls();
         } else void this.list(this.directory);
       } else if (event.type === "closed") {
+        this.uploadPicker.close();
         this.authAbort.abort();
         this.ready = false;
         this.busy = false;
@@ -581,14 +590,16 @@ export class FilesPane {
       ".files-actions button, .files-path button, .files-selection button",
     )) {
       const action = button.dataset.action;
+      if (action === "upload") {
+        button.disabled = !this.canUpload();
+        continue;
+      }
       button.disabled =
         action === "connect"
           ? !this.profile || this.choosingUpload
           : !this.ready ||
             this.busy ||
             this.choosingUpload ||
-            ((action === "upload" || action === "upload-folder") &&
-              !this.listedDirectory) ||
             (action === "download" &&
               (this.choosingDownload ||
                 ![...this.selection].some(
@@ -785,16 +796,8 @@ export class FilesPane {
     });
   }
 
-  private async upload(dropped?: string[], folder = false) {
-    if (
-      this.choosingUpload ||
-      this.choosingDownload ||
-      !this.ready ||
-      this.busy ||
-      !this.listedDirectory ||
-      this.listedDirectory !== this.directory
-    )
-      return;
+  private async upload(dropped?: string[]) {
+    if (!this.canUpload()) return;
     const { browser, directory, generation } = this;
     const current = () =>
       this.ready &&
@@ -807,28 +810,14 @@ export class FilesPane {
     let refresh = false;
     let inspecting = false;
     try {
-      const paths =
-        dropped ??
-        (await open({
-          title: folder
-            ? "选择要上传的文件夹（可多选）"
-            : "选择要上传的文件（可多选）",
-          multiple: true,
-          directory: folder,
-        }));
-      if (!paths?.length || !current()) return;
-      const name =
-        !folder && !dropped && paths.length === 1
-          ? await this.askName("上传到远程目录", localBasename(paths[0]))
-          : undefined;
-      if (name === null || !current()) return;
+      const paths = dropped ?? (await this.uploadPicker.choose(directory));
+      if (!paths.length || !current()) return;
       inspecting = true;
       this.message("正在扫描本地文件并检查远程目标…");
       const preview = await invoke<UploadPreview>("sftp_inspect_upload", {
         id: browser,
         directory,
         paths,
-        name,
       });
       if (!current()) return;
       const replace =
@@ -963,8 +952,19 @@ export class FilesPane {
       await this.list(remoteParent(this.directory));
       return;
     }
-    if (action === "upload") return this.upload();
-    if (action === "upload-folder") return this.upload(undefined, true);
+    if (action === "upload") {
+      try {
+        await this.upload();
+      } finally {
+        if (
+          !this.uploadButton.disabled &&
+          (document.activeElement === document.body ||
+            this.uploadPicker.hasFocus())
+        )
+          this.uploadButton.focus();
+      }
+      return;
+    }
     const entry = this.selected;
     if (action === "copy-path" && entry) {
       await copyText(remoteJoin(this.directory, entry.name));

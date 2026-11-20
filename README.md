@@ -23,7 +23,7 @@ Ubuntu 原生版使用 **Rust + GTK 3 + VTE + 系统 OpenSSH**，终端直接读
 - Ubuntu 终端由 VTE 直接解析、渲染、滚动，不经过 JS 或 IPC；隐藏标签继续处理输出。Tauri 前端保留二进制 IPC 与输出背压。
 - 连接表单支持保存、替换、清除登录密码；Linux 使用 Secret Service，Windows 使用 Credential Manager。
 - Ubuntu / Windows SFTP：右侧文件栏、目录导航、上传/下载、双向断点续传、暂停/继续、重启后恢复、新建目录、重命名及删除文件/空目录。最多两路传输，文件内容不进入界面线程。
-- Ubuntu 与 Windows 都可一次选择多个文件，或把本地文件拖到 SFTP 文件列表中上传。使用 Ctrl 多选或 Shift 连选后点「下载」，选择一次本地目录；批量下载跳过已有同名文件。文件栏支持按名称筛选当前目录并复制单个项目的远端绝对路径。
+- Ubuntu 与 Windows 都可点「上传」，在同一个窗口混选文件和文件夹，文件默认按原名上传；也可把文件和文件夹一起拖进 SFTP 文件列表。文件夹上传会保留目录结构及空文件夹，同名文件会在覆盖前确认。使用 Ctrl 多选或 Shift 连选后点「下载」，选择一次本地目录；批量下载跳过已有同名文件。文件栏支持按名称筛选当前目录并复制单个项目的远端绝对路径。
 - 文件栏按类型区分图标：目录柔金色、链接青绿色、代码冷蓝色、压缩包淡紫色、图片灰绿色；目录与链接名称同步着色，普通文件名保持浅灰。六类图标缓存复用，不增加远程查询。
 
 在终端会话中点击「文件」打开 SFTP。收起文件栏会断开浏览连接，后台传输继续；退出应用保留断点，再次打开文件栏后点击「继续」。续传会在后台完整核对已传前缀，大文件可能有一段校验时间。移除未完成任务会明确保留临时文件路径，按需清理。断点记录不含密码。详见 [SFTP 设计](docs/sftp-design.md)。
@@ -70,7 +70,7 @@ sudo apt install ./target/release/bundle/deb/hshell_0.3.8_amd64.deb
 
 Ubuntu 22.04 的发布包必须在 Ubuntu 22.04 构建，再在 22.04 和 24.04 安装验收。**不能用 Ubuntu 24.04 构建结果宣称兼容 22.04**，因为 glibc 基线可能不兼容。CI 已定义两套 Ubuntu 构建及 Windows 构建，但添加工作流不代表已实际运行。
 
-源码保留在 [Gitee](https://gitee.com/huochuanguo/hshell)，并同步到 [GitHub 私有仓库](https://github.com/huochuanguo/hshell)。Ubuntu 和 Windows 使用同一个版本号与 `vMAJOR.MINOR.PATCH` 标签。[自动发布流程](.github/workflows/release.yml) 在 Ubuntu 22.04 构建并完成 SFTP 与双系统安装检查，然后将 `.deb`、Windows `.exe` 及各自的 SHA256 校验文件一起发布到 [GitHub 发行版](https://github.com/huochuanguo/hshell/releases)。安装包不进入 Git 源码。私有发行版下载需要 GitHub 仓库访问权限。具体步骤及失败处理见 [发布说明](docs/releasing.md)。
+源码保留在 [Gitee](https://gitee.com/huochuanguo/hshell)，并同步到 [GitHub 公开仓库](https://github.com/huochuanguo/hshell)。Ubuntu 和 Windows 使用同一个版本号与 `vMAJOR.MINOR.PATCH` 标签。[自动发布流程](.github/workflows/release.yml) 在 Ubuntu 22.04 构建并完成 SFTP 与双系统安装检查，然后将 `.deb`、Windows `.exe` 及各自的 SHA256 校验文件一起发布到 [GitHub 发行版](https://github.com/huochuanguo/hshell/releases)。安装包不进入 Git 源码。具体步骤及失败处理见 [发布说明](docs/releasing.md)。
 
 Windows 开发需要 MSVC C++ Build Tools（含 Windows SDK）、Rust MSVC 工具链、Node.js 24 LTS、WebView2 Runtime，以及 Windows「可选功能」中的 OpenSSH 客户端。保存密码及 SFTP 需要 OpenSSH 8.4+：
 
