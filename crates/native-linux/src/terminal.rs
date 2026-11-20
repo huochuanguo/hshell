@@ -24,6 +24,7 @@ extern "C" {
         palette: *const gdk::ffi::GdkRGBA,
         count: usize,
     );
+    fn vte_terminal_set_bold_is_bright(terminal: *mut c_void, enabled: i32);
     fn vte_terminal_set_cursor_blink_mode(terminal: *mut c_void, mode: i32);
     fn vte_terminal_set_cursor_shape(terminal: *mut c_void, shape: i32);
     fn vte_terminal_set_allow_hyperlink(terminal: *mut c_void, allow: i32);
@@ -93,10 +94,12 @@ impl Terminal {
             let rgba = |hex: &str| gdk::RGBA::parse(hex).unwrap();
             let fg = rgba("#d3d9e2");
             let bg = rgba("#17191d");
+            // 让 ls 的蓝字绿底和白字蓝底都清晰可读。普通目录用粗体蓝，仍显示为亮蓝。
+            vte_terminal_set_bold_is_bright(raw, 1);
             let palette: Vec<_> = [
-                "#1e2126", "#e69a9a", "#9ccaa0", "#ddc28d", "#9abceb", "#c6a7d9", "#91c6cb",
-                "#d3d9e2", "#a2aab7", "#f2aeaa", "#b7d6ac", "#eed6a1", "#b5d0f1", "#dbbde7",
-                "#afe0db", "#e7edf5",
+                "#1e2126", "#e69a9a", "#e3ffd9", "#ddc28d", "#4072b2", "#c6a7d9", "#91c6cb",
+                "#f4f7fb", "#a2aab7", "#f2aeaa", "#b7d6ac", "#eed6a1", "#b5d0f1", "#dbbde7",
+                "#afe0db", "#ffffff",
             ]
             .iter()
             .map(|hex| *rgba(hex).to_glib_none().0)

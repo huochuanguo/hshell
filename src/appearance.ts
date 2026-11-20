@@ -46,6 +46,8 @@ export function terminalAppearance() {
     fontWeight: "400" as const,
     fontWeightBold: "600" as const,
     lineHeight: 1.36,
+    // 保留 ls 的权限底色，前景太接近底色时由渲染器提高对比度。
+    minimumContrastRatio: 4.5,
     theme,
   };
 }
