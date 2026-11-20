@@ -161,8 +161,9 @@ async fn main() {
             fs::write(source.join("链接的目录/不上传.txt"), "不写入").unwrap();
             fs::write(target.join("嵌套/保留.txt"), "旧内容").unwrap();
             fs::write(target.join("冲突的目录"), "不能替换").unwrap();
-            symlink(&outside, target.join("链接的目录")).unwrap();
-            symlink(&outside, source.join("本地链接")).unwrap();
+            // 容器内只挂载了夹具目录，相对链接在宿主机与容器内均有效。
+            symlink("../外部目录", target.join("链接的目录")).unwrap();
+            symlink("../data/外部目录", source.join("本地链接")).unwrap();
             let state = root.join("state-folder");
             let inspect =
                 || UploadPlan::inspect(&connection, directory.clone(), vec![source.clone()], None);
@@ -209,7 +210,7 @@ async fn main() {
                 .unwrap();
             prepared.create_transfers(profile(), &state).unwrap();
             fs::rename(target.join("嵌套"), target.join("改名后")).unwrap();
-            symlink(&outside, target.join("嵌套")).unwrap();
+            symlink("../外部目录", target.join("嵌套")).unwrap();
             for mut task in Transfer::restore(&state).unwrap() {
                 assert!(task
                     .run(&connection, |_| {})
