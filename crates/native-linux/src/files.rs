@@ -290,22 +290,17 @@ impl FilePane {
         let type_column = file_info_column("类型", 6, 58, 0.0);
         let size_column = file_info_column("大小", 2, 66, 1.0);
         let modified_column = file_info_column("修改时间", 7, 120, 0.0);
-        let permissions_column = file_info_column("权限", 8, 48, 0.0);
-        for column in [
-            &type_column,
-            &size_column,
-            &modified_column,
-            &permissions_column,
-        ] {
+        let owner_column = file_info_column("所有者", 8, 78, 0.0);
+        for column in [&type_column, &size_column, &modified_column, &owner_column] {
             tree.append_column(column);
         }
         type_column.set_visible(false);
         modified_column.set_visible(false);
-        permissions_column.set_visible(false);
+        owner_column.set_visible(false);
         let adaptive_columns = Rc::new([
             (modified_column, 350),
             (type_column, 425),
-            (permissions_column, 500),
+            (owner_column, 500),
         ]);
         let column_resize_pending = Rc::new(Cell::new(false));
         root.connect_size_allocate(move |pane, allocation| {
@@ -787,11 +782,11 @@ impl FilePane {
                             })
                             .and_then(|date| date.format("%Y-%m-%d %H:%M").ok())
                             .map_or_else(|| "—".into(), |value| value.to_string());
-                        let permissions = entry
-                            .permissions
-                            .map_or_else(|| "—".into(), |mode| format!("{mode:04o}"));
+                        let owner = entry
+                            .owner_uid
+                            .map_or_else(|| "—".into(), |uid| uid.to_string());
                         let tooltip = format!(
-                            "{}\n类型：{category} · 大小：{size}\n修改时间：{modified}\n权限：{permissions}",
+                            "{}\n类型：{category} · 大小：{size}\n修改时间：{modified}\n所有者（UID）：{owner}",
                             glib::markup_escape_text(&name),
                         );
                         self.model.insert_with_values(
@@ -805,7 +800,7 @@ impl FilePane {
                                 (5, &kind.name_weight()),
                                 (6, &category),
                                 (7, &modified),
-                                (8, &permissions),
+                                (8, &owner),
                                 (9, &tooltip),
                             ],
                         );

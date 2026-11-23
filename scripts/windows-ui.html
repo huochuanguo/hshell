@@ -37,16 +37,16 @@
             name: "中文 目录",
             directory: true,
             size: 4096,
-            permissions: 0o1755,
+            ownerUid: 0,
           },
           {
             name: "链接",
             symlink: true,
             size: 9,
-            permissions: null,
+            ownerUid: null,
             modified: null,
           },
-          { name: "server.ts", size: 2048 },
+          { name: "server.ts", size: 2048, ownerUid: 4294967294 },
           { name: "backup.tar.gz", size: 10485760 },
           { name: "image.png", size: 8096 },
           { name: '<文件 & "名称">.txt', size: 123 },
@@ -54,7 +54,7 @@
           directory: false,
           symlink: false,
           modified: 1780000000,
-          permissions: 0o644,
+          ownerUid: 1000,
           ...e,
         }));
       mockWindows("main");
@@ -184,7 +184,7 @@
                     symlink: false,
                     size: null,
                     modified: null,
-                    permissions: null,
+                    ownerUid: null,
                   },
                 ];
               if (r.type === "rename")
@@ -331,7 +331,7 @@
                   symlink: false,
                   size: null,
                   modified: null,
-                  permissions: null,
+                  ownerUid: null,
                 });
                 folders++;
               }

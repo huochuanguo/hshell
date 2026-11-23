@@ -181,7 +181,7 @@ body:has(.files-resizer.dragging) {
 }
 .file-type,
 .file-modified,
-.file-permissions {
+.file-owner {
   display: none;
   white-space: nowrap;
 }
@@ -203,9 +203,9 @@ body:has(.files-resizer.dragging) {
 }
 @container files (min-width: 500px) {
   .files-list-scroll {
-    --file-columns: minmax(0, 1fr) 55px 64px 116px 52px;
+    --file-columns: minmax(0, 1fr) 55px 64px 116px 76px;
   }
-  .file-permissions {
+  .file-owner {
     display: block;
   }
 }

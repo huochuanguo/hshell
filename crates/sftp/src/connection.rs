@@ -17,7 +17,7 @@ pub struct Entry {
     pub symlink: bool,
     pub size: Option<u64>,
     pub modified: Option<u32>,
-    pub permissions: Option<u32>,
+    pub owner_uid: Option<u32>,
 }
 
 /// One independently cancellable OpenSSH subsystem; never shares a terminal PTY.
@@ -186,7 +186,7 @@ impl Connection {
                 symlink: kind.is_some_and(|t| t.is_symlink()),
                 size: metadata.len(),
                 modified: metadata.modified().map(|time| time.into_raw()),
-                permissions: metadata.permissions().map(|mode| mode.as_raw().bits()),
+                owner_uid: metadata.uid(),
             });
             if page.len() == 128 {
                 batch(std::mem::replace(&mut page, Vec::with_capacity(128)))?;
