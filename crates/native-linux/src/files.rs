@@ -783,7 +783,7 @@ impl FilePane {
                             })
                             .and_then(|date| date.format("%Y-%m-%d %H:%M").ok())
                             .map_or_else(|| "—".into(), |value| value.to_string());
-                        let owner = entry.owner_name.as_deref().unwrap_or("—");
+                        let owner = entry.owner.as_deref().unwrap_or("—");
                         let tooltip = format!(
                             "{}\n类型：{category} · 大小：{size}\n修改时间：{modified}\n所有者：{}",
                             glib::markup_escape_text(&name),

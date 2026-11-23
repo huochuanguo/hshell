@@ -79,7 +79,7 @@ pub struct FileEntry {
     symlink: bool,
     size: Option<u64>,
     modified: Option<u32>,
-    owner_name: Option<String>,
+    owner: Option<String>,
 }
 
 #[derive(Serialize)]
@@ -297,7 +297,7 @@ pub fn sftp_open(
                         symlink: entry.symlink,
                         size: entry.size,
                         modified: entry.modified,
-                        owner_name: entry.owner_name,
+                        owner: entry.owner,
                     })
                     .collect(),
             },
