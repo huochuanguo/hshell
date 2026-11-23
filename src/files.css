@@ -203,10 +203,12 @@ body:has(.files-resizer.dragging) {
 }
 @container files (min-width: 500px) {
   .files-list-scroll {
-    --file-columns: minmax(0, 1fr) 55px 64px 116px 76px;
+    --file-columns: minmax(0, 1fr) 55px 64px 116px 96px;
   }
   .file-owner {
     display: block;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 }
 .file-row:hover {

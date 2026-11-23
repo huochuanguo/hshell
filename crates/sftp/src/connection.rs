@@ -17,7 +17,51 @@ pub struct Entry {
     pub symlink: bool,
     pub size: Option<u64>,
     pub modified: Option<u32>,
-    pub owner_uid: Option<u32>,
+    pub owner_name: Option<String>,
+}
+
+// SFTP v3 的结构化属性只提供 UID，OpenSSH 在目录条目的长格式中附带用户名。
+// 仅在识别出类 Unix 列表格式时读取所有者，跳过纯数字或无法识别的值。
+fn listed_owner_name(longname: &[u8]) -> Option<&str> {
+    let mut fields = longname
+        .split(u8::is_ascii_whitespace)
+        .filter(|field| !field.is_empty());
+    let [kind, mode @ ..] = fields.next()? else {
+        return None;
+    };
+    let (permissions, suffix) = mode.split_at_checked(9)?;
+    let allowed = [
+        &b"r-"[..],
+        b"w-",
+        b"xsS-",
+        b"r-",
+        b"w-",
+        b"xsS-",
+        b"r-",
+        b"w-",
+        b"xtT-",
+    ];
+    if !b"-dlbcpswD".contains(kind)
+        || !matches!(suffix, [] | [b'+' | b'.' | b'@'])
+        || !permissions
+            .iter()
+            .zip(allowed)
+            .all(|(bit, allowed)| allowed.contains(bit))
+        || !fields.next()?.iter().all(u8::is_ascii_digit)
+    {
+        return None;
+    }
+
+    let owner = std::str::from_utf8(fields.next()?).ok()?;
+    fields.next()?; // 所属组
+    let size = fields.next()?;
+    fields.next()?;
+    let digits = owner.trim_start_matches(['+', '-']);
+    (!digits.as_bytes().iter().all(u8::is_ascii_digit)
+        && !owner.chars().any(char::is_control)
+        && owner != "?"
+        && size.iter().all(u8::is_ascii_digit))
+    .then_some(owner)
 }
 
 /// One independently cancellable OpenSSH subsystem; never shares a terminal PTY.
@@ -186,7 +230,7 @@ impl Connection {
                 symlink: kind.is_some_and(|t| t.is_symlink()),
                 size: metadata.len(),
                 modified: metadata.modified().map(|time| time.into_raw()),
-                owner_uid: metadata.uid(),
+                owner_name: listed_owner_name(entry.longname()).map(str::to_owned),
             });
             if page.len() == 128 {
                 batch(std::mem::replace(&mut page, Vec::with_capacity(128)))?;
@@ -244,5 +288,48 @@ impl Connection {
         {
             let _ = child.kill().await;
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::listed_owner_name;
+
+    #[test]
+    fn reads_names_from_unix_sftp_listings() {
+        assert_eq!(
+            listed_owner_name(
+                b"-rw-r--r--    1 root     root          23 Jan  1  1970 file name.txt"
+            ),
+            Some("root")
+        );
+        assert_eq!(
+            listed_owner_name("drwxr-sr-x+  2 ops<研发>& 1000 4096 Aug 14  1:05 目录".as_bytes()),
+            Some("ops<研发>&")
+        );
+        assert_eq!(
+            listed_owner_name(b"lrwxrwxrwx   1 www-data  www-data      10 Jan  1  1970 file-\xff"),
+            Some("www-data")
+        );
+    }
+
+    #[test]
+    fn does_not_guess_names_from_ids_or_unrecognized_listings() {
+        for longname in [
+            "",
+            "report.txt",
+            "report.txt 1 filename field 23 another",
+            "-rw-r--r-- 1",
+            "-rw-r--r-- 1 4294967294 root 23 Jan 1 1970 file.txt",
+            "-rw-r--r-- 1 -1 root 23 Jan 1 1970 file.txt",
+            "-rw-r--r-- 1 ? root 23 Jan 1 1970 file.txt",
+            "-rw-r--r-- 1 first last staff 23 Jan 1 1970 file.txt",
+        ] {
+            assert_eq!(listed_owner_name(longname.as_bytes()), None, "{longname}");
+        }
+        assert_eq!(
+            listed_owner_name(b"-rw-r--r-- 1 invalid-\xff root 23 Jan 1 1970 file.txt"),
+            None
+        );
     }
 }

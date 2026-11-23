@@ -290,7 +290,8 @@ impl FilePane {
         let type_column = file_info_column("类型", 6, 58, 0.0);
         let size_column = file_info_column("大小", 2, 66, 1.0);
         let modified_column = file_info_column("修改时间", 7, 120, 0.0);
-        let owner_column = file_info_column("所有者", 8, 78, 0.0);
+        let owner_column = file_info_column("所有者", 8, 96, 0.0);
+        owner_column.set_max_width(owner_column.min_width());
         for column in [&type_column, &size_column, &modified_column, &owner_column] {
             tree.append_column(column);
         }
@@ -782,12 +783,11 @@ impl FilePane {
                             })
                             .and_then(|date| date.format("%Y-%m-%d %H:%M").ok())
                             .map_or_else(|| "—".into(), |value| value.to_string());
-                        let owner = entry
-                            .owner_uid
-                            .map_or_else(|| "—".into(), |uid| uid.to_string());
+                        let owner = entry.owner_name.as_deref().unwrap_or("—");
                         let tooltip = format!(
-                            "{}\n类型：{category} · 大小：{size}\n修改时间：{modified}\n所有者（UID）：{owner}",
+                            "{}\n类型：{category} · 大小：{size}\n修改时间：{modified}\n所有者：{}",
                             glib::markup_escape_text(&name),
+                            glib::markup_escape_text(owner),
                         );
                         self.model.insert_with_values(
                             None,
@@ -1607,6 +1607,7 @@ fn file_info_column(title: &str, field: i32, width: i32, align: f32) -> gtk::Tre
     column.set_min_width(width);
     let text = gtk::CellRendererText::new();
     text.set_xalign(align);
+    text.set_ellipsize(gtk::pango::EllipsizeMode::End);
     TreeViewColumnExt::pack_start(&column, &text, true);
     TreeViewColumnExt::add_attribute(&column, &text, "text", field);
     column

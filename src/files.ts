@@ -30,7 +30,7 @@ interface Entry {
   symlink: boolean;
   size: number | null;
   modified: number | null;
-  ownerUid: number | null;
+  ownerName: string | null;
 }
 interface Task {
   id: string;
@@ -185,7 +185,7 @@ export class FilesPane {
       <p class="files-message" role="status"></p>
       <p class="files-message files-filter-result" role="status" hidden></p>
       <div class="files-list-scroll">
-        <div class="file-columns" aria-hidden="true"><span>名称</span><span class="file-type">类型</span><span class="file-size">大小</span><span class="file-modified" title="本地时区">修改时间</span><span class="file-owner" title="服务器返回的所有者用户 ID（UID）">所有者</span></div>
+        <div class="file-columns" aria-hidden="true"><span>名称</span><span class="file-type">类型</span><span class="file-size">大小</span><span class="file-modified" title="本地时区">修改时间</span><span class="file-owner" title="远端所有者的用户名">所有者</span></div>
         <div class="files-list" role="listbox" aria-label="远程文件，可多选" aria-multiselectable="true" tabindex="0"></div>
       </div>
       <div class="files-selection"><button class="dark-button" data-action="copy-path">复制路径</button><button class="dark-button" data-action="rename">重命名</button><button class="dark-button" data-action="remove">删除</button><span></span></div>
@@ -658,10 +658,10 @@ export class FilesPane {
           : "文件";
       const bytes = entry.directory ? "—" : size(entry.size);
       const modified = modifiedTime(entry.modified);
-      const owner = String(entry.ownerUid ?? "—");
-      row.title = `${entry.name}\n类型：${type} · 大小：${bytes}\n修改时间：${modified}\n所有者（UID）：${owner}`;
+      const owner = entry.ownerName ?? "—";
+      row.title = `${entry.name}\n类型：${type} · 大小：${bytes}\n修改时间：${modified}\n所有者：${owner}`;
       row.setAttribute("aria-label", row.title);
-      row.innerHTML = `<span class="file-name">${icon(category)}<span>${escape(entry.name)}</span></span><small class="file-type">${type}</small><small class="file-size">${bytes}</small><small class="file-modified">${modified}</small><small class="file-owner">${owner}</small>`;
+      row.innerHTML = `<span class="file-name">${icon(category)}<span>${escape(entry.name)}</span></span><small class="file-type">${type}</small><small class="file-size">${bytes}</small><small class="file-modified">${modified}</small><small class="file-owner">${escape(owner)}</small>`;
       row.onclick = (event) => {
         this.selectRow(index, event.ctrlKey || event.metaKey, event.shiftKey);
         list.focus({ preventScroll: true });
