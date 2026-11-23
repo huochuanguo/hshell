@@ -367,7 +367,7 @@ strong {
 .host-item:hover {
   background: var(--hover);
 }
-.host-item.active {
+.host-item.selected {
   background: var(--selected);
 }
 .host-connect {
@@ -1191,9 +1191,6 @@ form label > small {
     padding-right: 9px;
   }
   .start-footnote > span:last-child {
-    display: none;
-  }
-  #session-status {
     display: none;
   }
 }

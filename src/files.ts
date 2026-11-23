@@ -30,6 +30,7 @@ interface Entry {
   symlink: boolean;
   size: number | null;
   modified: number | null;
+  permissions: number | null;
 }
 interface Task {
   id: string;
@@ -109,14 +110,23 @@ function icon(name: keyof typeof icons) {
     children,
   ]).outerHTML;
 }
-const size = (bytes: number | null) =>
-  bytes === null
-    ? "—"
-    : bytes < 1024
-      ? `${bytes} B`
-      : bytes < 1024 ** 2
-        ? `${(bytes / 1024).toFixed(1)} KiB`
-        : `${(bytes / 1024 ** 2).toFixed(1)} MiB`;
+function size(bytes: number | null) {
+  if (bytes === null) return "—";
+  let value = bytes;
+  for (const unit of ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB"]) {
+    if (value < 1024) break;
+    value /= 1024;
+    if (value < 1024) return `${value.toFixed(1)} ${unit}`;
+  }
+  return `${bytes} B`;
+}
+
+function modifiedTime(seconds: number | null) {
+  if (seconds === null) return "—";
+  const date = new Date(seconds * 1000);
+  const pad = (value: number) => String(value).padStart(2, "0");
+  return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${pad(date.getHours())}:${pad(date.getMinutes())}`;
+}
 function kind(entry: Entry): keyof typeof icons {
   if (entry.symlink) return "Link";
   if (entry.directory) return "Folder";
@@ -174,7 +184,10 @@ export class FilesPane {
       <input class="files-filter" type="search" aria-label="按文件名筛选当前目录" placeholder="筛选文件名" autocomplete="off" spellcheck="false">
       <p class="files-message" role="status"></p>
       <p class="files-message files-filter-result" role="status" hidden></p>
-      <div class="files-list" role="listbox" aria-label="远程文件，可多选" aria-multiselectable="true" tabindex="0"></div>
+      <div class="files-list-scroll">
+        <div class="file-columns" aria-hidden="true"><span>名称</span><span class="file-type">类型</span><span class="file-size">大小</span><span class="file-modified" title="本地时区">修改时间</span><span class="file-permissions" title="Unix 八进制权限">权限</span></div>
+        <div class="files-list" role="listbox" aria-label="远程文件，可多选" aria-multiselectable="true" tabindex="0"></div>
+      </div>
       <div class="files-selection"><button class="dark-button" data-action="copy-path">复制路径</button><button class="dark-button" data-action="rename">重命名</button><button class="dark-button" data-action="remove">删除</button><span></span></div>
       <div class="transfers-heading"><strong>传输任务</strong><span>最多两路</span></div><div class="transfer-list" aria-label="传输任务"></div>
       <p class="files-note">收起文件栏后传输继续。退出保留断点，重新打开后手动继续。</p>`;
@@ -198,7 +211,7 @@ export class FilesPane {
     this.filterInput.addEventListener("input", () => {
       this.limit = 500;
       this.clearSelection();
-      this.el(".files-list").scrollTop = 0;
+      this.el(".files-list-scroll").scrollTop = 0;
       this.renderEntries();
     });
     this.el(".files-list").addEventListener("keydown", (event) => {
@@ -638,10 +651,20 @@ export class FilesPane {
       row.id = `remote-entry-${index}`;
       row.dataset.entryIndex = String(index);
       row.tabIndex = -1;
-      row.title = entry.modified
-        ? `${entry.name}\n${new Date(entry.modified * 1000).toLocaleString()}`
-        : entry.name;
-      row.innerHTML = `${icon(category)}<span>${escape(entry.name)}</span><small>${entry.directory ? "目录" : size(entry.size)}</small>`;
+      const type = entry.symlink
+        ? "符号链接"
+        : entry.directory
+          ? "目录"
+          : "文件";
+      const bytes = entry.directory ? "—" : size(entry.size);
+      const modified = modifiedTime(entry.modified);
+      const permissions =
+        entry.permissions == null
+          ? "—"
+          : entry.permissions.toString(8).padStart(4, "0");
+      row.title = `${entry.name}\n类型：${type} · 大小：${bytes}\n修改时间：${modified}\n权限：${permissions}`;
+      row.setAttribute("aria-label", row.title);
+      row.innerHTML = `<span class="file-name">${icon(category)}<span>${escape(entry.name)}</span></span><small class="file-type">${type}</small><small class="file-size">${bytes}</small><small class="file-modified">${modified}</small><small class="file-permissions">${permissions}</small>`;
       row.onclick = (event) => {
         this.selectRow(index, event.ctrlKey || event.metaKey, event.shiftKey);
         list.focus({ preventScroll: true });

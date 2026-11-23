@@ -235,10 +235,6 @@ impl FilePane {
         let search = gtk::SearchEntry::new();
         search.set_placeholder_text(Some("筛选文件名"));
         root.pack_start(&search, false, false, 0);
-        let columns = gtk::Box::new(gtk::Orientation::Horizontal, 8);
-        columns.pack_start(&label("名称", "dim"), true, true, 4);
-        columns.pack_end(&label("大小", "dim"), false, false, 8);
-        root.pack_start(&columns, false, false, 0);
         let model = gtk::ListStore::new(&[
             gtk::cairo::Surface::static_type(),
             String::static_type(),
@@ -246,6 +242,10 @@ impl FilePane {
             u32::static_type(),
             String::static_type(),
             i32::static_type(),
+            String::static_type(),
+            String::static_type(),
+            String::static_type(),
+            String::static_type(),
         ]);
         let filtered = gtk::TreeModelFilter::new(&model, None);
         let query = Rc::new(RefCell::new(String::new()));
@@ -270,12 +270,13 @@ impl FilePane {
             gtk::gdk::DragAction::COPY,
         );
         tree.set_search_column(1);
-        tree.set_headers_visible(false);
+        tree.set_headers_visible(true);
+        tree.set_tooltip_column(9);
         tree.set_enable_tree_lines(false);
         let name_column = gtk::TreeViewColumn::new();
         name_column.set_title("名称");
         name_column.set_expand(true);
-        name_column.set_resizable(true);
+        name_column.set_min_width(98);
         let image = gtk::CellRendererPixbuf::new();
         TreeViewColumnExt::pack_start(&name_column, &image, false);
         TreeViewColumnExt::add_attribute(&name_column, &image, "surface", 0);
@@ -286,15 +287,52 @@ impl FilePane {
         TreeViewColumnExt::add_attribute(&name_column, &text, "foreground", 4);
         TreeViewColumnExt::add_attribute(&name_column, &text, "weight", 5);
         tree.append_column(&name_column);
-        let size_column = gtk::TreeViewColumn::new();
-        size_column.set_title("大小");
-        let text = gtk::CellRendererText::new();
-        text.set_xalign(1.0);
-        TreeViewColumnExt::pack_start(&size_column, &text, false);
-        TreeViewColumnExt::add_attribute(&size_column, &text, "text", 2);
-        tree.append_column(&size_column);
+        let type_column = file_info_column("类型", 6, 58, 0.0);
+        let size_column = file_info_column("大小", 2, 66, 1.0);
+        let modified_column = file_info_column("修改时间", 7, 120, 0.0);
+        let permissions_column = file_info_column("权限", 8, 48, 0.0);
+        for column in [
+            &type_column,
+            &size_column,
+            &modified_column,
+            &permissions_column,
+        ] {
+            tree.append_column(column);
+        }
+        type_column.set_visible(false);
+        modified_column.set_visible(false);
+        permissions_column.set_visible(false);
+        let adaptive_columns = Rc::new([
+            (modified_column, 350),
+            (type_column, 425),
+            (permissions_column, 500),
+        ]);
+        let column_resize_pending = Rc::new(Cell::new(false));
+        root.connect_size_allocate(move |pane, allocation| {
+            if column_resize_pending.get()
+                || adaptive_columns.iter().all(|(column, minimum)| {
+                    column.is_visible() == (allocation.width() >= *minimum)
+                })
+            {
+                return;
+            }
+            column_resize_pending.set(true);
+            let pane = pane.downgrade();
+            let columns = adaptive_columns.clone();
+            let pending = column_resize_pending.clone();
+            // 分配尺寸期间更改列会丢失重排请求，等 GTK 完成本轮布局再更新。
+            glib::idle_add_local_once(move || {
+                pending.set(false);
+                if let Some(pane) = pane.upgrade() {
+                    for (column, minimum) in columns.iter() {
+                        column.set_visible(pane.allocated_width() >= *minimum);
+                    }
+                }
+            });
+        });
         let scroll = gtk::ScrolledWindow::new(None::<&gtk::Adjustment>, None::<&gtk::Adjustment>);
-        scroll.set_policy(gtk::PolicyType::Never, gtk::PolicyType::Automatic);
+        // 收窄时先让面板缩小，再隐藏附加列，避免表格反过来卡住分隔条。
+        scroll.set_policy(gtk::PolicyType::External, gtk::PolicyType::Automatic);
         scroll.add(&tree);
         root.pack_start(&scroll, true, true, 0);
         let status = label("打开文件栏时连接 SFTP", "dim");
@@ -729,20 +767,46 @@ impl FilePane {
                     for entry in entries {
                         let index = stored.len() as u32;
                         let kind = FileKind::of(&entry);
+                        let name = entry.name.to_string_lossy();
+                        let category = if entry.symlink {
+                            "符号链接"
+                        } else if entry.directory {
+                            "目录"
+                        } else {
+                            "文件"
+                        };
                         let size = entry
                             .size
                             .filter(|_| !entry.directory)
                             .map(size)
-                            .unwrap_or_default();
+                            .unwrap_or_else(|| "—".into());
+                        let modified = entry
+                            .modified
+                            .and_then(|seconds| {
+                                glib::DateTime::from_unix_local(i64::from(seconds)).ok()
+                            })
+                            .and_then(|date| date.format("%Y-%m-%d %H:%M").ok())
+                            .map_or_else(|| "—".into(), |value| value.to_string());
+                        let permissions = entry
+                            .permissions
+                            .map_or_else(|| "—".into(), |mode| format!("{mode:04o}"));
+                        let tooltip = format!(
+                            "{}\n类型：{category} · 大小：{size}\n修改时间：{modified}\n权限：{permissions}",
+                            glib::markup_escape_text(&name),
+                        );
                         self.model.insert_with_values(
                             None,
                             &[
                                 (0, &self.icons[kind as usize]),
-                                (1, &entry.name.to_string_lossy().as_ref()),
+                                (1, &name.as_ref()),
                                 (2, &size),
                                 (3, &index),
                                 (4, &kind.name_color()),
                                 (5, &kind.name_weight()),
+                                (6, &category),
+                                (7, &modified),
+                                (8, &permissions),
+                                (9, &tooltip),
                             ],
                         );
                         stored.push(entry);
@@ -1541,16 +1605,30 @@ impl FilePane {
     }
 }
 
+fn file_info_column(title: &str, field: i32, width: i32, align: f32) -> gtk::TreeViewColumn {
+    let column = gtk::TreeViewColumn::new();
+    column.set_title(title);
+    column.set_alignment(align);
+    column.set_min_width(width);
+    let text = gtk::CellRendererText::new();
+    text.set_xalign(align);
+    TreeViewColumnExt::pack_start(&column, &text, true);
+    TreeViewColumnExt::add_attribute(&column, &text, "text", field);
+    column
+}
+
 fn size(bytes: u64) -> String {
-    if bytes < 1024 {
-        format!("{bytes} B")
-    } else if bytes < 1024 * 1024 {
-        format!("{:.1} KiB", bytes as f64 / 1024.0)
-    } else if bytes < 1024 * 1024 * 1024 {
-        format!("{:.1} MiB", bytes as f64 / (1024.0 * 1024.0))
-    } else {
-        format!("{:.2} GiB", bytes as f64 / (1024.0 * 1024.0 * 1024.0))
+    let mut value = bytes as f64;
+    for unit in ["KiB", "MiB", "GiB", "TiB", "PiB", "EiB"] {
+        if value < 1024.0 {
+            break;
+        }
+        value /= 1024.0;
+        if value < 1024.0 {
+            return format!("{value:.1} {unit}");
+        }
     }
+    format!("{bytes} B")
 }
 
 #[cfg(feature = "native-probe")]

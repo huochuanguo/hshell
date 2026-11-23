@@ -33,8 +33,19 @@
         terminal,
         tasks = [],
         entries = [
-          { name: "中文 目录", directory: true, size: null },
-          { name: "链接", symlink: true, size: 9 },
+          {
+            name: "中文 目录",
+            directory: true,
+            size: 4096,
+            permissions: 0o1755,
+          },
+          {
+            name: "链接",
+            symlink: true,
+            size: 9,
+            permissions: null,
+            modified: null,
+          },
           { name: "server.ts", size: 2048 },
           { name: "backup.tar.gz", size: 10485760 },
           { name: "image.png", size: 8096 },
@@ -43,6 +54,7 @@
           directory: false,
           symlink: false,
           modified: 1780000000,
+          permissions: 0o644,
           ...e,
         }));
       mockWindows("main");
@@ -172,6 +184,7 @@
                     symlink: false,
                     size: null,
                     modified: null,
+                    permissions: null,
                   },
                 ];
               if (r.type === "rename")
@@ -318,6 +331,7 @@
                   symlink: false,
                   size: null,
                   modified: null,
+                  permissions: null,
                 });
                 folders++;
               }
