@@ -1712,7 +1712,7 @@ dependencies = [
 
 [[package]]
 name = "hshell-desktop"
-version = "0.3.15"
+version = "0.3.16"
 dependencies = [
  "hshell-sftp",
  "serde",
@@ -1727,7 +1727,7 @@ dependencies = [
 
 [[package]]
 name = "hshell-native"
-version = "0.3.15"
+version = "0.3.16"
 dependencies = [
  "gtk",
  "hshell-sftp",

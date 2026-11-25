@@ -45,6 +45,12 @@ struct HostGroup {
     rows: Vec<String>,
 }
 
+struct FileTab {
+    owner: Option<Rc<Tab>>,
+    root: gtk::Box,
+    position: RefCell<Option<crate::files::FilePosition>>,
+}
+
 pub struct Client {
     pub window: gtk::ApplicationWindow,
     pub tabs: RefCell<Vec<Rc<Tab>>>,
@@ -79,7 +85,10 @@ pub struct Client {
     reconnect: gtk::Button,
     pub(crate) tab_key: gtk::Button,
     files: RefCell<Option<Rc<crate::files::FilePane>>>,
-    terminal_pane: gtk::Paned,
+    file_tabs: RefCell<Vec<Rc<FileTab>>>,
+    mounted_files: RefCell<Option<Rc<FileTab>>>,
+    file_button: gtk::Button,
+    transfer_button: gtk::Button,
 }
 
 pub(crate) fn icon(name: &str) -> gtk::Image {
@@ -187,6 +196,9 @@ impl Client {
         let snippets = gtk::Button::with_label("命令片段");
         snippets.set_image(Some(&icon("utilities-terminal-symbolic")));
         toolbar.pack_end(&snippets, false, false, 0);
+        let transfer_button = gtk::Button::with_label("传输任务");
+        transfer_button.set_no_show_all(true);
+        toolbar.pack_end(&transfer_button, false, false, 0);
         root.pack_start(&toolbar, false, false, 0);
         let pane = gtk::Paned::new(gtk::Orientation::Horizontal);
         pane.set_position(244);
@@ -247,7 +259,7 @@ impl Client {
         sessionbar.pack_start(&reconnect, false, false, 0);
         let files = gtk::Button::with_label("文件");
         files.set_image(Some(&icon("folder-remote-symbolic")));
-        files.set_tooltip_text(Some("打开 / 收起 SFTP 文件栏"));
+        files.set_tooltip_text(Some("打开当前 SSH 会话的 SFTP 标签"));
         sessionbar.pack_start(&files, false, false, 0);
         let copy = icon_button("edit-copy-symbolic", "复制选中内容 · Ctrl Shift C");
         let find = icon_button("edit-find-symbolic", "搜索终端 · Ctrl Shift F");
@@ -276,9 +288,7 @@ impl Client {
         notebook.set_scrollable(true);
         notebook.set_hexpand(true);
         notebook.set_vexpand(true);
-        let terminal_pane = gtk::Paned::new(gtk::Orientation::Horizontal);
-        terminal_pane.pack1(&notebook, true, false);
-        workspace.pack_start(&terminal_pane, true, true, 0);
+        workspace.pack_start(&notebook, true, true, 0);
         let home = gtk::Box::new(gtk::Orientation::Vertical, 16);
         home.set_valign(gtk::Align::Center);
         home.set_halign(gtk::Align::Center);
@@ -335,7 +345,10 @@ impl Client {
             reconnect,
             tab_key,
             files: RefCell::new(None),
-            terminal_pane,
+            file_tabs: RefCell::new(Vec::new()),
+            mounted_files: RefCell::new(None),
+            file_button: files.clone(),
+            transfer_button,
         });
         let weak = Rc::downgrade(&client);
         client.hosts.set_sort_func(Some(Box::new(move |a, b| {
@@ -369,18 +382,20 @@ impl Client {
             let Some(client) = weak.upgrade() else {
                 return;
             };
-            if let Some(pane) = client.files.borrow().as_ref() {
-                if pane.root.is_visible() {
-                    pane.hide();
-                    return;
-                }
+            if let Some(tab) = client.active() {
+                client.open_files(&tab);
             }
-            let Some(tab) = client.active() else {
-                client.notice("请先打开一个服务器会话");
-                return;
-            };
-            client.open_files(tab.profile.clone());
         });
+        Self::button(&client.transfer_button, &client, |client| {
+            client.open_file_page(None);
+        });
+        if client
+            .profiles_path
+            .with_file_name("sftp-transfers")
+            .is_dir()
+        {
+            client.files();
+        }
         Self::button(&next, &client, |client| client.find(false));
         Self::button(&prev, &client, |client| client.find(true));
         Self::button(&close_search, &client, |client| {
@@ -472,43 +487,11 @@ impl Client {
                 let weak = Rc::downgrade(&client);
                 glib::idle_add_local_once(move || {
                     if let Some(client) = weak.upgrade() {
+                        client.search_row.hide();
+                        client.sync_file_page();
                         client.update_session();
-                        let pane = client.files.borrow().clone();
-                        if let (Some(pane), Some(tab)) = (pane, client.active()) {
-                            if pane.root.is_visible() {
-                                pane.show(tab.profile.clone());
-                            }
-                        }
                     }
                 });
-            }
-        });
-        let weak = Rc::downgrade(&client);
-        client.window.connect_size_allocate(move |_, allocation| {
-            if let Some(client) = weak.upgrade() {
-                if allocation.width() < 1050
-                    && client.sidebar.is_visible()
-                    && client
-                        .files
-                        .borrow()
-                        .as_ref()
-                        .is_some_and(|pane| pane.root.is_visible())
-                {
-                    // GTK ignores resize requests made during size-allocation.
-                    // Collapse the sidebar after this allocation has returned.
-                    let weak = Rc::downgrade(&client);
-                    glib::idle_add_local_once(move || {
-                        if let Some(client) = weak.upgrade() {
-                            if client.window.allocated_width() < 1050 && client.sidebar.is_visible()
-                            {
-                                client.hide_sidebar();
-                                client
-                                    .terminal_pane
-                                    .set_position((client.window.allocated_width() - 360).max(300));
-                            }
-                        }
-                    });
-                }
             }
         });
         let weak = Rc::downgrade(&client);
@@ -531,7 +514,7 @@ impl Client {
                 .any(|tab| tab.phase.get() != Phase::Exited))
                 && !client.confirm(
                     "退出HShell？",
-                    "SSH 会话将断开，文件传输将暂停并保留断点，下次打开文件栏可继续。需要继续的远端任务请先放入 tmux 或 screen。",
+                    "SSH 会话将断开，文件传输将暂停并保留断点，下次可在传输任务中继续。需要继续的远端任务请先放入 tmux 或 screen。",
                 )
             {
                 client.confirming_close.set(false);
@@ -641,6 +624,7 @@ impl Client {
             return;
         }
         let active = self.active();
+        self.file_button.set_sensitive(active.is_some());
         self.tab_key.set_sensitive(
             active
                 .as_ref()
@@ -658,7 +642,15 @@ impl Client {
                 .set_sensitive(tab.phase.get() == Phase::Exited);
             tab.terminal.widget.grab_focus();
         } else {
-            self.session_address.set_text("选择主机，或输入地址连接");
+            let file_tab = self.active_file_page();
+            let status = match file_tab.as_ref().map(|page| page.owner.as_ref()) {
+                Some(Some(tab)) => {
+                    format!("SFTP · {} · {}", tab.profile.name, address(&tab.profile))
+                }
+                Some(None) => "传输任务".into(),
+                None => "选择主机，或输入地址连接".into(),
+            };
+            self.session_address.set_text(&status);
             self.disconnect.set_sensitive(false);
             self.reconnect.set_sensitive(false);
         }
@@ -1427,6 +1419,15 @@ impl Client {
             return;
         }
         tab.closed.set(true);
+        let file_page = self
+            .file_tabs
+            .borrow()
+            .iter()
+            .find(|page| page.owner.as_ref().is_some_and(|owner| owner.id == tab.id))
+            .cloned();
+        if let Some(page) = file_page {
+            self.close_file_page(&page);
+        }
         tab.terminal.dispose();
         tab.session.borrow_mut().take();
         if let Some(page) = self.notebook.page_num(&tab.root) {
@@ -1452,31 +1453,187 @@ impl Client {
         self.update_session();
         self.notice("会话已关闭");
     }
-    pub(crate) fn open_files(&self, profile: Profile) -> Rc<crate::files::FilePane> {
-        if self.files.borrow().is_none() {
-            let pane = crate::files::FilePane::new(&self.window, self.profiles_path.clone());
-            self.terminal_pane.pack2(&pane.root, false, false);
-            *self.files.borrow_mut() = Some(pane);
+    fn files(&self) -> Rc<crate::files::FilePane> {
+        if let Some(pane) = self.files.borrow().as_ref() {
+            return pane.clone();
         }
-        let pane = self.files.borrow().as_ref().unwrap().clone();
-        // Keep the terminal usable at the supported minimum window size.
-        if self.window.allocated_width() < 1050 {
-            self.hide_sidebar();
-            self.terminal_pane
-                .set_position((self.window.allocated_width() - 360).max(300));
-        }
-        pane.show(profile);
+        let button = self.transfer_button.clone();
+        let pane = crate::files::FilePane::new(
+            &self.window,
+            self.profiles_path.clone(),
+            move |total, running| {
+                let text = if running > 0 {
+                    format!("传输中 {running}")
+                } else {
+                    format!("传输任务 {total}")
+                };
+                if button.label().as_deref() != Some(text.as_str()) {
+                    button.set_label(&text);
+                }
+                if button.is_visible() != (total > 0) {
+                    button.set_visible(total > 0);
+                }
+            },
+        );
+        *self.files.borrow_mut() = Some(pane.clone());
         pane
     }
+
+    pub(crate) fn open_files(self: &Rc<Self>, tab: &Rc<Tab>) -> Rc<crate::files::FilePane> {
+        self.open_file_page(Some(tab.clone()));
+        self.files()
+    }
+
+    fn open_file_page(self: &Rc<Self>, owner: Option<Rc<Tab>>) {
+        let existing = self
+            .file_tabs
+            .borrow()
+            .iter()
+            .find(|page| {
+                page.owner.as_ref().map(|tab| &tab.id) == owner.as_ref().map(|tab| &tab.id)
+            })
+            .cloned();
+        let page = existing.unwrap_or_else(|| {
+            let root = gtk::Box::new(gtk::Orientation::Vertical, 0);
+            let header = gtk::Box::new(gtk::Orientation::Horizontal, 8);
+            let title = owner.as_ref().map_or_else(
+                || "传输任务".into(),
+                |tab| format!("{} · SFTP", tab.profile.name),
+            );
+            let text = label(&title, "");
+            if let Some(tab) = owner.as_ref() {
+                text.set_tooltip_text(Some(&address(&tab.profile)));
+            }
+            text.set_max_width_chars(25);
+            text.set_ellipsize(gtk::pango::EllipsizeMode::End);
+            header.pack_start(&icon("folder-remote-symbolic"), false, false, 0);
+            header.pack_start(&text, true, true, 0);
+            let close = icon_button("window-close-symbolic", "关闭文件标签；后台传输继续");
+            header.pack_end(&close, false, false, 0);
+            header.show_all();
+            root.show();
+            let page = Rc::new(FileTab {
+                owner,
+                root,
+                position: RefCell::new(None),
+            });
+            self.file_tabs.borrow_mut().push(page.clone());
+            self.notebook.append_page(&page.root, Some(&header));
+            self.notebook.set_tab_reorderable(&page.root, true);
+            let client = Rc::downgrade(self);
+            let page_ref = Rc::downgrade(&page);
+            close.connect_clicked(move |_| {
+                if let (Some(client), Some(page)) = (client.upgrade(), page_ref.upgrade()) {
+                    client.close_file_page(&page);
+                }
+            });
+            page
+        });
+        self.notebook
+            .set_current_page(self.notebook.page_num(&page.root));
+        self.sync_file_page();
+        self.update_session();
+    }
+
+    fn active_file_page(&self) -> Option<Rc<FileTab>> {
+        let widget = self.notebook.nth_page(self.notebook.current_page())?;
+        self.file_tabs
+            .borrow()
+            .iter()
+            .find(|page| page.root.upcast_ref::<gtk::Widget>() == &widget)
+            .cloned()
+    }
+
+    fn sync_file_page(&self) {
+        if self.closing.get() {
+            return;
+        }
+        let Some(page) = self.active_file_page() else {
+            return;
+        };
+        if self
+            .mounted_files
+            .borrow()
+            .as_ref()
+            .is_some_and(|old| Rc::ptr_eq(old, &page))
+        {
+            return;
+        }
+        let pane = self.files();
+        if let Some(old) = self.mounted_files.borrow_mut().take() {
+            if let Some(position) = pane.position() {
+                old.position.replace(Some(position));
+            }
+            old.root.remove(&pane.root);
+        }
+        page.root.pack_start(&pane.root, true, true, 0);
+        pane.open_workspace(
+            page.owner.as_ref().map(|tab| tab.profile.clone()),
+            page.position.borrow().clone(),
+        );
+        self.mounted_files.replace(Some(page));
+    }
+
+    fn close_file_page(&self, page: &Rc<FileTab>) {
+        let active = self
+            .active_file_page()
+            .is_some_and(|current| Rc::ptr_eq(&current, page));
+        if self
+            .mounted_files
+            .borrow()
+            .as_ref()
+            .is_some_and(|mounted| Rc::ptr_eq(mounted, page))
+        {
+            self.mounted_files.borrow_mut().take();
+            let pane = self.files();
+            pane.hide();
+            page.root.remove(&pane.root);
+        }
+        if active {
+            if let Some(owner) = page.owner.as_ref().filter(|owner| !owner.closed.get()) {
+                self.notebook
+                    .set_current_page(self.notebook.page_num(&owner.root));
+            }
+        }
+        self.file_tabs
+            .borrow_mut()
+            .retain(|other| !Rc::ptr_eq(other, page));
+        if let Some(index) = self.notebook.page_num(&page.root) {
+            self.notebook.remove_page(Some(index));
+        }
+        self.sync_file_page();
+        self.update_session();
+    }
+
+    #[cfg(feature = "native-probe")]
+    pub(crate) fn activate_terminal(&self, tab: &Tab) {
+        self.notebook
+            .set_current_page(self.notebook.page_num(&tab.root));
+    }
+
+    #[cfg(feature = "native-probe")]
+    pub(crate) fn open_transfers(self: &Rc<Self>) {
+        self.open_file_page(None);
+    }
+
+    #[cfg(feature = "native-probe")]
+    pub(crate) fn file_tab_fills_workspace(&self, pane: &gtk::Box) -> bool {
+        self.sidebar.is_visible()
+            && self.active_file_page().is_some()
+            && pane.allocated_width() >= self.notebook.allocated_width() - 12
+    }
+
+    #[cfg(feature = "native-probe")]
+    pub(crate) fn close_active_files(&self) {
+        if let Some(page) = self.active_file_page() {
+            self.close_file_page(&page);
+        }
+    }
+
     fn toggle_sidebar(&self) {
         if self.sidebar.is_visible() {
             self.hide_sidebar();
         } else {
-            if self.window.allocated_width() < 1050 {
-                if let Some(files) = self.files.borrow().as_ref() {
-                    files.hide();
-                }
-            }
             self.sidebar.set_no_show_all(false);
             self.sidebar.show();
             self.host_pane.set_position(244);
@@ -1489,7 +1646,7 @@ impl Client {
     }
     #[cfg(feature = "native-probe")]
     pub(crate) fn file_layout(&self) -> serde_json::Value {
-        serde_json::json!({"sidebarVisible":self.sidebar.is_visible(),"sidebarWidth":self.sidebar.allocated_width(),"hostPosition":self.host_pane.position(),"hostWidth":self.host_pane.allocated_width(),"terminalPosition":self.terminal_pane.position(),"terminalPaneWidth":self.terminal_pane.allocated_width(),"window":self.window.allocated_width()})
+        serde_json::json!({"sidebarVisible":self.sidebar.is_visible(),"sidebarWidth":self.sidebar.allocated_width(),"hostPosition":self.host_pane.position(),"hostWidth":self.host_pane.allocated_width(),"workspaceWidth":self.notebook.allocated_width(),"fileTabActive":self.active_file_page().is_some(),"window":self.window.allocated_width()})
     }
     pub fn shutdown(&self) {
         self.closing.set(true);
@@ -1632,7 +1789,9 @@ impl Client {
                     Some('f') => client.show_search(),
                     Some('t') => client.editor(None),
                     Some('w') => {
-                        if let Some(tab) = client.active() {
+                        if let Some(page) = client.active_file_page() {
+                            client.close_file_page(&page);
+                        } else if let Some(tab) = client.active() {
                             client.close_tab(&tab.id, true);
                         }
                     }
@@ -1657,25 +1816,29 @@ impl Client {
             if shift && event.keyval() == gdk::keys::constants::Insert {
                 if let Some(tab) = client.active() {
                     client.paste(&tab, false);
+                    return glib::Propagation::Stop;
                 }
-                return glib::Propagation::Stop;
             }
             if alt {
                 if let Some(digit) = key
                     .and_then(|key| key.to_digit(10))
                     .filter(|digit| (1..=9).contains(digit))
                 {
-                    let pages: Vec<_> = (0..client.notebook.n_pages())
-                        .filter(|index| {
-                            client.notebook.nth_page(Some(*index)).is_some_and(|page| {
-                                client
-                                    .tabs
-                                    .borrow()
-                                    .iter()
-                                    .any(|tab| tab.root.upcast_ref::<gtk::Widget>() == &page)
+                    let pages: Vec<_> =
+                        (0..client.notebook.n_pages())
+                            .filter(|index| {
+                                client.notebook.nth_page(Some(*index)).is_some_and(|page| {
+                                    client
+                                        .tabs
+                                        .borrow()
+                                        .iter()
+                                        .any(|tab| tab.root.upcast_ref::<gtk::Widget>() == &page)
+                                        || client.file_tabs.borrow().iter().any(|tab| {
+                                            tab.root.upcast_ref::<gtk::Widget>() == &page
+                                        })
+                                })
                             })
-                        })
-                        .collect();
+                            .collect();
                     if let Some(page) = pages.get(digit as usize - 1) {
                         client.notebook.set_current_page(Some(*page));
                     }
@@ -1701,7 +1864,7 @@ impl Client {
             gtk::ButtonsType::Close,
             &format!("HShell {}", env!("CARGO_PKG_VERSION")),
         );
-        dialog.set_secondary_text(Some(&format!("Ubuntu 原生客户端 · GTK / VTE / Rust / OpenSSH\n\nCtrl Shift K  快速连接\nCtrl Shift B  显示 / 隐藏主机栏\nCtrl Shift T  新建连接\nCtrl Shift W  关闭会话\nCtrl Shift F  搜索终端\nCtrl Shift C / V  复制 / 粘贴\nAlt 1 … 9  切换终端\n\n连接配置：{}\n密码保存在本机系统凭据库。", self.profiles_path.display())));
+        dialog.set_secondary_text(Some(&format!("Ubuntu 原生客户端 · GTK / VTE / Rust / OpenSSH\n\nCtrl Shift K  快速连接\nCtrl Shift B  显示 / 隐藏主机栏\nCtrl Shift T  新建连接\nCtrl Shift W  关闭当前标签\nCtrl Shift F  搜索终端\nCtrl Shift C / V  复制 / 粘贴\nAlt 1 … 9  切换终端\n\n连接配置：{}\n密码保存在本机系统凭据库。", self.profiles_path.display())));
         let alive = dialog_guard(&dialog);
         dialog.run();
         dismiss(&dialog, &alive);

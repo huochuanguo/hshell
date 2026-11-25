@@ -12,51 +12,22 @@
   min-height: 0;
   container: terminal / inline-size;
 }
-.files-pane {
+.files-pane,
+.file-browser {
   display: flex;
+  flex: 1 1 0;
   flex-direction: column;
-  width: var(--files-width, clamp(350px, 34vw, 420px));
-  min-width: var(--files-min-width, 0px);
-  max-width: var(--files-max-width, 50%);
-  flex-shrink: 0;
+  min-width: 0;
+  min-height: 0;
+}
+.files-pane {
   container: files / inline-size;
   background: var(--surface);
   overflow: hidden;
 }
-.files-resizer {
-  position: relative;
-  flex: 0 0 7px;
-  background: var(--bar);
-  cursor: col-resize;
-  touch-action: none;
-}
-.files-resizer:has(+ .files-pane[hidden]) {
-  display: none;
-}
-.files-resizer::before {
-  position: absolute;
-  inset: 0 3px;
-  background: var(--line);
-  content: "";
-}
-.files-resizer::after {
-  position: absolute;
-  inset: calc(50% - 12px) 2px auto;
-  height: 24px;
-  border-radius: 2px;
-  background: var(--muted);
-  content: "";
-}
-.files-resizer:is(:hover, :focus-visible, .dragging)::after {
-  background: var(--accent);
-}
-.files-resizer:focus-visible {
-  outline: 1px solid var(--accent);
-  outline-offset: -1px;
-}
-body:has(.files-resizer.dragging) {
-  cursor: col-resize;
-  user-select: none;
+.files-pane.transfers-only .transfer-list {
+  flex: 1 1 0;
+  max-height: none;
 }
 .files-heading,
 .transfers-heading {
@@ -69,9 +40,12 @@ body:has(.files-resizer.dragging) {
   background: var(--bar);
   border-bottom: 1px solid var(--line);
 }
+.files-heading strong {
+  flex: none;
+}
 .files-host {
-  flex-shrink: 0;
-  margin: 8px 10px;
+  min-width: 0;
+  margin: 0;
   color: var(--muted);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -94,10 +68,26 @@ body:has(.files-resizer.dragging) {
   padding: 4px 6px;
   font: 12px var(--mono);
 }
+.files-tools {
+  display: flex;
+  flex-direction: column;
+}
 .files-filter {
   flex: 0 0 auto;
   width: auto;
   margin: 0 8px;
+}
+@container files (min-width: 525px) {
+  .files-tools {
+    flex-direction: row;
+    align-items: center;
+  }
+  .files-actions {
+    flex: 1;
+  }
+  .files-filter {
+    width: clamp(145px, 24cqw, 260px);
+  }
 }
 .files-actions,
 .files-selection,

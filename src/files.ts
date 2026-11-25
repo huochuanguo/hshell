@@ -16,7 +16,6 @@ import {
   ArrowUp,
   RotateCw,
   FolderPlus,
-  X,
 } from "lucide";
 import { UploadPicker } from "./upload-picker";
 import { copyText } from "./clipboard";
@@ -32,10 +31,24 @@ interface Entry {
   modified: number | null;
   owner: string | null;
 }
+interface BrowserPosition {
+  path: string;
+  filter: string;
+  selected: Set<string>;
+  scroll: number;
+  limit: number;
+}
+
+const activeTask = (task: Task) =>
+  ["queued", "running", "pausing"].includes(task.status);
+
 interface Task {
   id: string;
   name: string;
   host: string;
+  profileId: string;
+  username: string;
+  port: number | null;
   direction: "Upload" | "Download";
   local: string;
   remote: string;
@@ -100,7 +113,6 @@ const icons = {
   ArrowUp,
   RotateCw,
   FolderPlus,
-  X,
 };
 function icon(name: keyof typeof icons) {
   const [tag, attrs, children] = icons[name];
@@ -147,6 +159,7 @@ export class FilesPane {
   private profile: Profile | null = null;
   private opened = false;
   private browser = "";
+  private opening = Promise.resolve();
   private ready = false;
   private busy = false;
   private generation = 0;
@@ -163,7 +176,9 @@ export class FilesPane {
   private tasks = new Map<string, Task>();
   private authAbort = new AbortController();
   private transferAuth = new Map<string, AbortController>();
-  private paths = new Map<string, string>();
+  private workspace: string | null = null;
+  private positions = new Map<string, BrowserPosition>();
+  private restorePosition?: BrowserPosition;
   private uploadPicker = new UploadPicker();
   private nameDialog: HTMLDialogElement;
 
@@ -175,13 +190,14 @@ export class FilesPane {
       message: string,
       action?: string,
     ) => Promise<boolean>,
+    private tasksChanged: (total: number, running: number) => void,
   ) {
     root.innerHTML = `
-      <div class="files-heading"><strong>文件与传输</strong><button class="icon-button" data-action="close" aria-label="收起文件栏">${icon("X")}</button></div>
-      <p class="files-host"></p>
+      <div class="file-browser">
+      <div class="files-heading"><strong>远程文件</strong><p class="files-host"></p></div>
       <form class="files-path"><button type="button" class="icon-button" data-action="up" aria-label="上一级目录">${icon("ArrowUp")}</button><input aria-label="远程 Unix 目录" placeholder="/home/user" spellcheck="false"><button type="submit" class="icon-button" aria-label="打开远程目录">${icon("RotateCw")}</button></form>
-      <div class="files-actions"><button type="button" class="dark-button" data-action="upload" aria-haspopup="dialog" title="选择文件和文件夹，也可直接拖入">${icon("Upload")} 上传</button><button class="dark-button" data-action="download">${icon("Download")} 下载</button><button class="icon-button" data-action="mkdir" aria-label="新建远程目录">${icon("FolderPlus")}</button><button class="dark-button" data-action="connect">重新连接</button></div>
-      <input class="files-filter" type="search" aria-label="按文件名筛选当前目录" placeholder="筛选文件名" autocomplete="off" spellcheck="false">
+      <div class="files-tools"><div class="files-actions"><button type="button" class="dark-button" data-action="upload" aria-haspopup="dialog" title="选择文件和文件夹，也可直接拖入">${icon("Upload")} 上传</button><button class="dark-button" data-action="download">${icon("Download")} 下载</button><button class="icon-button" data-action="mkdir" aria-label="新建远程目录">${icon("FolderPlus")}</button><button class="dark-button" data-action="connect">重新连接</button></div>
+      <input class="files-filter" type="search" aria-label="按文件名筛选当前目录" placeholder="筛选文件名" autocomplete="off" spellcheck="false"></div>
       <p class="files-message" role="status"></p>
       <p class="files-message files-filter-result" role="status" hidden></p>
       <div class="files-list-scroll">
@@ -189,8 +205,9 @@ export class FilesPane {
         <div class="files-list" role="listbox" aria-label="远程文件，可多选" aria-multiselectable="true" tabindex="0"></div>
       </div>
       <div class="files-selection"><button class="dark-button" data-action="copy-path">复制路径</button><button class="dark-button" data-action="rename">重命名</button><button class="dark-button" data-action="remove">删除</button><span></span></div>
+      </div>
       <div class="transfers-heading"><strong>传输任务</strong><span>最多两路</span></div><div class="transfer-list" aria-label="传输任务"></div>
-      <p class="files-note">收起文件栏后传输继续。退出保留断点，重新打开后手动继续。</p>`;
+      <p class="files-note">关闭文件标签后传输继续。退出保留断点，重新打开后手动继续。</p>`;
     this.nameDialog = document.createElement("dialog");
     this.nameDialog.className = "file-name-dialog";
     this.nameDialog.innerHTML = `<form><h2></h2><label>远程名称<input required maxlength="255" autocomplete="off" spellcheck="false"></label><p class="form-error" role="alert"></p><div class="dialog-actions"><button type="button" class="secondary">取消</button><button class="primary" type="submit">确定</button></div></form>`;
@@ -339,7 +356,7 @@ export class FilesPane {
       event.type !== "leave" &&
       this.canUpload() &&
       !document.querySelector("dialog[open]") &&
-      this.root.contains(
+      this.el(".files-list-scroll").contains(
         document.elementFromPoint(
           event.position.x / devicePixelRatio,
           event.position.y / devicePixelRatio,
@@ -382,16 +399,20 @@ export class FilesPane {
         )
           this.updateProgress(payload.task);
         else this.renderTask(payload.task);
+        if (previous?.status !== payload.task.status) this.reportTasks();
         if (
           payload.task.direction === "Upload" &&
           payload.task.status === "complete" &&
           previous?.status !== "complete" &&
           this.ready &&
           !this.busy &&
-          this.profile?.host === payload.task.host &&
+          this.profile?.id === payload.task.profileId &&
+          this.profile.host === payload.task.host &&
+          this.profile.username === payload.task.username &&
+          this.profile.port === payload.task.port &&
           remoteParent(payload.task.remote) === this.directory
         )
-          void this.list(this.directory);
+          void this.list(this.directory, true);
       } else {
         let abort = this.transferAuth.get(payload.id);
         if (!abort) {
@@ -433,25 +454,49 @@ export class FilesPane {
     this.renderTasks();
   }
 
-  setProfile(profile: Profile | null) {
-    if (
-      this.profile?.id === profile?.id &&
-      this.profile?.host === profile?.host
-    )
-      return;
-    this.stopBrowser();
-    this.profile = profile ? { ...profile } : null;
-    this.directory = profile ? (this.paths.get(profile.id) ?? ".") : ".";
-    if (this.opened) void this.startBrowser();
+  openWorkspace(id: string, profile: Profile | null) {
+    if (this.workspace !== id) {
+      if (this.workspace && this.listedDirectory)
+        this.positions.set(this.workspace, this.position());
+      this.stopBrowser();
+      this.workspace = id;
+      this.profile = profile ? { ...profile } : null;
+      this.restorePosition = this.positions.get(id);
+      this.directory = this.restorePosition?.path ?? ".";
+      this.input.value = this.directory;
+      this.el(".file-browser").hidden = !profile;
+      this.root.classList.toggle("transfers-only", !profile);
+      if (profile) void this.startBrowser();
+    }
+    this.setVisible(true);
   }
 
-  toggle(force = !this.opened) {
-    this.opened = force;
-    this.root.hidden = !force;
-    const button = document.querySelector("#toggle-files");
-    button?.setAttribute("aria-expanded", String(force));
-    if (force) void this.startBrowser();
-    else this.stopBrowser();
+  setVisible(visible: boolean) {
+    this.opened = visible;
+    this.root.hidden = !visible;
+    this.root.classList.remove("drag-upload");
+    if (!visible) this.uploadPicker.close();
+    this.controls();
+  }
+
+  forgetWorkspace(id: string) {
+    this.positions.delete(id);
+    if (this.workspace !== id) return;
+    this.workspace = null;
+    this.profile = null;
+    this.restorePosition = undefined;
+    this.stopBrowser();
+    this.setVisible(false);
+  }
+
+  private position(): BrowserPosition {
+    return {
+      path: this.directory,
+      filter: this.filterInput.value,
+      selected: new Set([...this.selection].map((entry) => entry.name)),
+      scroll: this.el(".files-list-scroll").scrollTop,
+      limit: this.limit,
+    };
   }
 
   private stopBrowser() {
@@ -476,10 +521,14 @@ export class FilesPane {
   }
 
   private async startBrowser() {
-    this.stopBrowser();
-    this.el(".files-host").textContent = this.profile
-      ? `${this.profile.name} · ${this.profile.host}`
-      : "选择终端会话以浏览远程文件";
+    if (this.browser) {
+      if (this.listedDirectory) this.restorePosition = this.position();
+      this.stopBrowser();
+    }
+    const profile = this.profile;
+    this.el(".files-host").textContent = profile
+      ? `${profile.name} · ${profile.username ? `${profile.username}@` : ""}${profile.host}${profile.port ? ` · 端口 ${profile.port}` : ""}`
+      : "";
     if (!this.profile) {
       this.message("尚未选择服务器，已有传输任务仍可继续。");
       return;
@@ -501,6 +550,8 @@ export class FilesPane {
         event.generation === this.generation
       ) {
         this.busy = false;
+        const position = this.restorePosition;
+        this.restorePosition = undefined;
         if (event.error) {
           this.entries = [];
           this.message(event.error);
@@ -509,7 +560,6 @@ export class FilesPane {
           this.directory = event.path!;
           this.listedDirectory = event.path!;
           this.input.value = this.directory;
-          if (this.profile) this.paths.set(this.profile.id, this.directory);
           this.entries.sort(
             (a, b) =>
               Number(b.directory) - Number(a.directory) ||
@@ -518,8 +568,17 @@ export class FilesPane {
           this.message(
             this.entries.length ? `${this.entries.length} 项` : "目录为空",
           );
+          if (position?.path === this.directory) {
+            this.filterInput.value = position.filter;
+            this.limit = position.limit;
+            this.selection = new Set(
+              this.entries.filter((entry) => position.selected.has(entry.name)),
+            );
+          }
         }
         this.renderEntries();
+        if (position?.path === this.listedDirectory)
+          this.el(".files-list-scroll").scrollTop = position.scroll;
         this.controls();
       } else if (event.type === "changed") {
         this.busy = false;
@@ -560,9 +619,15 @@ export class FilesPane {
       }
     };
     this.message("正在连接 SFTP…");
-    try {
-      await invoke("sftp_open", { id, profile: this.profile, onEvent });
+    // 后端只保留一路浏览连接，旧的打开请求不能覆盖较新的标签。
+    const opening = this.opening.then(async () => {
+      if (this.browser !== id) return;
+      await invoke("sftp_open", { id, profile, onEvent });
       if (this.browser !== id) await invoke("sftp_close", { id });
+    });
+    this.opening = opening.catch(() => {});
+    try {
+      await opening;
     } catch (error) {
       if (this.browser === id) {
         this.message(String(error));
@@ -571,13 +636,19 @@ export class FilesPane {
     }
   }
 
-  private async list(path: string) {
+  private async list(path: string, preserveSelection = false) {
     if (
       !this.ready ||
       this.busy ||
       (this.choosingUpload && this.listedDirectory)
     )
       return;
+    if (this.workspace && this.listedDirectory) {
+      const position = this.position();
+      this.positions.set(this.workspace, position);
+      if (preserveSelection) this.restorePosition = position;
+    }
+    const id = this.browser;
     this.busy = true;
     this.entries = [];
     this.clearSelection();
@@ -588,10 +659,11 @@ export class FilesPane {
     this.message("正在读取目录…");
     try {
       await invoke("sftp_request", {
-        id: this.browser,
+        id,
         request: { type: "list", generation: ++this.generation, path },
       });
     } catch (error) {
+      if (this.browser !== id) return;
       this.busy = false;
       this.message(String(error));
       this.controls();
@@ -703,7 +775,15 @@ export class FilesPane {
       `${task.name} · ${size(task.bytes)} / ${size(task.total)}`;
   }
 
+  private reportTasks() {
+    this.tasksChanged(
+      this.tasks.size,
+      [...this.tasks.values()].filter(activeTask).length,
+    );
+  }
+
   private renderTasks() {
+    this.reportTasks();
     const list = this.el(".transfer-list");
     list.replaceChildren();
     for (const task of this.tasks.values()) this.renderTask(task);
@@ -959,10 +1039,6 @@ export class FilesPane {
   }
 
   private async action(action: string) {
-    if (action === "close") {
-      this.toggle(false);
-      return;
-    }
     if (action === "connect") {
       await this.startBrowser();
       return;
@@ -1028,6 +1104,7 @@ export class FilesPane {
       try {
         await invoke("sftp_request", { id, request });
       } catch (error) {
+        if (this.browser !== id) return;
         this.busy = false;
         this.controls();
         throw error;

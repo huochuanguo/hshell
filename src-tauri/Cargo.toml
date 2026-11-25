@@ -1,6 +1,6 @@
 [package]
 name = "hshell-desktop"
-version = "0.3.15"
+version = "0.3.16"
 description = "A quiet, lightweight SSH workspace"
 edition = "2021"
 rust-version = "1.90"

@@ -29,9 +29,8 @@
       });
       let profiles = [profile];
       let snippets = [];
-      let browser,
-        terminal,
-        tasks = [],
+      const browsers = new Map();
+      let tasks = [],
         entries = [
           {
             name: "中文 目录",
@@ -83,8 +82,11 @@
       async function addTask(args) {
         const task = {
           id: crypto.randomUUID(),
-          name: profile.name,
-          host: profile.host,
+          name: (args.profile ?? profile).name,
+          host: (args.profile ?? profile).host,
+          profileId: (args.profile ?? profile).id,
+          username: (args.profile ?? profile).username,
+          port: (args.profile ?? profile).port,
           direction: args.direction,
           local: args.local,
           remote: args.remotePath,
@@ -106,6 +108,10 @@
         async (cmd, args) => {
           record(cmd, args);
           if (cmd === "get_profiles") return profiles;
+          if (cmd === "store_profiles") {
+            profiles = structuredClone(args.profiles);
+            return profiles;
+          }
           if (cmd === "get_snippets") return snippets;
           if (cmd === "store_snippets")
             snippets = structuredClone(args.snippets);
@@ -134,7 +140,7 @@
           if (cmd === "sftp_tasks") return tasks;
           if (cmd === "plugin:path|join") return args.paths.join("\\");
           if (cmd === "start_session") {
-            terminal = args.onEvent;
+            const terminal = args.onEvent;
             if (flags.has("connectionFailure")) {
               setTimeout(() => {
                 terminal.onmessage(
@@ -155,20 +161,27 @@
               () =>
                 terminal.onmessage(
                   new TextEncoder().encode(
-                    "\x1b[34mWindows UI 夹具 · 未连接服务器\x1b[0m\r\n中文字符、终端尺寸与文件栏交互验证\r\nfixture $ ",
+                    "\x1b[34mWindows UI 夹具 · 未连接服务器\x1b[0m\r\n中文字符、终端尺寸与 SFTP 标签交互验证\r\nfixture $ ",
                   ).buffer,
                 ),
               30,
             );
           }
           if (cmd === "sftp_open") {
-            browser = args.onEvent;
+            const browser = args.onEvent;
+            browsers.set(args.id, { browser, profile: args.profile });
             setTimeout(() => browser.onmessage({ type: "ready" }), 10);
           }
+          if (cmd === "sftp_close") browsers.delete(args.id);
           if (cmd === "sftp_request") {
+            const { browser, profile } = browsers.get(args.id);
             const r = args.request;
             if (r.type === "list") {
-              const path = r.path === "." ? "/home/测试用户" : r.path;
+              const home =
+                profile.username === "fixture"
+                  ? "/home/测试用户"
+                  : `/home/${profile.username}`;
+              const path = r.path === "." ? home : r.path;
               setTimeout(() => {
                 browser.onmessage({
                   type: "entries",

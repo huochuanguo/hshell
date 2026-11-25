@@ -8,6 +8,7 @@ use hshell_sftp::{
 use ssh_core::{Profile, SubsystemAuthentication};
 use std::{
     cell::{Cell, RefCell},
+    collections::HashSet,
     path::{Path, PathBuf},
     rc::Rc,
     sync::mpsc,
@@ -153,8 +154,17 @@ struct Task {
     last: (u64, Instant),
 }
 
+#[derive(Clone)]
+pub(crate) struct FilePosition {
+    path: PathBuf,
+    filter: String,
+    selected: HashSet<PathBuf>,
+}
+
 pub struct FilePane {
     pub root: gtk::Box,
+    browser_panel: gtk::Box,
+    queue_scroll: gtk::ScrolledWindow,
     window: gtk::ApplicationWindow,
     profiles_path: PathBuf,
     state_path: PathBuf,
@@ -168,6 +178,8 @@ pub struct FilePane {
     uploading: Cell<bool>,
     upload_notice: RefCell<Option<String>>,
     path: RefCell<PathBuf>,
+    pending_position: RefCell<Option<FilePosition>>,
+    last_position: RefCell<Option<FilePosition>>,
     address: gtk::Entry,
     upload_button: gtk::Button,
     local_directory: RefCell<Option<PathBuf>>,
@@ -179,6 +191,7 @@ pub struct FilePane {
     tree: gtk::TreeView,
     entries: RefCell<Vec<Entry>>,
     tasks: RefCell<Vec<Task>>,
+    tasks_changed: Box<dyn Fn(usize, usize)>,
     queue: gtk::ListBox,
     queue_title: gtk::Label,
     restoring: Cell<bool>,
@@ -191,19 +204,21 @@ pub struct FilePane {
 
 impl FilePane {
     #[allow(deprecated)]
-    pub fn new(window: &gtk::ApplicationWindow, profiles_path: PathBuf) -> Rc<Self> {
+    pub fn new(
+        window: &gtk::ApplicationWindow,
+        profiles_path: PathBuf,
+        tasks_changed: impl Fn(usize, usize) + 'static,
+    ) -> Rc<Self> {
         let (wake, wake_receiver) = glib::MainContext::channel(glib::Priority::DEFAULT_IDLE);
         let root = gtk::Box::new(gtk::Orientation::Vertical, 8);
         root.style_context().add_class("file-pane");
-        root.set_size_request(340, -1);
-        root.set_no_show_all(true);
+        let browser_panel = gtk::Box::new(gtk::Orientation::Vertical, 8);
+        root.pack_start(&browser_panel, true, true, 0);
         let heading = gtk::Box::new(gtk::Orientation::Horizontal, 8);
         let host = label("远程文件", "heading");
         host.set_ellipsize(gtk::pango::EllipsizeMode::Middle);
         heading.pack_start(&host, true, true, 0);
-        let close = icon_button("window-close-symbolic", "收起文件栏；后台传输继续");
-        heading.pack_end(&close, false, false, 0);
-        root.pack_start(&heading, false, false, 0);
+        browser_panel.pack_start(&heading, false, false, 0);
         let navigation = gtk::Box::new(gtk::Orientation::Horizontal, 4);
         let up = icon_button("go-up-symbolic", "上一级目录");
         let refresh = icon_button("view-refresh-symbolic", "刷新 / 重新连接");
@@ -213,7 +228,7 @@ impl FilePane {
         navigation.pack_start(&up, false, false, 0);
         navigation.pack_start(&address, true, true, 0);
         navigation.pack_start(&refresh, false, false, 0);
-        root.pack_start(&navigation, false, false, 0);
+        browser_panel.pack_start(&navigation, false, false, 0);
         let actions = gtk::Box::new(gtk::Orientation::Horizontal, 3);
         let upload = gtk::Button::with_label("上传");
         upload.set_sensitive(false);
@@ -231,10 +246,10 @@ impl FilePane {
         for button in [&download, &mkdir, &rename, &delete, &copy_path] {
             actions.pack_start(button, false, false, 0);
         }
-        root.pack_start(&actions, false, false, 0);
+        browser_panel.pack_start(&actions, false, false, 0);
         let search = gtk::SearchEntry::new();
         search.set_placeholder_text(Some("筛选文件名"));
-        root.pack_start(&search, false, false, 0);
+        browser_panel.pack_start(&search, false, false, 0);
         let model = gtk::ListStore::new(&[
             gtk::cairo::Surface::static_type(),
             String::static_type(),
@@ -330,10 +345,10 @@ impl FilePane {
         // 收窄时先让面板缩小，再隐藏附加列，避免表格反过来卡住分隔条。
         scroll.set_policy(gtk::PolicyType::External, gtk::PolicyType::Automatic);
         scroll.add(&tree);
-        root.pack_start(&scroll, true, true, 0);
+        browser_panel.pack_start(&scroll, true, true, 0);
         let status = label("打开文件栏时连接 SFTP", "dim");
         status.set_line_wrap(true);
-        root.pack_start(&status, false, false, 0);
+        browser_panel.pack_start(&status, false, false, 0);
         let queue_title = label("传输队列", "heading");
         root.pack_start(&queue_title, false, false, 4);
         let queue = gtk::ListBox::new();
@@ -348,6 +363,8 @@ impl FilePane {
         let state_path = profiles_path.parent().unwrap().join("sftp-transfers");
         let pane = Rc::new(Self {
             root,
+            browser_panel,
+            queue_scroll,
             window: window.clone(),
             profiles_path,
             state_path,
@@ -361,6 +378,8 @@ impl FilePane {
             uploading: Cell::new(false),
             upload_notice: RefCell::new(None),
             path: RefCell::new(PathBuf::from(".")),
+            pending_position: RefCell::new(None),
+            last_position: RefCell::new(None),
             address,
             upload_button: upload.clone(),
             local_directory: RefCell::new(None),
@@ -372,6 +391,7 @@ impl FilePane {
             tree,
             entries: RefCell::new(Vec::new()),
             tasks: RefCell::new(Vec::new()),
+            tasks_changed: Box::new(tasks_changed),
             queue,
             queue_title,
             restoring: Cell::new(true),
@@ -382,9 +402,9 @@ impl FilePane {
             poll_dirty: Cell::new(false),
         });
         let weak = Rc::downgrade(&pane);
-        close.connect_clicked(move |_| {
+        pane.root.connect_map(move |_| {
             if let Some(p) = weak.upgrade() {
-                p.hide();
+                p.update_upload_button();
             }
         });
         let weak = Rc::downgrade(&pane);
@@ -553,34 +573,52 @@ impl FilePane {
         );
         pane
     }
-    pub fn show(self: &Rc<Self>, profile: Profile) {
+    pub(crate) fn position(&self) -> Option<FilePosition> {
+        if !self.listed.get() {
+            return self.last_position.borrow().clone();
+        }
+        Some(FilePosition {
+            path: self.path.borrow().clone(),
+            filter: self.search.text().to_string(),
+            selected: self
+                .selected_entries()
+                .into_iter()
+                .map(|entry| entry.name)
+                .collect(),
+        })
+    }
+
+    pub(crate) fn open_workspace(
+        self: &Rc<Self>,
+        profile: Option<Profile>,
+        position: Option<FilePosition>,
+    ) {
         if self.closed.get() {
             return;
         }
-        let changed = self.profile.borrow().as_ref().is_none_or(|old| {
-            old.id != profile.id
-                || old.host != profile.host
-                || old.username != profile.username
-                || old.port != profile.port
-        });
-        if changed {
-            self.listed.set(false);
-            self.generation.set(self.generation.get().wrapping_add(1));
-            self.browser.borrow_mut().take();
-            self.receiver.borrow_mut().take();
-            self.model.clear();
-            self.entries.borrow_mut().clear();
-            self.path.replace(PathBuf::from("."));
-            self.address.set_text(".");
-            self.search.set_text("");
-            self.profile.replace(Some(profile));
-        }
-        self.root.set_no_show_all(false);
+        self.hide();
+        self.model.clear();
+        self.entries.borrow_mut().clear();
+        self.search.set_text("");
+        self.path.replace(
+            position
+                .as_ref()
+                .map_or_else(|| PathBuf::from("."), |p| p.path.clone()),
+        );
+        self.address.set_text(&self.path.borrow().to_string_lossy());
+        self.last_position.replace(position.clone());
+        self.pending_position.replace(position);
+        let browsing = profile.is_some();
+        self.profile.replace(profile);
         self.root.show_all();
-        self.root.set_no_show_all(true);
-        self.root.show();
-        self.connect();
+        self.browser_panel.set_visible(browsing);
+        self.root
+            .set_child_packing(&self.queue_scroll, !browsing, true, 0, gtk::PackType::End);
+        if browsing {
+            self.connect();
+        }
     }
+
     pub fn hide(&self) {
         self.root.hide();
         self.listed.set(false);
@@ -588,6 +626,7 @@ impl FilePane {
         self.browser.borrow_mut().take();
         self.receiver.borrow_mut().take();
         self.loading.set(false);
+        self.pending_position.borrow_mut().take();
         self.upload_notice.borrow_mut().take();
         self.update_upload_button();
     }
@@ -619,7 +658,7 @@ impl FilePane {
         };
         self.listed.set(false);
         self.update_upload_button();
-        self.host.set_text(&format!("文件 · {}", profile.name));
+        self.host.set_text("远程文件");
         self.status.set_text("正在连接 SFTP…");
         let (sender, receiver) = mpsc::sync_channel(8);
         let wake = self.wake.clone();
@@ -635,6 +674,7 @@ impl FilePane {
         )));
     }
     fn refresh(self: &Rc<Self>) {
+        self.pending_position.replace(self.position());
         if self.browser.borrow().is_none() {
             self.connect();
         } else {
@@ -647,12 +687,15 @@ impl FilePane {
             return;
         }
         if self.loading.get() {
-            self.status.set_text("目录仍在读取，可收起文件栏停止连接");
+            self.status.set_text("目录仍在读取，可关闭文件标签停止连接");
             return;
         }
         let generation = self.generation.get().wrapping_add(1);
         self.generation.set(generation);
         if self.request(BrowseRequest::List { generation, path }) {
+            if self.listed.get() {
+                self.last_position.replace(self.position());
+            }
             self.loading.set(true);
             self.listed.set(false);
             self.update_upload_button();
@@ -818,12 +861,42 @@ impl FilePane {
                             if self.path.replace(path.clone()) != path {
                                 self.search.set_text("");
                             }
+                            if let Some(position) = self
+                                .pending_position
+                                .borrow_mut()
+                                .take()
+                                .filter(|p| p.path == path)
+                            {
+                                self.search.set_text(&position.filter);
+                                if !position.selected.is_empty() {
+                                    let selected = self.tree.selection();
+                                    if let Some(model) = self.tree.model() {
+                                        model.foreach(|model, path, iter| {
+                                            if model.value(iter, 3).get::<u32>().ok().is_some_and(
+                                                |index| {
+                                                    self.entries
+                                                        .borrow()
+                                                        .get(index as usize)
+                                                        .is_some_and(|entry| {
+                                                            position.selected.contains(&entry.name)
+                                                        })
+                                                },
+                                            ) {
+                                                selected.select_path(path);
+                                            }
+                                            false
+                                        });
+                                    }
+                                }
+                            }
+                            self.last_position.replace(self.position());
                             self.list_status();
                             if let Some(notice) = self.upload_notice.borrow_mut().take() {
                                 self.status.set_text(&notice);
                             }
                         }
                         Err(error) => {
+                            self.pending_position.borrow_mut().take();
                             self.address.set_text(&self.path.borrow().to_string_lossy());
                             self.status.set_text(&error);
                         }
@@ -1027,7 +1100,7 @@ impl FilePane {
     fn can_transfer(&self) -> bool {
         !self.closed.get()
             && !self.restoring.get()
-            && self.root.is_visible()
+            && self.root.is_mapped()
             && self.listed.get()
             && !self.loading.get()
             && self.browser.borrow().is_some()
@@ -1450,6 +1523,8 @@ impl FilePane {
                         if let Some(index) = tasks.iter().position(|t| t.transfer.id == task_id) {
                             let task = tasks.remove(index); p.queue.remove(&task.row);
                         }
+                        drop(tasks);
+                        p.report_tasks();
                     }
                 });
             }
@@ -1468,7 +1543,18 @@ impl FilePane {
             remove,
             last: (0, Instant::now()),
         });
+        self.report_tasks();
         self.ensure_poll();
+    }
+    fn report_tasks(&self) {
+        let tasks = self.tasks.borrow();
+        (self.tasks_changed)(
+            tasks.len(),
+            tasks
+                .iter()
+                .filter(|task| matches!(task.state, State::Running | State::Queued))
+                .count(),
+        );
     }
     fn schedule(&self) {
         if self.closed.get() {
@@ -1513,6 +1599,8 @@ impl FilePane {
         if self.queue_title.text() != text {
             self.queue_title.set_text(&text);
         }
+        drop(tasks);
+        self.report_tasks();
     }
     fn transfer_event(self: &Rc<Self>, id: &str, event: TransferEvent) {
         if let TransferEvent::Auth {
@@ -1571,12 +1659,15 @@ impl FilePane {
                 match result {
                     Ok(()) => {
                         refresh = task.transfer.direction == Direction::Upload
-                            && self.root.is_visible()
-                            && self
-                                .profile
-                                .borrow()
-                                .as_ref()
-                                .is_some_and(|p| p.id == task.transfer.profile.id);
+                            && self.browser.borrow().is_some()
+                            && task.transfer.remote.parent() == Some(self.path.borrow().as_path())
+                            && self.profile.borrow().as_ref().is_some_and(|profile| {
+                                let target = &task.transfer.profile;
+                                profile.id == target.id
+                                    && profile.host == target.host
+                                    && profile.username == target.username
+                                    && profile.port == target.port
+                            });
                         task.state = State::Complete;
                         task.progress.set_fraction(1.0);
                         task.detail.set_text("传输完成");
@@ -1594,6 +1685,7 @@ impl FilePane {
             _ => {}
         }
         drop(tasks);
+        self.report_tasks();
         if refresh && !self.loading.get() && !self.uploading.get() {
             self.refresh();
         }
@@ -1691,7 +1783,7 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     std::fs::write(result, r#"{"phase":"terminal-baseline"}"#).map_err(|e| e.to_string())?;
     pause(500).await;
     std::fs::write(result, r#"{"phase":"directory"}"#).map_err(|e| e.to_string())?;
-    let pane = client.open_files(profile.clone());
+    let pane = client.open_files(&tab);
     until(
         || !pane.restoring.get() && pane.path.borrow().is_absolute() && !pane.loading.get(),
         "SFTP browser did not connect",
@@ -1810,6 +1902,32 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     if copied.as_deref().map(Path::new) != Some(expected.as_path()) {
         return Err(format!("Copied path {copied:?}, expected {expected:?}"));
     }
+    client.activate_terminal(&tab);
+    pause(100).await;
+    client.open_files(&tab);
+    if pane
+        .selected()
+        .is_none_or(|entry| entry.name != selected.name)
+    {
+        return Err("Switching to the terminal lost the SFTP selection".into());
+    }
+    client.open_transfers();
+    client.open_files(&tab);
+    until(
+        || pane.listed.get() && !pane.loading.get(),
+        "SFTP tab did not restore",
+    )
+    .await?;
+    if pane.search.text().as_str() != "FILE-09999"
+        || pane
+            .selected()
+            .is_none_or(|entry| entry.name != selected.name)
+        || pane.path.borrow().as_path() != expected.parent().unwrap()
+    {
+        return Err(
+            "Switching SFTP pages did not restore the directory, filter and selection".into(),
+        );
+    }
     pane.search.set_text("没有匹配项");
     if shown.iter_n_children(None) != 0 || pane.selected().is_some() {
         return Err("Filtering did not clear a hidden selection".into());
@@ -1864,6 +1982,8 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     let mut input = Vec::new();
     let mut scroll_ticks = Vec::new();
     let mut simultaneous = 0;
+    client.activate_terminal(&tab);
+    pause(100).await;
     tab.terminal.widget.grab_focus();
     for index in 0..60 {
         let running = pane.running();
@@ -1921,6 +2041,8 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
                 .collect::<Vec<_>>()
         ));
     }
+    client.open_files(&tab);
+    pause(150).await;
     snapshot(client, "sftp")?;
     // A paused transfer survives hiding/reopening the pane, and the stop button
     // is tested through its GTK signal rather than a separate transport mock.
@@ -1948,9 +2070,9 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         "Pause did not settle",
     )
     .await?;
-    pane.hide();
+    client.activate_terminal(&tab);
     pause(100).await;
-    pane.show(profile);
+    client.open_files(&tab);
     action.emit_clicked();
     until_with_timeout(
         || pane.tasks.borrow().last().unwrap().state == State::Complete,
@@ -1959,10 +2081,13 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     )
     .await?;
     client.window.resize(800, 580);
-    pane.hide();
-    client.open_files(pane.profile.borrow().clone().unwrap());
     pause(500).await;
+    if !client.file_tab_fills_workspace(&pane.root) {
+        return Err(client.file_layout().to_string());
+    }
     snapshot(client, "sftp-small")?;
+    client.activate_terminal(&tab);
+    pause(150).await;
     if tab.terminal.widget.allocated_width() < 300 {
         return Err(format!(
             "Minimum window leaves terminal too narrow: terminal {}, window {}, file pane {}",
@@ -1973,7 +2098,8 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     }
     let terminal_width = tab.terminal.widget.allocated_width();
     std::fs::write(result, r#"{"phase":"hidden-idle"}"#).map_err(|e| e.to_string())?;
-    pane.hide();
+    client.open_files(&tab);
+    client.close_active_files();
     pause(500).await;
     if pane.polling.get() {
         return Err("Hidden idle file pane retains polling timer".into());
