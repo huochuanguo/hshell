@@ -65,9 +65,9 @@ impl Task {
 
 #[derive(Clone, Serialize)]
 #[serde(tag = "type", rename_all = "camelCase")]
-enum TransferNotice {
+enum TransferNotice<'a> {
     Task {
-        task: TaskInfo,
+        task: &'a TaskInfo,
     },
     Auth {
         id: String,
@@ -165,7 +165,7 @@ impl Files {
         }
     }
 
-    fn notify(&self, info: TaskInfo) {
+    fn notify(&self, info: &TaskInfo) {
         let _ = self
             .app
             .emit("sftp-transfer", TransferNotice::Task { task: info });
@@ -244,14 +244,14 @@ impl Files {
                         }
                         task.info.clone()
                     };
-                    files.notify(info);
+                    files.notify(&info);
                     if finished {
                         files.pump();
                     }
                     true
                 },
             ));
-            self.notify(task.info.clone());
+            self.notify(&task.info);
         }
     }
 
@@ -537,7 +537,7 @@ pub async fn sftp_prepare_upload(
             let mut task = Task::new(transfer);
             task.info.status = "queued".into();
             let id = task.info.id.clone();
-            files.notify(task.info.clone());
+            files.notify(&task.info);
             inner.tasks.insert(id.clone(), task);
             inner.queue.push_back(id);
         }
@@ -607,7 +607,7 @@ pub async fn sftp_enqueue(
         let id = transfer.id.clone();
         let mut task = Task::new(transfer);
         task.info.status = "queued".into();
-        files.notify(task.info.clone());
+        files.notify(&task.info);
         inner.tasks.insert(id.clone(), task);
         inner.queue.push_back(id.clone());
         drop(inner);
@@ -660,7 +660,7 @@ pub async fn sftp_task_action(
             }
             _ => return Err("未知任务操作".into()),
         }
-        files.notify(task.info.clone());
+        files.notify(&task.info);
         inner.queue.retain(|queued| queued != &id);
         if action == "resume" {
             inner.queue.push_back(id);
