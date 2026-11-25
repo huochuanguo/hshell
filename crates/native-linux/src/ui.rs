@@ -48,6 +48,8 @@ struct HostGroup {
 struct FileTab {
     owner: Option<Rc<Tab>>,
     root: gtk::Box,
+    #[cfg(feature = "native-probe")]
+    title: gtk::Label,
     position: RefCell<Option<crate::files::FilePosition>>,
 }
 
@@ -1502,10 +1504,12 @@ impl Client {
             );
             let text = label(&title, "");
             if let Some(tab) = owner.as_ref() {
-                text.set_tooltip_text(Some(&address(&tab.profile)));
+                text.set_tooltip_text(Some(&format!("{title}\n{}", address(&tab.profile))));
+                // Notebook 的非扩展标签可能只分到最小宽度，避免标题只剩省略号。
+                text.set_width_chars(16);
+                text.set_max_width_chars(25);
+                text.set_ellipsize(gtk::pango::EllipsizeMode::End);
             }
-            text.set_max_width_chars(25);
-            text.set_ellipsize(gtk::pango::EllipsizeMode::End);
             header.pack_start(&icon("folder-remote-symbolic"), false, false, 0);
             header.pack_start(&text, true, true, 0);
             let close = icon_button("window-close-symbolic", "关闭文件标签；后台传输继续");
@@ -1515,6 +1519,8 @@ impl Client {
             let page = Rc::new(FileTab {
                 owner,
                 root,
+                #[cfg(feature = "native-probe")]
+                title: text,
                 position: RefCell::new(None),
             });
             self.file_tabs.borrow_mut().push(page.clone());
@@ -1614,6 +1620,24 @@ impl Client {
     #[cfg(feature = "native-probe")]
     pub(crate) fn open_transfers(self: &Rc<Self>) {
         self.open_file_page(None);
+    }
+
+    #[cfg(feature = "native-probe")]
+    pub(crate) fn verify_file_tab_title(&self, expected: &str) -> Result<(), String> {
+        let page = self.active_file_page().ok_or("没有活动的文件标签")?;
+        let title = &page.title;
+        let actual = title.text();
+        let ellipsized = title
+            .layout()
+            .ok_or("文件标签没有文字布局")?
+            .is_ellipsized();
+        if !title.is_mapped() || actual.as_str() != expected || ellipsized {
+            return Err(format!(
+                "文件标签标题未完整显示：预期 {expected:?}，实际 {actual:?}，宽度 {}，省略 {ellipsized}",
+                title.allocated_width()
+            ));
+        }
+        Ok(())
     }
 
     #[cfg(feature = "native-probe")]

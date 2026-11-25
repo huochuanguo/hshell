@@ -1754,7 +1754,7 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     let root = PathBuf::from(std::env::var_os("HSHELL_SFTP_ROOT").ok_or("Missing fixture root")?);
     let profile = Profile {
         id: "gui-sftp".into(),
-        name: "开发服务器".into(),
+        name: "202".into(),
         host: "fixture".into(),
         username: String::new(),
         port: None,
@@ -1789,6 +1789,7 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         "SFTP browser did not connect",
     )
     .await?;
+    client.verify_file_tab_title("202 · SFTP")?;
     if std::env::var_os("HSHELL_NATIVE_SFTP_APPEARANCE").is_some() {
         pane.navigate(PathBuf::from("/fixture/data/appearance"));
         until(|| !pane.loading.get(), "Appearance directory did not load").await?;
@@ -1827,6 +1828,7 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         snapshot(client, "files-selected")?;
         client.window.resize(800, 580);
         pause(500).await;
+        client.verify_file_tab_title("202 · SFTP")?;
         snapshot(client, "files-small")?;
         return std::fs::write(result,serde_json::json!({"phase":"complete","entries":palette,"iconCacheEntries":pane.icons.len(),"scaleFactor":client.window.scale_factor(),"selectionChecked":true}).to_string()).map_err(|e|e.to_string());
     }
@@ -1912,6 +1914,8 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
         return Err("Switching to the terminal lost the SFTP selection".into());
     }
     client.open_transfers();
+    pause(100).await;
+    client.verify_file_tab_title("传输任务")?;
     client.open_files(&tab);
     until(
         || pane.listed.get() && !pane.loading.get(),
@@ -2085,6 +2089,7 @@ pub(crate) async fn verify(client: &Rc<crate::ui::Client>, result: &Path) -> Res
     if !client.file_tab_fills_workspace(&pane.root) {
         return Err(client.file_layout().to_string());
     }
+    client.verify_file_tab_title("202 · SFTP")?;
     snapshot(client, "sftp-small")?;
     client.activate_terminal(&tab);
     pause(150).await;
